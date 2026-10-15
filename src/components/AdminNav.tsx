@@ -23,9 +23,10 @@ export function AdminNav({ tenantName, tenantSlug, userEmail }: AdminNavProps) {
   const pathname = usePathname();
 
   const links = [
-    { href: "/admin", label: "Citas & Agenda", icon: Calendar },
-    { href: "/admin/servicios", label: "Catálogo de Servicios", icon: Layers },
-    { href: "/admin/personal", label: "Colaboradores (Staff)", icon: Users },
+    { href: "/admin", label: "Resumen", icon: Layers },
+    { href: "/admin/calendario", label: "Calendario Diario", icon: Calendar },
+    { href: "/admin/servicios", label: "Servicios", icon: Scissors },
+    { href: "/admin/personal", label: "Colaboradores", icon: Users },
   ];
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
-import { createBooking } from "@/app/actions/booking";
+import { createBooking, getAvailableSlotsAction } from "@/app/actions/booking";
 import { 
   Scissors, 
   User, 
@@ -13,7 +13,8 @@ import {
   ArrowLeft, 
   Sparkles,
   Phone,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 
 interface ServiceItem {
@@ -62,11 +63,16 @@ export function BookingWizard({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
 
+  // Slots dinámicos calculados por el motor de disponibilidad
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
+  const [slotsMessage, setSlotsMessage] = useState<string | null>(null);
+
   const selectedService = services.find((s) => s.id === selectedServiceId);
   const selectedStaff = staffMembers.find((st) => st.id === selectedStaffId);
 
-  // Generar próximos 5 días disponibles
-  const upcomingDays = Array.from({ length: 5 }, (_, i) => {
+  // Generar próximos 7 días disponibles
+  const upcomingDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().split("T")[0];
@@ -76,12 +82,42 @@ export function BookingWizard({
     return { dateStr, label: `${dayName.toUpperCase()} ${dayNum} ${monthName}` };
   });
 
-  // Generar slots de horario comunes (09:00 a 18:30)
-  const availableSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "14:00", "14:30", "15:00", "15:30",
-    "16:00", "16:30", "17:00", "17:30", "18:00"
-  ];
+  // Consultar disponibilidad real cuando cambian profesional, servicio o fecha
+  useEffect(() => {
+    if (!selectedStaffId || !selectedServiceId || !selectedDate) return;
+
+    let isMounted = true;
+    async function fetchSlots() {
+      setLoadingSlots(true);
+      setSlotsMessage(null);
+      setSelectedTime("");
+
+      const res = await getAvailableSlotsAction({
+        tenantSlug,
+        staffId: selectedStaffId,
+        serviceId: selectedServiceId,
+        dateStr: selectedDate,
+      });
+
+      if (isMounted) {
+        setLoadingSlots(false);
+        if (res.success) {
+          setAvailableSlots(res.slots);
+          if (res.slots.length === 0) {
+            setSlotsMessage(res.message || "No hay horarios disponibles para esta fecha.");
+          }
+        } else {
+          setSlotsMessage(res.error || "No se pudieron calcular los horarios.");
+        }
+      }
+    }
+
+    fetchSlots();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tenantSlug, selectedStaffId, selectedServiceId, selectedDate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,14 +167,14 @@ export function BookingWizard({
         <h2 className="text-2xl font-bold">
           {step === 1 && "1. Elige tu Servicio"}
           {step === 2 && "2. Selecciona a tu Profesional"}
-          {step === 3 && "3. Fecha y Horario"}
+          {step === 3 && "3. Fecha y Horario Disponible"}
           {step === 4 && "4. Datos de Contacto"}
           {step === 5 && "¡Cita Confirmada con Éxito!"}
         </h2>
         <p className="text-slate-300 text-sm mt-1">
           {step === 1 && "Selecciona el tratamiento o corte que deseas realizarte."}
           {step === 2 && "¿Quién te gustaría que te atienda hoy?"}
-          {step === 3 && "Elige el día y la hora que mejor se acomode a ti."}
+          {step === 3 && "Disponibilidad calculada en tiempo real según el turno del profesional."}
           {step === 4 && "Indícanos a qué número confirmaremos tu reservación."}
           {step === 5 && "Tu espacio está asegurado en nuestra agenda."}
         </p>
@@ -282,14 +318,14 @@ export function BookingWizard({
           </div>
         )}
 
-        {/* PASO 3: FECHA Y HORA */}
+        {/* PASO 3: FECHA Y HORA CON DISPONIBILIDAD EN TIEMPO REAL */}
         {step === 3 && (
           <div className="space-y-6">
             <div>
               <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                1. Selecciona el Día
+                1. Selecciona la Fecha
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                 {upcomingDays.map((d) => (
                   <button
                     key={d.dateStr}
@@ -308,25 +344,43 @@ export function BookingWizard({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                2. Horarios Disponibles
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {availableSlots.map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() => setSelectedTime(time)}
-                    className={`py-2 px-3 rounded-lg border text-sm font-medium text-center transition ${
-                      selectedTime === time
-                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                        : "bg-white text-gray-700 border-gray-200 hover:border-amber-300 hover:bg-amber-50/30"
-                    }`}
-                  >
-                    {time}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  2. Horarios Libres para {selectedStaff?.displayName}
+                </label>
+                <span className="text-[11px] text-gray-500 font-medium">
+                  Duración: {selectedService?.durationMinutes} min
+                </span>
               </div>
+
+              {loadingSlots ? (
+                <div className="py-8 flex flex-col items-center justify-center text-gray-500 gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                  <span className="text-xs">Consultando agenda disponible en tiempo real...</span>
+                </div>
+              ) : slotsMessage && availableSlots.length === 0 ? (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" />
+                  <span>{slotsMessage}</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {availableSlots.map((time) => (
+                    <button
+                      key={time}
+                      type="button"
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-2 px-3 rounded-lg border text-sm font-medium text-center transition ${
+                        selectedTime === time
+                          ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-amber-300 hover:bg-amber-50/30"
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="pt-4 flex items-center justify-between border-t border-gray-100">

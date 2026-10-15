@@ -151,6 +151,13 @@ export default async function AdminDashboardPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <Link
+              href="/admin/calendario"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition"
+            >
+              <Calendar className="w-4 h-4 text-amber-400" />
+              Ver Calendario Diario
+            </Link>
+            <Link
               href={`/b/${tenant.slug}`}
               target="_blank"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-sm transition"

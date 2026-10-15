@@ -179,3 +179,75 @@ export async function createStaffAction(formData: FormData) {
     return { success: false, error: "No se pudo registrar el colaborador." };
   }
 }
+
+export interface CreateManualAppointmentInput {
+  serviceId: string;
+  staffId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  dateStr: string;
+  timeStr: string;
+  notes?: string;
+}
+
+export async function createManualAppointmentAction(input: CreateManualAppointmentInput) {
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  const { serviceId, staffId, customerName, customerPhone, customerEmail, dateStr, timeStr, notes } = input;
+  if (!serviceId || !staffId || !customerName || !customerPhone || !dateStr || !timeStr) {
+    return { success: false, error: "Por favor completa todos los campos requeridos." };
+  }
+
+  try {
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId, tenantId },
+    });
+    if (!service) return { success: false, error: "Servicio no válido." };
+
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const startTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
+
+    const endTime = new Date(startTime);
+    endTime.setMinutes(endTime.getMinutes() + service.durationMinutes);
+
+    // Buscar o registrar cliente
+    let customer = await prisma.customer.findFirst({
+      where: { tenantId, phone: customerPhone },
+    });
+
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: {
+          tenantId,
+          fullName: customerName,
+          phone: customerPhone,
+          email: customerEmail || null,
+        },
+      });
+    }
+
+    const appointment = await prisma.appointment.create({
+      data: {
+        tenantId,
+        serviceId: service.id,
+        staffId,
+        customerId: customer.id,
+        startTime,
+        endTime,
+        totalPrice: service.price,
+        customerNotes: notes || null,
+        status: "CONFIRMED",
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/calendario");
+    return { success: true, appointmentId: appointment.id };
+  } catch (error: any) {
+    console.error("Error al agendar cita manual:", error);
+    return { success: false, error: "No se pudo registrar la cita manual." };
+  }
+}
