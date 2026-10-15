@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
-import { AdminNav } from "@/components/AdminNav";
 import { AppointmentManager } from "@/components/AppointmentManager";
 import {
   Calendar,
@@ -13,12 +12,14 @@ import {
   Layers,
   Sparkles,
   Info,
+  Clock,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
 
-  // Si hay sesión activa usamos el tenant del usuario; si no, tenant demo
   let tenant = null;
 
   if (session?.tenantId) {
@@ -63,19 +64,19 @@ export default async function AdminDashboardPage() {
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+      <div className="flex-1 flex items-center justify-center p-6 text-center text-zinc-400">
         <div>
-          <h2 className="text-xl font-bold">No hay negocios registrados</h2>
-          <p className="text-gray-500 mt-2">Ejecuta el comando de sembrado con `npm run db:seed`.</p>
+          <h2 className="text-xl font-bold text-white">No hay negocios registrados</h2>
+          <p className="text-sm mt-2">Ejecuta el comando de sembrado con `npm run db:seed`.</p>
         </div>
       </div>
     );
   }
 
   // Métricas
-  const totalRevenue = tenant.appointments
-    .filter((a) => a.status !== "CANCELLED")
-    .reduce((acc, app) => acc + Number(app.totalPrice), 0);
+  const confirmedOrCompleted = tenant.appointments.filter((a) => a.status !== "CANCELLED");
+  const totalRevenue = confirmedOrCompleted.reduce((acc, app) => acc + Number(app.totalPrice), 0);
+  const completedCount = tenant.appointments.filter((a) => a.status === "COMPLETED").length;
 
   // Serialización para AppointmentManager (Client Component)
   const serializedAppointments = tenant.appointments.map((a) => ({
@@ -100,222 +101,256 @@ export default async function AdminDashboardPage() {
     },
   }));
 
+  const todayFormatted = new Date().toLocaleDateString("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
-      <AdminNav
-        tenantName={tenant.name}
-        tenantSlug={tenant.slug}
-        userEmail={session?.email}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
-        {!session && (
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-300 text-amber-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
-              <span>
-                Estás visualizando el negocio demo (<strong>{tenant.name}</strong>). Para gestionar tu propio negocio privado, inicia sesión o regístrate.
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800 transition"
-              >
-                Iniciar Sesión
-              </Link>
-              <Link
-                href="/register"
-                className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition"
-              >
-                Crear Mi Negocio
-              </Link>
-            </div>
+    <main className="p-4 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
+      {/* Banner de Modo Demo si no hay sesión */}
+      {!session && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+          <div className="flex items-center gap-2.5">
+            <Info className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span>
+              Estás visualizando el negocio de demostración (<strong>{tenant.name}</strong>). Para gestionar tu propio negocio privado, inicia sesión o crea una cuenta.
+            </span>
           </div>
-        )}
-
-        {/* Banner de bienvenida y accesos rápidos */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-amber-400 text-xs font-semibold mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              {session ? `Conectado como ${session.fullName}` : "Modo Administrador"}
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Agenda y Control de Citas
-            </h2>
-            <p className="text-gray-500 text-sm mt-1">
-              Supervisa las reservas en tiempo real y gestiona los estados de cada cita.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link
-              href="/admin/calendario"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition"
+              href="/login"
+              className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold border border-zinc-700 transition"
             >
-              <Calendar className="w-4 h-4 text-amber-400" />
-              Ver Calendario Diario
+              Iniciar Sesión
             </Link>
             <Link
-              href={`/b/${tenant.slug}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-sm transition"
+              href="/register"
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition shadow-md shadow-amber-500/20"
             >
-              <Scissors className="w-4 h-4" />
-              Probar Reserva como Cliente
+              Crear Mi Negocio
             </Link>
           </div>
         </div>
+      )}
 
-        {/* Tarjetas de Métricas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Citas Totales
-              </p>
-              <h3 className="text-2xl font-black text-gray-900 mt-1">
-                {tenant.appointments.length}
-              </h3>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Calendar className="w-5 h-5" />
-            </div>
+      {/* Header Principal del Dashboard (Dark Luxe) */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-zinc-850">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 capitalize mb-1">
+            <Calendar className="w-3.5 h-3.5 text-amber-400" />
+            <span>{todayFormatted}</span>
           </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Ingresos Estimados
-              </p>
-              <h3 className="text-2xl font-black text-emerald-600 mt-1">
-                {formatCurrency(totalRevenue, tenant.currency)}
-              </h3>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Colaboradores
-              </p>
-              <h3 className="text-2xl font-black text-gray-900 mt-1">
-                {tenant.staff.length} activos
-              </h3>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <User className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Servicios Activos
-              </p>
-              <h3 className="text-2xl font-black text-gray-900 mt-1">
-                {tenant.services.length}
-              </h3>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Layers className="w-5 h-5" />
-            </div>
-          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Resumen Operativo
+          </h2>
+          <p className="text-xs text-zinc-400 mt-1">
+            Supervisa reservaciones, ingresos estimados y la actividad de tu equipo en tiempo real.
+          </p>
         </div>
 
-        {/* Sección Principal con AppointmentManager y Sidebar */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-amber-500" />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/admin/calendario"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold border border-zinc-800 transition"
+          >
+            <Calendar className="w-4 h-4 text-amber-400" />
+            <span>Ver Calendario Diario</span>
+          </Link>
+
+          <Link
+            href={`/b/${tenant.slug}`}
+            target="_blank"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition shadow-lg shadow-amber-500/20"
+          >
+            <Scissors className="w-4 h-4" />
+            <span>Probar Reserva como Cliente</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Tarjetas de Métricas Dark Luxe */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Ingresos */}
+        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md relative overflow-hidden group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Ingresos Estimados
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-emerald-400 transition-colors">
+            {formatCurrency(totalRevenue, tenant.currency)}
+          </h3>
+          <span className="text-[11px] text-zinc-500 mt-1 block">
+            {confirmedOrCompleted.length} cita(s) activas
+          </span>
+        </div>
+
+        {/* Citas Totales */}
+        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
               Citas Registradas
-            </h3>
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Calendar className="w-4 h-4" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-amber-400 transition-colors">
+            {tenant.appointments.length}
+          </h3>
+          <span className="text-[11px] text-emerald-400 mt-1 block font-medium">
+            {completedCount} completadas
+          </span>
+        </div>
 
-            <AppointmentManager
-              appointments={serializedAppointments}
-              currency={tenant.currency}
-            />
+        {/* Especialistas Activos */}
+        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Especialistas
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+              <User className="w-4 h-4" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-blue-400 transition-colors">
+            {tenant.staff.length}
+          </h3>
+          <span className="text-[11px] text-zinc-500 mt-1 block">
+            Turnos semanales asignados
+          </span>
+        </div>
+
+        {/* Servicios */}
+        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Servicios en Catálogo
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+              <Layers className="w-4 h-4" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-purple-400 transition-colors">
+            {tenant.services.length}
+          </h3>
+          <span className="text-[11px] text-zinc-500 mt-1 block">
+            Disponibles en el portal web
+          </span>
+        </div>
+      </div>
+
+      {/* Grid Principal: AppointmentManager + Sidebar de Detalles */}
+      <div className="grid lg:grid-cols-12 gap-8 items-start">
+        {/* Columna de Citas (8 cols) */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-400" />
+              Gestión de Agenda & Citas
+            </h3>
+            <span className="text-xs text-zinc-500 font-medium font-mono">
+              Sincronizado en tiempo real
+            </span>
           </div>
 
-          {/* Colaboradores & Info del Negocio */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
-                  <User className="w-4 h-4 text-amber-500" />
-                  Equipo de Trabajo
-                </h3>
-                <Link
-                  href="/admin/personal"
-                  className="text-xs font-semibold text-amber-600 hover:text-amber-700"
-                >
-                  Gestionar
-                </Link>
-              </div>
+          <AppointmentManager
+            appointments={serializedAppointments}
+            currency={tenant.currency}
+            businessName={tenant.name}
+          />
+        </div>
 
-              <div className="space-y-3">
-                {tenant.staff.map((st) => (
-                  <div key={st.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-full overflow-hidden border-2 flex items-center justify-center bg-slate-100"
-                        style={{ borderColor: st.colorCode }}
-                      >
-                        {st.avatarUrl ? (
-                          <img
-                            src={st.avatarUrl}
-                            alt={st.displayName}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <User className="w-5 h-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{st.displayName}</p>
-                        <p className="text-xs text-gray-400">{st.phone || "Sin teléfono"}</p>
-                      </div>
-                    </div>
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: st.colorCode }}
-                      title={`Color: ${st.colorCode}`}
-                    />
-                  </div>
-                ))}
-              </div>
+        {/* Columna Lateral Informativa (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Tarjeta de Equipo */}
+          <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-850 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                <User className="w-4 h-4 text-amber-400" />
+                Equipo de Especialistas
+              </h4>
+              <Link
+                href="/admin/personal"
+                className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition"
+              >
+                Gestionar
+              </Link>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              <h3 className="font-bold text-gray-900 text-base mb-3 flex items-center gap-2">
-                <Store className="w-4 h-4 text-amber-500" />
-                Datos del Negocio
-              </h3>
-              <div className="text-xs text-gray-600 space-y-2">
-                <div>
-                  <span className="font-bold text-gray-800">Slug / Enlace:</span>{" "}
-                  <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono">
-                    /b/{tenant.slug}
-                  </code>
+            <div className="space-y-3">
+              {tenant.staff.map((st) => (
+                <div key={st.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-zinc-850/50 transition">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-full overflow-hidden border-2 flex items-center justify-center bg-zinc-950 flex-shrink-0"
+                      style={{ borderColor: st.colorCode }}
+                    >
+                      {st.avatarUrl ? (
+                        <img
+                          src={st.avatarUrl}
+                          alt={st.displayName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-zinc-500" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-zinc-200 block leading-tight">
+                        {st.displayName}
+                      </span>
+                      <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">
+                        {st.phone || "Sin teléfono"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: st.colorCode }}
+                    title={`Color: ${st.colorCode}`}
+                  />
                 </div>
-                <div>
-                  <span className="font-bold text-gray-800">Dirección:</span> {tenant.address || "No configurada"}
-                </div>
-                <div>
-                  <span className="font-bold text-gray-800">Teléfono:</span> {tenant.phone || "No configurado"}
-                </div>
-                <div>
-                  <span className="font-bold text-gray-800">Moneda:</span> {tenant.currency}
-                </div>
-              </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tarjeta de Datos del Negocio */}
+          <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-850 backdrop-blur-md text-xs space-y-3">
+            <h4 className="font-bold text-sm text-white flex items-center gap-2 mb-3">
+              <Store className="w-4 h-4 text-amber-400" />
+              Configuración de Local
+            </h4>
+
+            <div>
+              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Identificador Único</span>
+              <code className="text-amber-400 font-mono text-xs mt-0.5 block">/b/{tenant.slug}</code>
+            </div>
+
+            <div>
+              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Dirección</span>
+              <span className="text-zinc-300 mt-0.5 block">{tenant.address || "No configurada"}</span>
+            </div>
+
+            <div>
+              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Teléfono de contacto</span>
+              <span className="text-zinc-300 mt-0.5 block">{tenant.phone || "No configurado"}</span>
+            </div>
+
+            <div>
+              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Moneda configurada</span>
+              <span className="text-zinc-300 mt-0.5 block">{tenant.currency}</span>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

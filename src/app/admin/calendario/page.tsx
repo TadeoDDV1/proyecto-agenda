@@ -84,23 +84,16 @@ export default async function AdminCalendarPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
-      <AdminNav
-        tenantName={tenant.name}
-        tenantSlug={tenant.slug}
-        userEmail={session?.email}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <CalendarIcon className="w-6 h-6 text-amber-500" />
-            Calendario de Turnos y Citas
-          </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Visualiza los espacios por profesional en tiempo real y registra citas directas en mostrador.
-          </p>
-        </div>
+    <main className="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
+      <div className="pb-2 border-b border-zinc-850">
+        <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+          <CalendarIcon className="w-6 h-6 text-amber-400" />
+          Calendario de Trabajo
+        </h2>
+        <p className="text-xs text-zinc-400 mt-1">
+          Visualiza los espacios por profesional en tiempo real y registra citas directas en mostrador.
+        </p>
+      </div>
 
         <InteractiveCalendar
           initialDateStr={initialDateStr}
@@ -110,6 +103,5 @@ export default async function AdminCalendarPage() {
           currency={tenant.currency}
         />
       </main>
-    </div>
   );
 }
