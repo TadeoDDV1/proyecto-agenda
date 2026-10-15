@@ -251,3 +251,97 @@ export async function createManualAppointmentAction(input: CreateManualAppointme
     return { success: false, error: "No se pudo registrar la cita manual." };
   }
 }
+
+export async function createCustomerAction(formData: FormData) {
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  const fullName = (formData.get("fullName") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim();
+  const email = (formData.get("email") as string)?.trim() || null;
+  const notes = (formData.get("notes") as string)?.trim() || null;
+
+  if (!fullName || !phone) {
+    return { success: false, error: "Nombre completo y teléfono son obligatorios." };
+  }
+
+  try {
+    const existing = await prisma.customer.findFirst({
+      where: { tenantId, phone },
+    });
+
+    if (existing) {
+      return { success: false, error: "Ya existe un cliente registrado con ese número de teléfono." };
+    }
+
+    const customer = await prisma.customer.create({
+      data: {
+        tenantId,
+        fullName,
+        phone,
+        email,
+        notes,
+      },
+    });
+
+    revalidatePath("/admin/clientes");
+    return { success: true, customer };
+  } catch (error: any) {
+    console.error("Error al crear cliente:", error);
+    return { success: false, error: "No se pudo registrar al cliente." };
+  }
+}
+
+export async function updateCustomerNotesAction(customerId: string, notes: string) {
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  try {
+    await prisma.customer.update({
+      where: { id: customerId, tenantId },
+      data: { notes: notes.trim() || null },
+    });
+
+    revalidatePath("/admin/clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al actualizar notas:", error);
+    return { success: false, error: "No se pudieron guardar las notas del cliente." };
+  }
+}
+
+export async function updateTenantSettingsAction(formData: FormData) {
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  const name = (formData.get("name") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim() || null;
+  const address = (formData.get("address") as string)?.trim() || null;
+  const description = (formData.get("description") as string)?.trim() || null;
+  const currency = (formData.get("currency") as string)?.trim() || "MXN";
+
+  if (!name) {
+    return { success: false, error: "El nombre del salón es obligatorio." };
+  }
+
+  try {
+    const updated = await prisma.tenant.update({
+      where: { id: tenantId },
+      data: {
+        name,
+        phone,
+        address,
+        description,
+        currency,
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/configuracion");
+    return { success: true, tenant: updated };
+  } catch (error: any) {
+    console.error("Error al actualizar configuración:", error);
+    return { success: false, error: "No se pudo actualizar la configuración del salón." };
+  }
+}
+

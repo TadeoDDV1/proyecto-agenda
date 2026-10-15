@@ -10,6 +10,8 @@ import {
   Calendar,
   Layers,
   Users,
+  Contact,
+  Settings,
   ExternalLink,
   LogOut,
   Menu,
@@ -42,6 +44,8 @@ export function AdminSidebar({
     { name: "Calendario Diario", href: "/admin/calendario", icon: Calendar },
     { name: "Catálogo de Servicios", href: "/admin/servicios", icon: Layers },
     { name: "Equipo & Especialistas", href: "/admin/personal", icon: Users },
+    { name: "Clientes & CRM", href: "/admin/clientes", icon: Contact },
+    { name: "Configuración del Salón", href: "/admin/configuracion", icon: Settings },
   ];
 
   return (
