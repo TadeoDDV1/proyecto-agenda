@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { BookingWizard } from "@/components/BookingWizard";
-import { MapPin, Phone, Clock, Star, ShieldCheck, Scissors } from "lucide-react";
+import { MapPin, Phone, Clock, Star, ShieldCheck, Scissors, Sparkles, MessageCircle } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -41,6 +41,7 @@ export default async function PublicBookingPage({ params }: PageProps) {
     durationMinutes: s.durationMinutes,
     price: Number(s.price),
     categoryId: s.categoryId,
+    categoryName: tenant.categories.find((c) => c.id === s.categoryId)?.name || "General",
   }));
 
   const serializedStaff = tenant.staff.map((st) => ({
@@ -51,68 +52,88 @@ export default async function PublicBookingPage({ params }: PageProps) {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
-      {/* Navbar Superior del Portal */}
-      <header className="border-b bg-white sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-amber-500 selection:text-zinc-950 pb-24">
+      {/* Luz ambiental sutil de fondo */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-amber-500/10 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
+
+      {/* Navbar Superior Glassmorphism */}
+      <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-lg shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-zinc-950 font-black flex items-center justify-center text-lg shadow-lg shadow-amber-500/20">
               <Scissors className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-bold text-base leading-tight">{tenant.name}</h1>
-              <p className="text-[11px] text-gray-500 font-medium">Portal Oficial de Reservas</p>
+              <h1 className="font-bold text-sm sm:text-base text-zinc-100 leading-tight">{tenant.name}</h1>
+              <p className="text-[11px] text-zinc-400 font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Portal Oficial de Reservas
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Abierto Hoy (09:00 - 19:00)
+          <div className="flex items-center gap-3">
+            <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>09:00 - 19:00 hrs</span>
             </span>
-            <a
-              href={`tel:${tenant.phone}`}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 transition"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">{tenant.phone}</span>
-            </a>
+
+            {tenant.phone && (
+              <a
+                href={`tel:${tenant.phone}`}
+                className="inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 transition"
+              >
+                <Phone className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">{tenant.phone}</span>
+              </a>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Hero del Negocio */}
-      <section className="bg-slate-900 text-white py-10 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-6">
-          {tenant.logoUrl && (
-            <img
-              src={tenant.logoUrl}
-              alt={tenant.name}
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-700 shadow-md"
-            />
-          )}
-          <div className="text-center md:text-left flex-1">
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 text-xs font-semibold mb-2">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              4.9 (128 reseñas verificadas)
+      {/* Hero del Negocio (Dark Luxe) */}
+      <section className="border-b border-zinc-850/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 py-10 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start gap-6">
+          {tenant.logoUrl ? (
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/30 to-amber-500/0 rounded-2xl blur opacity-75 group-hover:opacity-100 transition" />
+              <img
+                src={tenant.logoUrl}
+                alt={tenant.name}
+                className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border border-zinc-700/80 shadow-2xl bg-zinc-900"
+              />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold">{tenant.name}</h2>
-            <p className="text-slate-300 text-sm mt-1 max-w-xl">{tenant.description}</p>
+          ) : (
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-amber-400">
+              <Scissors className="w-10 h-10" />
+            </div>
+          )}
+
+          <div className="text-center md:text-left flex-1">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span>4.9 (128 reseñas verificadas)</span>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Negocio Verificado
+              </span>
+            </div>
+
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">{tenant.name}</h2>
+            <p className="text-zinc-400 text-sm mt-2 max-w-2xl leading-relaxed">{tenant.description}</p>
             
-            <div className="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-400">
+            <div className="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-zinc-400">
               {tenant.address && (
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 bg-zinc-900/60 px-3 py-1.5 rounded-xl border border-zinc-850">
+                  <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                   <span>{tenant.address}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 bg-zinc-900/60 px-3 py-1.5 rounded-xl border border-zinc-850">
+                <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                 <span>Lun - Sáb: 09:00 - 19:00</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>Garantía de puntualidad</span>
               </div>
             </div>
           </div>
@@ -120,61 +141,14 @@ export default async function PublicBookingPage({ params }: PageProps) {
       </section>
 
       {/* Contenido Principal con Wizard */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 mt-8">
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
-          {/* Asistente de Reserva */}
-          <div className="lg:col-span-8">
-            <BookingWizard
-              tenantSlug={tenant.slug}
-              currency={tenant.currency}
-              services={serializedServices}
-              staffMembers={serializedStaff}
-            />
-          </div>
-
-          {/* Barra Lateral Informativa */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              <h3 className="font-bold text-gray-900 text-base mb-3 flex items-center gap-2">
-                <Scissors className="w-4 h-4 text-amber-500" />
-                Nuestro Equipo
-              </h3>
-              <div className="space-y-3">
-                {tenant.staff.map((st) => (
-                  <div key={st.id} className="flex items-center gap-3">
-                    <img
-                      src={st.avatarUrl || ""}
-                      alt={st.displayName}
-                      className="w-10 h-10 rounded-full object-cover border"
-                      style={{ borderColor: st.colorCode }}
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{st.displayName}</p>
-                      <span className="text-[11px] text-gray-500">Disponible hoy</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-amber-500/10 border border-amber-200/60 rounded-2xl p-6">
-              <h4 className="font-bold text-amber-900 text-sm mb-1">
-                ¿Tienes dudas o citas especiales?
-              </h4>
-              <p className="text-xs text-amber-800/80 leading-relaxed mb-4">
-                Si requieres un horario fuera de agenda o un servicio a domicilio para eventos, comunícate directamente con nuestro equipo.
-              </p>
-              <a
-                href={`https://wa.me/${tenant.phone?.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition shadow-sm"
-              >
-                Escribir por WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-8">
+        <BookingWizard
+          tenantSlug={tenant.slug}
+          tenantName={tenant.name}
+          currency={tenant.currency}
+          services={serializedServices}
+          staffMembers={serializedStaff}
+        />
       </main>
     </div>
   );
