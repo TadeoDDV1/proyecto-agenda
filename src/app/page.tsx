@@ -39,19 +39,25 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/admin"
+              href="/login"
               className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg transition"
             >
-              Panel Admin
+              Iniciar Sesión
+            </Link>
+            <Link
+              href="/register"
+              className="text-xs font-bold px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-750 text-white hover:bg-slate-800 transition"
+            >
+              Crear Negocio
             </Link>
             {demoTenant && (
               <Link
                 href={`/b/${demoTenant.slug}`}
-                className="text-xs font-bold px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-sm"
+                className="hidden sm:inline-flex text-xs font-bold px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-sm"
               >
-                Portal Público
+                Demo Cliente
               </Link>
             )}
           </div>

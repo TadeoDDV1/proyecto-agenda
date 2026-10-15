@@ -1,4 +1,5 @@
 import { PrismaClient, UserRole, AppointmentStatus } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -31,12 +32,13 @@ async function main() {
 
   console.log(`✅ Tenant creado: ${tenant.name} (${tenant.slug})`);
 
-  // 3. Crear Usuario Administrador/Dueño
+  // 3. Crear Usuario Administrador/Dueño (contraseña: password123)
+  const passwordHash = await bcrypt.hash("password123", 10);
   const ownerUser = await prisma.user.create({
     data: {
       tenantId: tenant.id,
       email: "admin@barberiavintage.com",
-      passwordHash: "hash_demo_12345", // En fases siguientes se integrará bcrypt/argon2
+      passwordHash: passwordHash,
       fullName: "Roberto Palacios",
       role: UserRole.OWNER,
     },
