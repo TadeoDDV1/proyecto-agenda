@@ -2,7 +2,18 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { formatCurrency } from "@/lib/utils";
 import { createServiceAction } from "@/app/actions/admin";
-import { Layers, Plus, Clock, Scissors, Check, Tag } from "lucide-react";
+import { Layers, Plus, Clock } from "lucide-react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  EmptyState,
+  Field,
+  Input,
+  PageHeader,
+  Textarea,
+} from "@/components/ui";
 
 export default async function AdminServicesPage() {
   const session = await getSession();
@@ -36,30 +47,22 @@ export default async function AdminServicesPage() {
   if (!tenant) return null;
 
   return (
-    <main className="p-4 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
-      {/* Header */}
-      <div className="pb-2 border-b border-zinc-850 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <Layers className="w-6 h-6 text-amber-400" />
-            Catálogo de Servicios
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Configura los servicios, duraciones y precios disponibles para reservar en tu portal.
-          </p>
-        </div>
-        <div className="text-xs font-mono text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800">
-          Total: <span className="text-amber-400 font-bold">{tenant.services.length}</span> activos
-        </div>
-      </div>
+    <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
+      <PageHeader
+        eyebrow="Administración"
+        title="Catálogo de Servicios"
+        description="Configura servicios, duraciones y precios para tu portal de reservas."
+        action={<Badge>{tenant.services.length} servicios</Badge>}
+      />
 
-      <div className="grid lg:grid-cols-12 gap-8 items-start">
-        {/* Formulario de Nuevo Servicio (Dark Luxe) */}
-        <div className="lg:col-span-5 bg-zinc-900/60 p-6 rounded-3xl border border-zinc-850 backdrop-blur-md shadow-2xl">
-          <h3 className="font-bold text-sm text-white mb-4 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-amber-400" />
-            Crear Nuevo Servicio
-          </h3>
+      <div className="grid lg:grid-cols-12 gap-6 items-start">
+        {/* Formulario */}
+        <Card className="lg:col-span-5 p-6">
+          <CardHeader
+            icon={<Plus className="w-3.5 h-3.5" />}
+            title="Nuevo servicio"
+            className="pb-5 mb-5"
+          />
 
           <form
             action={async (formData) => {
@@ -68,135 +71,111 @@ export default async function AdminServicesPage() {
             }}
             className="space-y-4"
           >
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Nombre del Servicio *
-              </label>
-              <input
+            <Field label="Nombre del servicio" required htmlFor="service-name">
+              <Input
                 type="text"
                 name="name"
                 required
                 placeholder="Ej. Fade & Diseño con Navaja"
-                className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              id="service-name"
               />
-            </div>
+            </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                  Duración (min) *
-                </label>
-                <input
+              <Field label="Duración (min)" required htmlFor="service-duration">
+                <Input
                   type="number"
                   name="durationMinutes"
                   required
                   min={5}
                   step={5}
                   defaultValue={30}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                id="service-duration"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                  Precio ({tenant.currency}) *
-                </label>
-                <input
+              </Field>
+              <Field label={`Precio (${tenant.currency})`} required htmlFor="service-price">
+                <Input
                   type="number"
                   name="price"
                   required
                   min={0}
                   step={1}
                   defaultValue={250}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                id="service-price"
                 />
-              </div>
+              </Field>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Categoría
-              </label>
-              <input
+            <Field label="Categoría" htmlFor="service-category">
+              <Input
                 type="text"
                 name="categoryName"
-                placeholder="Ej. Cortes, Barba, Faciales"
+                placeholder="Cortes, Barba, Faciales..."
                 defaultValue="Cortes de Cabello"
-                className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              id="service-category"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Descripción (opcional)
-              </label>
-              <textarea
-                name="description"
-                rows={2}
-                placeholder="Detalla lo que incluye el servicio..."
-                className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
+            <Field label="Descripción (opcional)" htmlFor="service-description">
+              <Textarea name="description" rows={2} placeholder="Qué incluye el servicio..." id="service-description" />
+            </Field>
 
-            <button
-              type="submit"
-              className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
-            >
-              Guardar Servicio
-            </button>
+            <Button type="submit" className="w-full">
+              Guardar servicio
+            </Button>
           </form>
-        </div>
+        </Card>
 
-        {/* Listado de Servicios Actuales (Dark Luxe) */}
-        <div className="lg:col-span-7 space-y-3">
-          <h3 className="font-bold text-sm text-white mb-2 flex items-center justify-between">
-            <span>Servicios Configurados</span>
-            <span className="text-xs text-zinc-500 font-mono font-normal">Disponibles para reserva</span>
-          </h3>
-
-          <div className="space-y-3">
-            {tenant.services.map((srv) => (
-              <div
-                key={srv.id}
-                className="p-5 bg-zinc-900/50 rounded-2xl border border-zinc-850 hover:border-zinc-700 transition flex items-start justify-between gap-4 group"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-white text-base group-hover:text-amber-400 transition">
-                      {srv.name}
-                    </h4>
-                    {srv.category && (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">
-                        {srv.category.name}
-                      </span>
-                    )}
-                  </div>
-                  {srv.description && (
-                    <p className="text-xs text-zinc-400 mt-1 leading-relaxed">{srv.description}</p>
-                  )}
-                  <div className="flex items-center gap-4 mt-3 text-xs text-zinc-400 font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-zinc-500" />
-                      {srv.durationMinutes} minutos
-                    </span>
-                    <span className="flex items-center gap-1 text-amber-400 font-black text-sm">
-                      {formatCurrency(srv.price, tenant.currency)}
-                    </span>
-                  </div>
-                </div>
-
-                <span
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
-                    srv.isActive
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                      : "bg-zinc-800 text-zinc-500"
-                  }`}
-                >
-                  {srv.isActive ? "Activo" : "Inactivo"}
-                </span>
-              </div>
-            ))}
+        {/* Listado */}
+        <div className="lg:col-span-7 space-y-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+              Servicios configurados
+            </h3>
+            <span className="text-[11px] font-mono text-dim">
+              Disponibles para reserva
+            </span>
           </div>
+
+          {tenant.services.map((srv) => (
+            <Card
+              key={srv.id}
+              className="p-4 transition flex items-start justify-between gap-4 hover:border-border-strong"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <h4 className="text-sm font-medium text-foreground">{srv.name}</h4>
+                  {srv.category && <Badge>{srv.category.name}</Badge>}
+                </div>
+                {srv.description && (
+                  <p className="text-xs mb-2 leading-relaxed text-muted">
+                    {srv.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 text-xs text-muted">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-dim" />
+                    {srv.durationMinutes} min
+                  </span>
+                  <span className="font-mono font-medium text-accent-warm">
+                    {formatCurrency(Number(srv.price), tenant.currency)}
+                  </span>
+                </div>
+              </div>
+
+              <Badge tone={srv.isActive ? "success" : "default"} className="flex-shrink-0">
+                {srv.isActive ? "Activo" : "Inactivo"}
+              </Badge>
+            </Card>
+          ))}
+
+          {tenant.services.length === 0 && (
+            <EmptyState
+              icon={<Layers className="w-5 h-5" />}
+              title="Sin servicios configurados"
+              description="Crea tu primer servicio para que tus clientes puedan reservar."
+            />
+          )}
         </div>
       </div>
     </main>

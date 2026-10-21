@@ -38,7 +38,7 @@ export async function updateAppointmentStatusAction(
 
     revalidatePath("/admin");
     return { success: true, updated };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error al actualizar cita:", err);
     return { success: false, error: "No se pudo actualizar el estado de la cita." };
   }
@@ -99,7 +99,7 @@ export async function createServiceAction(formData: FormData) {
     revalidatePath("/admin/servicios");
     revalidatePath("/admin");
     return { success: true };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error al crear servicio:", err);
     return { success: false, error: "No se pudo crear el servicio." };
   }
@@ -117,7 +117,7 @@ export async function toggleServiceStatusAction(serviceId: string, isActive: boo
 
     revalidatePath("/admin/servicios");
     return { success: true };
-  } catch (err: any) {
+  } catch {
     return { success: false, error: "Error al actualizar servicio." };
   }
 }
@@ -174,7 +174,7 @@ export async function createStaffAction(formData: FormData) {
     revalidatePath("/admin/personal");
     revalidatePath("/admin");
     return { success: true };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error al crear colaborador:", err);
     return { success: false, error: "No se pudo registrar el colaborador." };
   }
@@ -246,7 +246,7 @@ export async function createManualAppointmentAction(input: CreateManualAppointme
     revalidatePath("/admin");
     revalidatePath("/admin/calendario");
     return { success: true, appointmentId: appointment.id };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al agendar cita manual:", error);
     return { success: false, error: "No se pudo registrar la cita manual." };
   }
@@ -286,7 +286,7 @@ export async function createCustomerAction(formData: FormData) {
 
     revalidatePath("/admin/clientes");
     return { success: true, customer };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al crear cliente:", error);
     return { success: false, error: "No se pudo registrar al cliente." };
   }
@@ -304,7 +304,7 @@ export async function updateCustomerNotesAction(customerId: string, notes: strin
 
     revalidatePath("/admin/clientes");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al actualizar notas:", error);
     return { success: false, error: "No se pudieron guardar las notas del cliente." };
   }
@@ -339,7 +339,7 @@ export async function updateTenantSettingsAction(formData: FormData) {
     revalidatePath("/admin");
     revalidatePath("/admin/configuracion");
     return { success: true, tenant: updated };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al actualizar configuración:", error);
     return { success: false, error: "No se pudo actualizar la configuración del salón." };
   }

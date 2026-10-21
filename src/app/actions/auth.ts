@@ -164,7 +164,7 @@ export async function registerTenantAction(formData: FormData) {
     });
 
     return { success: true, slug: result.tenant.slug };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al registrar tenant:", error);
     return { success: false, error: "Ocurrió un error al registrar el negocio. Intenta nuevamente." };
   }

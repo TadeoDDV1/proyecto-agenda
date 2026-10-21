@@ -125,7 +125,7 @@ export async function createBooking(input: CreateBookingInput) {
         totalPrice: Number(appointment.totalPrice),
       },
     };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error al registrar cita:", err);
     return {
       success: false,
@@ -265,7 +265,7 @@ export async function getAvailableSlotsAction(input: GetAvailableSlotsInput) {
       success: true,
       slots: availableSlots,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error calculando slots de disponibilidad:", error);
     return {
       success: false,

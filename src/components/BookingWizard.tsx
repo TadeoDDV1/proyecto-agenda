@@ -3,22 +3,17 @@
 import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { createBooking, getAvailableSlotsAction } from "@/app/actions/booking";
-import { 
-  Scissors, 
-  User, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  CheckCircle2, 
-  ArrowRight, 
-  ArrowLeft, 
-  Sparkles,
-  Phone,
+import {
+  Clock,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
   AlertCircle,
-  Loader2,
   ShieldCheck,
   Check,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
+import { Button, LoadingState } from "@/components/ui";
 
 interface ServiceItem {
   id: string;
@@ -37,6 +32,14 @@ interface StaffItem {
   avatarUrl: string | null;
 }
 
+interface ConfirmedBooking {
+  serviceName: string;
+  staffName: string;
+  customerName: string;
+  startTime: string;
+  totalPrice: number;
+}
+
 interface BookingWizardProps {
   tenantSlug: string;
   tenantName?: string;
@@ -44,6 +47,13 @@ interface BookingWizardProps {
   services: ServiceItem[];
   staffMembers: StaffItem[];
 }
+
+const STEPS = [
+  { num: 1, label: "Servicio" },
+  { num: 2, label: "Especialista" },
+  { num: 3, label: "Horario" },
+  { num: 4, label: "Confirmar" },
+];
 
 export function BookingWizard({
   tenantSlug,
@@ -65,10 +75,10 @@ export function BookingWizard({
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
-  
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+  const [confirmedBooking, setConfirmedBooking] = useState<ConfirmedBooking | null>(null);
 
   // Slots dinámicos
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -160,15 +170,16 @@ export function BookingWizard({
 
     setIsSubmitting(false);
 
-    if (res.success) {
+    if (res.success && res.appointment) {
       setConfirmedBooking(res.appointment);
       setStep(5);
     } else {
-      setErrorMessage(res.error || "No se pudo agendar la cita.");
+      setErrorMessage(
+        ("error" in res && res.error) || "No se pudo agendar la cita."
+      );
     }
   }
 
-  // Comprobar si puede avanzar de paso
   const canProceed =
     (step === 1 && selectedServiceId) ||
     (step === 2 && selectedStaffId) ||
@@ -177,17 +188,12 @@ export function BookingWizard({
 
   return (
     <div className="grid lg:grid-cols-12 gap-8 items-start">
-      {/* COLUMNA IZQUIERDA: EL ASISTENTE (WIZARD) */}
+      {/* Columna izquierda: asistente */}
       <div className="lg:col-span-8 space-y-6">
-        {/* Barra de progreso / Stepper Dark Luxe */}
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-md">
-          <div className="flex items-center justify-between gap-2 overflow-x-auto">
-            {[
-              { num: 1, label: "Servicio" },
-              { num: 2, label: "Especialista" },
-              { num: 3, label: "Horario" },
-              { num: 4, label: "Confirmar" },
-            ].map((s) => {
+        {/* Stepper */}
+        <div className="bg-surface border border-border rounded-xl p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+            {STEPS.map((s) => {
               const isActive = step === s.num;
               const isPast = step > s.num;
 
@@ -197,21 +203,21 @@ export function BookingWizard({
                   type="button"
                   disabled={s.num > step}
                   onClick={() => s.num < step && setStep(s.num)}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                     isActive
-                      ? "bg-amber-500/10 border border-amber-500/40 text-amber-400 shadow-sm"
+                      ? "bg-accent-soft border border-accent/40 text-accent-warm"
                       : isPast
-                      ? "text-zinc-300 hover:text-white"
-                      : "text-zinc-600 opacity-60 cursor-not-allowed"
+                      ? "text-muted hover:text-foreground"
+                      : "text-dim cursor-not-allowed"
                   }`}
                 >
                   <div
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold transition ${
+                    className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition ${
                       isActive
-                        ? "bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20"
+                        ? "bg-accent text-accent-fg"
                         : isPast
-                        ? "bg-zinc-800 text-zinc-300"
-                        : "bg-zinc-900 text-zinc-600"
+                        ? "bg-surface-raised text-muted"
+                        : "bg-base text-dim"
                     }`}
                   >
                     {isPast ? <Check className="w-3.5 h-3.5" /> : s.num}
@@ -223,36 +229,39 @@ export function BookingWizard({
           </div>
         </div>
 
-        {/* CONTENEDOR PRINCIPAL DEL PASO ACTUAL */}
-        <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
+        {/* Contenedor principal del paso */}
+        <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 relative overflow-hidden">
           {errorMessage && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3 text-xs">
+            <div className="mb-6 p-4 rounded-xl bg-error/10 border border-error/25 text-error-text flex items-center gap-3 text-xs">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* PASO 1: SELECCIÓN DE SERVICIO */}
+          {/* PASO 1: SERVICIO */}
           {step === 1 && (
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold text-white tracking-tight">1. Selecciona tu Servicio</h3>
-                  <span className="text-xs text-zinc-400 font-medium">Paso 1 de 4</span>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                    1. Selecciona tu Servicio
+                  </h3>
+                  <span className="text-xs text-dim font-medium">Paso 1 de 4</span>
                 </div>
-                <p className="text-xs text-zinc-400">Elige el corte o experiencia que deseas agendar.</p>
+                <p className="text-xs text-muted">
+                  Elige el corte o experiencia que deseas agendar.
+                </p>
               </div>
 
-              {/* Filtro de Categorías en Píldoras Horizontales */}
               {categories.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                   <button
                     type="button"
                     onClick={() => setSelectedCategory("ALL")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                       selectedCategory === "ALL"
-                        ? "bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20"
-                        : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                        ? "bg-accent text-accent-fg"
+                        : "bg-base border border-border text-muted hover:text-foreground"
                     }`}
                   >
                     Todos los servicios
@@ -262,10 +271,10 @@ export function BookingWizard({
                       key={cat}
                       type="button"
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                         selectedCategory === cat
-                          ? "bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20"
-                          : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                          ? "bg-accent text-accent-fg"
+                          : "bg-base border border-border text-muted hover:text-foreground"
                       }`}
                     >
                       {cat}
@@ -274,7 +283,6 @@ export function BookingWizard({
                 </div>
               )}
 
-              {/* Grid de Servicios Dark Luxe */}
               <div className="grid gap-3 sm:grid-cols-2">
                 {filteredServices.map((srv) => {
                   const isSelected = selectedServiceId === srv.id;
@@ -283,38 +291,38 @@ export function BookingWizard({
                       key={srv.id}
                       type="button"
                       onClick={() => setSelectedServiceId(srv.id)}
-                      className={`text-left p-5 rounded-2xl border transition-all flex flex-col justify-between group relative overflow-hidden ${
+                      className={`text-left p-5 rounded-xl border transition-all flex flex-col justify-between group relative overflow-hidden ${
                         isSelected
-                          ? "bg-gradient-to-br from-amber-500/10 via-zinc-900/90 to-zinc-900 border-amber-500/60 shadow-lg shadow-amber-500/10"
-                          : "bg-zinc-950/60 border-zinc-850 hover:border-zinc-700 hover:bg-zinc-905"
+                          ? "bg-accent-soft border-accent/60"
+                          : "bg-base border-border hover:border-border-strong"
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
+                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent text-accent-fg flex items-center justify-center">
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
                       )}
 
                       <div>
-                        <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500 block mb-1">
+                        <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-dim block mb-1">
                           {srv.categoryName}
                         </span>
-                        <h4 className="font-bold text-sm sm:text-base text-zinc-100 group-hover:text-amber-400 transition pr-6">
+                        <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-accent-warm transition pr-6">
                           {srv.name}
                         </h4>
                         {srv.description && (
-                          <p className="text-xs text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-muted mt-1.5 line-clamp-2 leading-relaxed">
                             {srv.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-5 pt-3 border-t border-zinc-850 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-medium">
-                          <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <div className="mt-5 pt-3 border-t border-border-subtle flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
+                          <Clock className="w-3.5 h-3.5 text-accent-hover" />
                           <span>{srv.durationMinutes} min</span>
                         </div>
-                        <span className="text-amber-400 font-black text-base">
+                        <span className="text-accent-warm font-semibold text-base">
                           {formatCurrency(srv.price, currency)}
                         </span>
                       </div>
@@ -324,28 +332,31 @@ export function BookingWizard({
               </div>
 
               <div className="pt-4 flex justify-end">
-                <button
+                <Button
                   type="button"
                   disabled={!selectedServiceId}
                   onClick={() => setStep(2)}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
                   Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
-          {/* PASO 2: SELECCIÓN DE ESPECIALISTA */}
+          {/* PASO 2: ESPECIALISTA */}
           {step === 2 && (
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold text-white tracking-tight">2. Elige a tu Profesional</h3>
-                  <span className="text-xs text-zinc-400 font-medium">Paso 2 de 4</span>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                    2. Elige a tu Profesional
+                  </h3>
+                  <span className="text-xs text-dim font-medium">Paso 2 de 4</span>
                 </div>
-                <p className="text-xs text-zinc-400">¿Quién te gustaría que realice tu servicio?</p>
+                <p className="text-xs text-muted">
+                  ¿Quién te gustaría que realice tu servicio?
+                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
@@ -356,91 +367,99 @@ export function BookingWizard({
                       key={staff.id}
                       type="button"
                       onClick={() => setSelectedStaffId(staff.id)}
-                      className={`text-center p-6 rounded-2xl border transition-all flex flex-col items-center relative group ${
+                      className={`text-center p-6 rounded-xl border transition-all flex flex-col items-center relative group ${
                         isSelected
-                          ? "bg-gradient-to-b from-amber-500/10 via-zinc-900/90 to-zinc-900 border-amber-500/60 shadow-lg shadow-amber-500/10"
-                          : "bg-zinc-950/60 border-zinc-850 hover:border-zinc-700 hover:bg-zinc-905"
+                          ? "bg-accent-soft border-accent/60"
+                          : "bg-base border-border hover:border-border-strong"
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
+                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent text-accent-fg flex items-center justify-center">
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
                       )}
 
                       <div className="relative mb-3.5">
                         <div
-                          className="w-20 h-20 rounded-full overflow-hidden border-2 shadow-xl bg-zinc-900 flex items-center justify-center transition-transform group-hover:scale-105"
+                          className="w-20 h-20 rounded-full overflow-hidden border-2 bg-surface-raised flex items-center justify-center transition-transform group-hover:scale-105"
                           style={{ borderColor: staff.colorCode }}
                         >
                           {staff.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={staff.avatarUrl}
                               alt={staff.displayName}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <User className="w-8 h-8 text-zinc-500" />
+                            <span
+                              className="text-2xl font-semibold font-display"
+                              style={{ color: staff.colorCode }}
+                            >
+                              {staff.displayName.charAt(0).toUpperCase()}
+                            </span>
                           )}
                         </div>
                         <span
-                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-zinc-950"
+                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-surface"
                           style={{ backgroundColor: staff.colorCode }}
                         />
                       </div>
 
-                      <h4 className="font-bold text-sm text-zinc-100 group-hover:text-amber-400 transition">
+                      <h4 className="font-semibold text-sm text-foreground group-hover:text-accent-warm transition">
                         {staff.displayName}
                       </h4>
-                      <span className="text-[11px] text-zinc-400 mt-1 font-medium">
-                        Especialista Certificado
+                      <span className="text-[11px] text-muted mt-1 font-medium">
+                        Especialista certificado
                       </span>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-zinc-850">
-                <button
+              <div className="pt-4 flex items-center justify-between border-t border-border-subtle">
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setStep(1)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold transition"
+                  leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  <ArrowLeft className="w-4 h-4" />
                   Atrás
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   disabled={!selectedStaffId}
                   onClick={() => setStep(3)}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 disabled:opacity-40"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
                   Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
-          {/* PASO 3: FECHA Y HORA CON DISPONIBILIDAD REAL */}
+          {/* PASO 3: FECHA Y HORA */}
           {step === 3 && (
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold text-white tracking-tight">3. Fecha y Horario</h3>
-                  <span className="text-xs text-zinc-400 font-medium">Paso 3 de 4</span>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                    3. Fecha y Horario
+                  </h3>
+                  <span className="text-xs text-dim font-medium">Paso 3 de 4</span>
                 </div>
-                <p className="text-xs text-zinc-400">
-                  Horarios calculados en tiempo real para <strong>{selectedStaff?.displayName}</strong>.
+                <p className="text-xs text-muted">
+                  Horarios calculados en tiempo real para{" "}
+                  <strong className="text-foreground">{selectedStaff?.displayName}</strong>.
                 </p>
               </div>
 
-              {/* Carrusel Deslizable de Días (Dark Luxe) */}
-              <div>
-                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">
+              {/* Carrusel de días */}
+              <div role="group" aria-labelledby="bk-date-label">
+                <span id="bk-date-label" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-2.5">
                   Selecciona la Fecha
-                </label>
-                <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                </span>
+                <div className="flex items-center gap-2.5 overflow-x-auto pb-2 no-scrollbar">
                   {upcomingDays.map((d) => {
                     const isSelected = selectedDate === d.dateStr;
                     return (
@@ -448,17 +467,25 @@ export function BookingWizard({
                         key={d.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(d.dateStr)}
-                        className={`flex flex-col items-center justify-center min-w-[76px] py-3.5 px-3 rounded-2xl border transition-all text-center flex-shrink-0 ${
+                        className={`flex flex-col items-center justify-center min-w-[76px] py-3.5 px-3 rounded-xl border transition-all text-center flex-shrink-0 ${
                           isSelected
-                            ? "bg-amber-500 text-zinc-950 border-amber-400 font-bold shadow-lg shadow-amber-500/20 scale-[1.02]"
-                            : "bg-zinc-950/70 text-zinc-300 border-zinc-850 hover:border-zinc-700 hover:bg-zinc-900"
+                            ? "bg-accent text-accent-fg border-accent"
+                            : "bg-base text-muted border-border hover:border-border-strong"
                         }`}
                       >
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? "text-zinc-950" : "text-zinc-500"}`}>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            isSelected ? "text-accent-fg/80" : "text-dim"
+                          }`}
+                        >
                           {d.dayName}
                         </span>
-                        <span className="text-xl font-black my-1">{d.dayNum}</span>
-                        <span className={`text-[9px] font-semibold ${isSelected ? "text-zinc-950" : "text-zinc-400"}`}>
+                        <span className="text-xl font-semibold my-1">{d.dayNum}</span>
+                        <span
+                          className={`text-[9px] font-semibold ${
+                            isSelected ? "text-accent-fg/80" : "text-muted"
+                          }`}
+                        >
                           {d.monthName}
                         </span>
                       </button>
@@ -467,25 +494,24 @@ export function BookingWizard({
                 </div>
               </div>
 
-              {/* Horarios Disponibles */}
-              <div>
+              {/* Horarios */}
+              <div role="group" aria-labelledby="bk-slots-label">
                 <div className="flex items-center justify-between mb-2.5">
-                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  <span id="bk-slots-label" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em]">
                     Turnos Disponibles
-                  </label>
-                  <span className="text-[11px] text-zinc-400 font-mono">
+                  </span>
+                  <span className="text-[11px] text-dim font-mono">
                     Duración: {selectedService?.durationMinutes} min
                   </span>
                 </div>
 
                 {loadingSlots ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-zinc-400 gap-3 bg-zinc-950/50 rounded-2xl border border-zinc-850">
-                    <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
-                    <span className="text-xs font-medium">Consultando espacios libres en la agenda...</span>
+                  <div className="bg-base rounded-xl border border-border">
+                    <LoadingState label="Consultando espacios libres en la agenda…" />
                   </div>
                 ) : slotsMessage && availableSlots.length === 0 ? (
-                  <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-400" />
+                  <div className="p-5 rounded-xl bg-warning/10 border border-warning/25 text-warning-text text-xs flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <span>{slotsMessage}</span>
                   </div>
                 ) : (
@@ -497,13 +523,13 @@ export function BookingWizard({
                           key={time}
                           type="button"
                           onClick={() => setSelectedTime(time)}
-                          className={`py-3 px-2 rounded-xl border text-xs font-mono font-bold transition ${
+                          className={`py-3 px-2 rounded-lg border text-xs font-mono font-semibold transition ${
                             isSelected
-                              ? "bg-amber-500 text-zinc-950 border-amber-400 shadow-md shadow-amber-500/20"
-                              : "bg-zinc-950/70 text-zinc-300 border-zinc-850 hover:border-amber-400/40 hover:bg-zinc-900"
+                              ? "bg-accent text-accent-fg border-accent"
+                              : "bg-base text-muted border-border hover:border-accent/40 hover:text-foreground"
                           }`}
                         >
-                          {time} hrs
+                          {time}
                         </button>
                       );
                     })}
@@ -511,181 +537,188 @@ export function BookingWizard({
                 )}
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-zinc-850">
-                <button
+              <div className="pt-4 flex items-center justify-between border-t border-border-subtle">
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setStep(2)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold transition"
+                  leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  <ArrowLeft className="w-4 h-4" />
                   Atrás
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   disabled={!selectedDate || !selectedTime}
                   onClick={() => setStep(4)}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 disabled:opacity-40"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
                   Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
-          {/* PASO 4: FORMULARIO DE CONFIRMACIÓN */}
+          {/* PASO 4: FORMULARIO */}
           {step === 4 && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold text-white tracking-tight">4. Datos de Contacto</h3>
-                  <span className="text-xs text-zinc-400 font-medium">Paso 4 de 4</span>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                    4. Datos de Contacto
+                  </h3>
+                  <span className="text-xs text-dim font-medium">Paso 4 de 4</span>
                 </div>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-muted">
                   Indícanos a qué nombre y WhatsApp confirmaremos tu reservación.
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                    Nombre Completo *
+                  <label htmlFor="bk-name" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
                   </label>
-                  <input
+                  <input id="bk-name"
                     type="text"
                     required
                     placeholder="Ej. Juan Pérez"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                    Teléfono / WhatsApp *
+                  <label htmlFor="bk-phone" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
                   </label>
-                  <input
+                  <input id="bk-phone"
                     type="tel"
                     required
                     placeholder="Ej. 55 1234 5678"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                  Correo Electrónico (opcional)
+                <label htmlFor="bk-email" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
                 </label>
-                <input
+                <input id="bk-email"
                   type="email"
                   placeholder="juan@ejemplo.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                  Notas adicionales para el especialista
+                <label htmlFor="bk-notes" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
                 </label>
-                <textarea
+                <textarea id="bk-notes"
                   rows={2}
                   placeholder="Preferencias de corte, productos alérgicos, etc."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition resize-none"
                 />
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-zinc-850">
-                <button
+              <div className="pt-4 flex items-center justify-between border-t border-border-subtle">
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setStep(3)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold transition"
+                  leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  <ArrowLeft className="w-4 h-4" />
                   Atrás
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wider transition shadow-xl shadow-amber-500/25 disabled:opacity-50"
+                  loading={isSubmitting}
+                  rightIcon={!isSubmitting ? <CheckCircle2 className="w-4 h-4" /> : undefined}
                 >
                   {isSubmitting ? "Confirmando..." : "Confirmar y Asegurar Cita"}
-                  <CheckCircle2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </form>
           )}
 
-          {/* PASO 5: TICKET DE CONFIRMACIÓN FINAL */}
+          {/* PASO 5: TICKET */}
           {step === 5 && confirmedBooking && (
             <div className="py-6 text-center space-y-6">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-emerald-300 text-zinc-950 flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20">
-                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+              <div className="w-20 h-20 rounded-2xl bg-success/15 border border-success/30 text-success-text flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-10 h-10" />
               </div>
 
               <div>
-                <h3 className="text-2xl font-black text-white">¡Tu cita está asegurada!</h3>
-                <p className="text-sm text-zinc-400 mt-1 max-w-md mx-auto">
+                <h3 className="text-2xl font-semibold text-foreground">
+                  ¡Tu cita está asegurada!
+                </h3>
+                <p className="text-sm text-muted mt-1 max-w-md mx-auto">
                   Hemos registrado tu reserva con éxito. Te esperamos puntualmente en sucursal.
                 </p>
               </div>
 
-              {/* Recibo Estilizado Dark Luxe */}
-              <div className="max-w-md mx-auto p-6 rounded-2xl bg-zinc-950 border border-zinc-800 text-left text-xs space-y-3 relative overflow-hidden shadow-2xl">
-                <div className="flex justify-between items-center pb-3 border-b border-zinc-850">
-                  <span className="text-zinc-500 font-semibold uppercase tracking-wider">Negocio</span>
-                  <span className="font-bold text-white text-sm">{tenantName}</span>
+              <div className="max-w-md mx-auto p-6 rounded-xl bg-base border border-border text-left text-xs space-y-3">
+                <div className="flex justify-between items-center pb-3 border-b border-border-subtle">
+                  <span className="text-dim font-semibold uppercase tracking-wider">
+                    Negocio
+                  </span>
+                  <span className="font-semibold text-foreground text-sm">{tenantName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-400">Servicio:</span>
-                  <span className="font-bold text-zinc-100">{confirmedBooking.serviceName}</span>
+                  <span className="text-muted">Servicio:</span>
+                  <span className="font-semibold text-foreground">
+                    {confirmedBooking.serviceName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-400">Atendido por:</span>
-                  <span className="font-bold text-zinc-100">{confirmedBooking.staffName}</span>
+                  <span className="text-muted">Atendido por:</span>
+                  <span className="font-semibold text-foreground">
+                    {confirmedBooking.staffName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-400">Cliente:</span>
-                  <span className="font-bold text-zinc-100">{confirmedBooking.customerName}</span>
+                  <span className="text-muted">Cliente:</span>
+                  <span className="font-semibold text-foreground">
+                    {confirmedBooking.customerName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-400">Horario:</span>
-                  <span className="font-bold text-amber-400">
+                  <span className="text-muted">Horario:</span>
+                  <span className="font-semibold text-accent-warm">
                     {new Date(confirmedBooking.startTime).toLocaleString("es-MX", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
                   </span>
                 </div>
-                <div className="flex justify-between pt-3 border-t border-zinc-850 text-base font-black">
-                  <span className="text-zinc-300">Total en sucursal:</span>
-                  <span className="text-amber-400">{formatCurrency(confirmedBooking.totalPrice, currency)}</span>
+                <div className="flex justify-between pt-3 border-t border-border-subtle text-base font-semibold">
+                  <span className="text-muted">Total en sucursal:</span>
+                  <span className="text-accent-warm">
+                    {formatCurrency(confirmedBooking.totalPrice, currency)}
+                  </span>
                 </div>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => {
                     setStep(1);
                     setSelectedTime("");
                     setNotes("");
                     setConfirmedBooking(null);
                   }}
-                  className="px-6 py-3 rounded-xl border border-zinc-800 text-xs font-semibold text-zinc-300 hover:bg-zinc-900 transition"
                 >
                   Agendar otra cita
-                </button>
+                </Button>
                 <a
                   href="/admin"
-                  className="px-6 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition border border-zinc-700"
+                  className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-surface-raised border border-border text-foreground text-sm font-medium hover:border-border-strong transition"
                 >
                   Ver en Panel de Administración
                 </a>
@@ -695,47 +728,54 @@ export function BookingWizard({
         </div>
       </div>
 
-      {/* COLUMNA DERECHA (DESKTOP): RECIBO DE RESERVA EN VIVO (LIVE TICKET) */}
+      {/* Columna derecha: recibo en vivo */}
       <div className="hidden lg:block lg:col-span-4 sticky top-24 space-y-5">
-        <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-          {/* Header del Ticket */}
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+        <div className="bg-surface border border-border rounded-2xl p-6">
+          <div className="flex items-center justify-between pb-4 border-b border-border">
             <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-amber-400 block">
+              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-accent-warm block">
                 Resumen de Cita
               </span>
-              <h4 className="font-bold text-white text-base leading-tight mt-0.5">Tu Reservación</h4>
+              <h4 className="font-semibold text-foreground text-base leading-tight mt-0.5">
+                Tu Reservación
+              </h4>
             </div>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
+              <Clock className="w-4 h-4" />
             </div>
           </div>
 
-          {/* Desglose en Vivo */}
           <div className="py-4 space-y-4 text-xs">
-            {/* Servicio seleccionado */}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Servicio</span>
-                <span className="font-bold text-zinc-100 text-sm">{selectedService?.name || "Sin seleccionar"}</span>
+                <span className="text-dim block text-[10px] uppercase font-semibold tracking-wider">
+                  Servicio
+                </span>
+                <span className="font-semibold text-foreground text-sm">
+                  {selectedService?.name || "Sin seleccionar"}
+                </span>
                 {selectedService && (
-                  <span className="text-zinc-400 block text-[11px] mt-0.5 font-mono">
+                  <span className="text-muted block text-[11px] mt-0.5 font-mono">
                     {selectedService.durationMinutes} minutos de atención
                   </span>
                 )}
               </div>
-              <span className="font-bold text-zinc-200 text-sm whitespace-nowrap">
+              <span className="font-semibold text-foreground text-sm whitespace-nowrap">
                 {selectedService ? formatCurrency(selectedService.price, currency) : "---"}
               </span>
             </div>
 
-            {/* Profesional seleccionado */}
-            <div className="flex items-center justify-between gap-3 pt-3 border-t border-zinc-850">
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-border-subtle">
               <div>
-                <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Profesional</span>
-                <span className="font-bold text-zinc-200">{selectedStaff?.displayName || "Cualquiera"}</span>
+                <span className="text-dim block text-[10px] uppercase font-semibold tracking-wider">
+                  Profesional
+                </span>
+                <span className="font-semibold text-foreground">
+                  {selectedStaff?.displayName || "Cualquiera"}
+                </span>
               </div>
               {selectedStaff?.avatarUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selectedStaff.avatarUrl}
                   alt={selectedStaff.displayName}
@@ -745,75 +785,78 @@ export function BookingWizard({
               )}
             </div>
 
-            {/* Fecha y hora */}
-            <div className="pt-3 border-t border-zinc-850">
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold mb-1">Horario Programado</span>
+            <div className="pt-3 border-t border-border-subtle">
+              <span className="text-dim block text-[10px] uppercase font-semibold tracking-wider mb-1">
+                Horario Programado
+              </span>
               {selectedTime ? (
-                <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
+                <div className="flex items-center gap-2 text-accent-warm font-mono text-xs font-semibold bg-accent-soft px-3 py-1.5 rounded-lg border border-accent/20">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>{selectedDate} a las {selectedTime} hrs</span>
+                  <span>
+                    {selectedDate} a las {selectedTime} hrs
+                  </span>
                 </div>
               ) : (
-                <span className="text-zinc-500 italic">Pendiente de selección</span>
+                <span className="text-dim italic">Pendiente de selección</span>
               )}
             </div>
           </div>
 
-          {/* Total & Garantía */}
-          <div className="pt-4 border-t border-zinc-800 space-y-4">
+          <div className="pt-4 border-t border-border space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-zinc-400 text-xs block">Total a pagar</span>
-                <span className="text-[10px] text-zinc-500">En sucursal al finalizar</span>
+                <span className="text-muted text-xs block">Total a pagar</span>
+                <span className="text-[10px] text-dim">En sucursal al finalizar</span>
               </div>
-              <span className="text-2xl font-black text-amber-400">
+              <span className="text-2xl font-semibold text-accent-warm font-display">
                 {selectedService ? formatCurrency(selectedService.price, currency) : "$0.00"}
               </span>
             </div>
 
-            <div className="p-3 bg-zinc-950/60 rounded-xl border border-zinc-850 text-[11px] text-zinc-400 flex items-start gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div className="p-3 bg-base rounded-lg border border-border-subtle text-[11px] text-muted flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
               <span>Reserva garantizada. Sin cargos de cancelación anticipada.</span>
             </div>
 
             {step < 5 && (
-              <button
+              <Button
                 type="button"
                 disabled={!canProceed}
                 onClick={() => {
                   if (step < 4) setStep(step + 1);
                 }}
-                className="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-xl shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full"
+                rightIcon={<ChevronRight className="w-4 h-4" />}
               >
-                <span>{step === 4 ? "Listo para confirmar" : "Siguiente Paso"}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                {step === 4 ? "Listo para confirmar" : "Siguiente Paso"}
+              </Button>
             )}
           </div>
         </div>
       </div>
 
-      {/* BARRA STICKY INFERIOR PARA MÓVILES */}
+      {/* Barra sticky inferior móvil */}
       {step < 5 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800 z-50 flex items-center justify-between gap-4">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-base/95 backdrop-blur-xl border-t border-border z-50 flex items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] text-zinc-400 block uppercase font-semibold">Total estimado</span>
-            <span className="text-lg font-black text-amber-400 leading-none">
+            <span className="text-[10px] text-dim block uppercase font-semibold tracking-wider">
+              Total estimado
+            </span>
+            <span className="text-lg font-semibold text-accent-warm font-display leading-none">
               {selectedService ? formatCurrency(selectedService.price, currency) : "$0.00"}
             </span>
           </div>
 
-          <button
+          <Button
             type="button"
             disabled={!canProceed}
             onClick={() => {
               if (step < 4) setStep(step + 1);
             }}
-            className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 disabled:opacity-40 flex items-center gap-1.5"
+            rightIcon={<ChevronRight className="w-4 h-4" />}
           >
-            <span>{step === 4 ? "Revisar y enviar" : "Continuar"}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+            {step === 4 ? "Revisar y enviar" : "Continuar"}
+          </Button>
         </div>
       )}
     </div>

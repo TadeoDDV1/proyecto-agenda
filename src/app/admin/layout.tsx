@@ -27,7 +27,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-amber-500 selection:text-zinc-950">
+    <div className="min-h-screen bg-base text-foreground">
       {tenant && (
         <AdminSidebar
           tenantName={tenant.name}

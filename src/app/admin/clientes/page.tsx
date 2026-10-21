@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { CustomerManager } from "@/components/CustomerManager";
-import { Contact } from "lucide-react";
+import { PageHeader } from "@/components/ui";
 
 export default async function AdminClientesPage() {
   const session = await getSession();
@@ -64,18 +64,11 @@ export default async function AdminClientesPage() {
 
   return (
     <main className="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-      {/* Header */}
-      <div className="pb-3 border-b border-zinc-850 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <Contact className="w-6 h-6 text-amber-400" />
-            Directorio de Clientes & CRM
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Historial de visitas, fidelidad y contacto directo por WhatsApp para {tenant.name}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Relación con clientes"
+        title="Directorio & CRM"
+        description={`Historial de visitas, fidelidad y contacto directo por WhatsApp para ${tenant.name}.`}
+      />
 
       <CustomerManager
         initialCustomers={customers}

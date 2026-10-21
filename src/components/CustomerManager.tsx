@@ -18,10 +18,20 @@ import {
   ChevronRight,
   Save,
   CheckCircle2,
-  DollarSign,
   TrendingUp,
 } from "lucide-react";
 import { createCustomerAction, updateCustomerNotesAction } from "@/app/actions/admin";
+import { getWhatsAppUrl } from "@/lib/utils";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Input,
+  StatusPill,
+  Textarea,
+} from "@/components/ui";
 
 interface AppointmentHistory {
   id: string;
@@ -67,23 +77,20 @@ export function CustomerManager({
   const [activeTab, setActiveTab] = useState<"all" | "frequent" | "new" | "none">("all");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
 
-  // Estados para nuevo cliente
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // Estado para notas del cliente seleccionado
   const [customerNotes, setCustomerNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSuccess, setNotesSuccess] = useState(false);
 
-  // Filtrado reactivo
   const filteredCustomers = customers.filter((customer) => {
     const q = search.toLowerCase();
     const matchesSearch =
       customer.fullName.toLowerCase().includes(q) ||
       customer.phone.includes(q) ||
-      (customer.email && customer.email.toLowerCase().includes(q));
+      (customer.email ? customer.email.toLowerCase().includes(q) : false);
 
     if (!matchesSearch) return false;
 
@@ -94,7 +101,6 @@ export function CustomerManager({
     return true;
   });
 
-  // Métricas globales
   const totalCustomers = customers.length;
   const frequentCustomers = customers.filter((c) => c.appointments.length >= 2).length;
   const totalCompletedAppointments = customers.reduce(
@@ -157,154 +163,124 @@ export function CustomerManager({
     }
   }
 
-  function getWhatsAppUrl(phone: string, customerName: string) {
-    const cleanPhone = phone.replace(/[^0-9]/g, "");
-    const formattedPhone = cleanPhone.length === 10 ? `521${cleanPhone}` : cleanPhone;
-    const msg = `¡Hola ${customerName}! Te escribimos de ${tenantName}. ¿En qué podemos apoyarte con tu próxima cita?`;
-    return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`;
-  }
+  const stats = [
+    {
+      label: "Total clientes",
+      value: totalCustomers,
+      hint: "Registrados en agenda",
+      icon: Award,
+      tone: "text-accent-warm",
+    },
+    {
+      label: "Frecuentes",
+      value: frequentCustomers,
+      hint: "Con 2 o más reservas",
+      icon: Sparkles,
+      tone: "text-success-text",
+    },
+    {
+      label: "Citas completadas",
+      value: totalCompletedAppointments,
+      hint: "Servicios finalizados",
+      icon: Calendar,
+      tone: "text-foreground",
+    },
+    {
+      label: "LTV acumulado",
+      value: `${totalLTV.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`,
+      hint: `Facturación · ${tenantCurrency}`,
+      icon: TrendingUp,
+      tone: "text-accent-warm",
+    },
+  ];
+
+  const tabs: { key: typeof activeTab; label: string }[] = [
+    { key: "all", label: `Todos (${customers.length})` },
+    { key: "frequent", label: `Frecuentes (${frequentCustomers})` },
+    { key: "new", label: "Nuevos" },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Barra de Estadísticas Clave */}
+      {/* Estadísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-              Total Clientes
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-              <Award className="w-3.5 h-3.5" />
+        {stats.map(({ label, value, hint, icon: Icon, tone }) => (
+          <Card key={label} className="p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-muted uppercase tracking-[0.1em]">
+                {label}
+              </span>
+              <div className="w-7 h-7 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-dim">
+                <Icon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-white">{totalCustomers}</div>
-          <span className="text-[10px] text-zinc-500 mt-0.5 block">Registrados en agenda</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-              Clientes Frecuentes
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className={`mt-2 text-2xl font-semibold font-display ${tone}`}>
+              {value}
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-emerald-400">{frequentCustomers}</div>
-          <span className="text-[10px] text-zinc-500 mt-0.5 block">Con 2 o más reservas</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-              Citas Completadas
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
-              <Calendar className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-white">{totalCompletedAppointments}</div>
-          <span className="text-[10px] text-zinc-500 mt-0.5 block">Servicios finalizados</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-              LTV Acumulado
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-amber-400">
-            ${totalLTV.toLocaleString("es-MX", { minimumFractionDigits: 2 })}{" "}
-            <span className="text-xs text-zinc-400 font-normal">{tenantCurrency}</span>
-          </div>
-          <span className="text-[10px] text-zinc-500 mt-0.5 block">Facturación de clientes</span>
-        </div>
+            <span className="text-[10px] text-dim mt-0.5 block">{hint}</span>
+          </Card>
+        ))}
       </div>
 
-      {/* Controles de Búsqueda, Filtro y Acción */}
+      {/* Controles */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        {/* Barra de Búsqueda */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-dim absolute left-3.5 top-3" />
           <input
             type="text"
             placeholder="Buscar por nombre, teléfono o email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/40 transition"
+            className="w-full pl-10 pr-9 py-2.5 rounded-lg bg-surface border border-border text-xs text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 text-xs"
+              aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-2.5 text-dim hover:text-foreground text-xs transition"
             >
               ✕
             </button>
           )}
         </div>
 
-        {/* Pestañas de Filtro y Botón Nuevo */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <div className="flex bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "all"
-                  ? "bg-amber-500 text-zinc-950 font-bold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Todos ({customers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("frequent")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "frequent"
-                  ? "bg-amber-500 text-zinc-950 font-bold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Frecuentes ({frequentCustomers})
-            </button>
-            <button
-              onClick={() => setActiveTab("new")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "new"
-                  ? "bg-amber-500 text-zinc-950 font-bold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Nuevos
-            </button>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+          <div className="flex bg-surface p-1 rounded-lg border border-border text-xs font-semibold">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`px-3 py-1.5 rounded-md transition whitespace-nowrap ${
+                  activeTab === t.key
+                    ? "bg-accent text-accent-fg"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          <button
+          <Button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-bold text-xs transition shadow-md shadow-amber-500/20 active:scale-95 whitespace-nowrap"
+            leftIcon={<UserPlus className="w-3.5 h-3.5" />}
+            className="whitespace-nowrap"
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Nuevo Cliente</span>
-          </button>
+            Nuevo cliente
+          </Button>
         </div>
       </div>
 
-      {/* Listado de Clientes */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl overflow-hidden backdrop-blur-sm">
+      {/* Listado */}
+      <Card className="overflow-hidden">
         {filteredCustomers.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 text-zinc-500 flex items-center justify-center mx-auto mb-3">
-              <Search className="w-6 h-6" />
-            </div>
-            <h4 className="text-sm font-bold text-zinc-300">No se encontraron clientes</h4>
-            <p className="text-xs text-zinc-500 mt-1">
-              Prueba cambiando el término de búsqueda o crea un nuevo cliente manualmente.
-            </p>
-          </div>
+          <EmptyState
+            icon={<Search className="w-5 h-5" />}
+            title="No se encontraron clientes"
+            description="Prueba cambiando el término de búsqueda o crea un nuevo cliente manualmente."
+          />
         ) : (
-          <div className="divide-y divide-zinc-850">
+          <div className="divide-y divide-border-subtle">
             {filteredCustomers.map((customer) => {
               const apts = customer.appointments;
               const completedApts = apts.filter((a) => a.status === "COMPLETED");
@@ -315,51 +291,40 @@ export function CustomerManager({
               const lastApt = apts.length > 0 ? apts[0] : null;
 
               return (
-                <div
+                <button
                   key={customer.id}
+                  type="button"
                   onClick={() => handleSelectCustomer(customer)}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-850/40 transition cursor-pointer group"
+                  className="w-full text-left p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface-raised/60 transition group"
                 >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-750 text-amber-400 font-extrabold flex items-center justify-center text-sm shadow-inner shrink-0 group-hover:border-amber-500/50 transition">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-11 h-11 rounded-xl bg-surface-raised border border-border text-accent-warm font-semibold flex items-center justify-center text-sm shrink-0 group-hover:border-accent/40 transition font-display">
                       {customer.fullName.charAt(0).toUpperCase()}
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-zinc-100 group-hover:text-amber-400 transition">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-sm text-foreground group-hover:text-accent-warm transition">
                           {customer.fullName}
                         </span>
-                        {apts.length >= 3 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            VIP
-                          </span>
-                        )}
-                        {apts.length === 2 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Recurrente
-                          </span>
-                        )}
-                        {apts.length === 1 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400">
-                            1 Cita
-                          </span>
-                        )}
+                        {apts.length >= 3 && <Badge tone="accent">VIP</Badge>}
+                        {apts.length === 2 && <Badge tone="success">Recurrente</Badge>}
+                        {apts.length === 1 && <Badge>1 cita</Badge>}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-zinc-400">
+                      <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted">
                         <span className="flex items-center gap-1 font-mono text-[11px]">
-                          <Phone className="w-3 h-3 text-zinc-500" />
+                          <Phone className="w-3 h-3 text-dim" />
                           {customer.phone}
                         </span>
                         {customer.email && (
-                          <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                            <Mail className="w-3 h-3 text-zinc-600" />
+                          <span className="flex items-center gap-1 text-[11px] text-dim">
+                            <Mail className="w-3 h-3" />
                             {customer.email}
                           </span>
                         )}
                         {customer.notes && (
-                          <span className="flex items-center gap-1 text-[11px] text-amber-400/80 italic">
+                          <span className="flex items-center gap-1 text-[11px] text-accent-warm italic">
                             <FileText className="w-3 h-3" />
                             Nota
                           </span>
@@ -368,74 +333,77 @@ export function CustomerManager({
                     </div>
                   </div>
 
-                  {/* Métricas del cliente y llamada a la acción */}
-                  <div className="flex items-center justify-between sm:justify-end gap-5 border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-850">
+                  <div className="flex items-center justify-between sm:justify-end gap-5 border-t sm:border-t-0 pt-3 sm:pt-0 border-border-subtle">
                     <div className="text-left sm:text-right">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
-                        Gasto Total
+                      <span className="text-[10px] text-dim uppercase tracking-wider block font-semibold">
+                        Gasto total
                       </span>
-                      <span className="text-sm font-bold text-white block">
+                      <span className="text-sm font-semibold text-foreground block">
                         ${totalSpent.toLocaleString("es-MX", { minimumFractionDigits: 2 })}{" "}
-                        <span className="text-[10px] text-zinc-500 font-normal">
+                        <span className="text-[10px] text-dim font-normal">
                           {tenantCurrency}
                         </span>
                       </span>
                     </div>
 
                     <div className="text-left sm:text-right hidden md:block">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
-                        Última Cita
+                      <span className="text-[10px] text-dim uppercase tracking-wider block font-semibold">
+                        Última cita
                       </span>
-                      <span className="text-xs text-zinc-300 block font-medium">
+                      <span className="text-xs text-muted block font-medium">
                         {lastApt
                           ? format(new Date(lastApt.startTime), "d MMM yyyy", { locale: es })
                           : "Sin citas"}
                       </span>
                     </div>
 
-                    {/* Botón rápido WhatsApp */}
                     <a
-                      href={getWhatsAppUrl(customer.phone, customer.fullName)}
+                      href={getWhatsAppUrl(
+                        customer.phone,
+                        `¡Hola ${customer.fullName}! Te escribimos de ${tenantName}. ¿En qué podemos apoyarte con tu próxima cita?`
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 transition"
+                      className="p-2.5 rounded-lg bg-success/10 hover:bg-success/20 text-success-text border border-success/25 transition"
                       title="Enviar WhatsApp"
+                      aria-label="Enviar WhatsApp"
                     >
                       <MessageCircle className="w-4 h-4" />
                     </a>
 
-                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition" />
+                    <ChevronRight className="w-4 h-4 text-dim group-hover:text-accent-warm group-hover:translate-x-0.5 transition" />
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
         )}
-      </div>
+      </Card>
 
-      {/* Slide-over Drawer: Ficha Detallada del Cliente */}
+      {/* Drawer: ficha del cliente */}
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div
-            className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm transition-opacity"
+          <button
+            type="button"
+            aria-label="Cerrar ficha"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
             onClick={() => setSelectedCustomer(null)}
           />
 
-          <div className="relative w-full max-w-lg bg-zinc-950 border-l border-zinc-800 p-6 flex flex-col justify-between overflow-y-auto shadow-2xl z-10">
+          <div className="relative w-full max-w-lg bg-surface border-l border-border p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right z-10">
             <div>
-              {/* Header Drawer */}
-              <div className="flex items-center justify-between pb-5 border-b border-zinc-850">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-zinc-950 font-black flex items-center justify-center text-lg shadow-lg shadow-amber-500/20">
+              <div className="flex items-center justify-between pb-5 border-b border-border">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded-xl bg-accent-soft border border-accent/25 text-accent-warm font-semibold flex items-center justify-center text-lg flex-shrink-0 font-display">
                     {selectedCustomer.fullName.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-base text-white">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-base text-foreground truncate">
                       {selectedCustomer.fullName}
                     </h3>
-                    <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5 font-mono">
-                      <Phone className="w-3 h-3 text-zinc-500" />
+                    <p className="text-xs text-muted flex items-center gap-1 mt-0.5 font-mono">
+                      <Phone className="w-3 h-3 text-dim" />
                       {selectedCustomer.phone}
                     </p>
                   </div>
@@ -443,56 +411,60 @@ export function CustomerManager({
 
                 <button
                   onClick={() => setSelectedCustomer(null)}
-                  className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-900 transition"
+                  aria-label="Cerrar detalle de cliente"
+                  className="p-2 text-muted hover:text-foreground rounded-lg hover:bg-surface-raised transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Botones de Contacto Directo */}
+              {/* Contacto directo */}
               <div className="grid grid-cols-2 gap-3 my-5">
                 <a
-                  href={getWhatsAppUrl(selectedCustomer.phone, selectedCustomer.fullName)}
+                  href={getWhatsAppUrl(
+                    selectedCustomer.phone,
+                    `¡Hola ${selectedCustomer.fullName}! Te escribimos de ${tenantName}. ¿En qué podemos apoyarte con tu próxima cita?`
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-success/10 border border-success/25 text-success-text hover:bg-success/20 text-xs font-semibold transition"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Chatear en WhatsApp</span>
+                  <span>WhatsApp</span>
                 </a>
 
                 <a
                   href={`tel:${selectedCustomer.phone}`}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 hover:bg-zinc-850 text-xs font-semibold transition"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-surface-raised border border-border text-foreground hover:border-border-strong text-xs font-semibold transition"
                 >
-                  <Phone className="w-4 h-4 text-zinc-400" />
-                  <span>Llamar al Móvil</span>
+                  <Phone className="w-4 h-4 text-muted" />
+                  <span>Llamar</span>
                 </a>
               </div>
 
-              {/* Resumen de Fidelidad y Métricas */}
-              <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-850 text-center mb-6">
+              {/* Métricas */}
+              <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-xl bg-base border border-border text-center mb-6">
                 <div>
-                  <span className="text-[10px] text-zinc-500 font-semibold uppercase block">
-                    Citas Totales
+                  <span className="text-[10px] text-dim font-semibold uppercase block">
+                    Citas
                   </span>
-                  <span className="text-base font-black text-white mt-0.5 block">
+                  <span className="text-base font-semibold text-foreground mt-0.5 block font-display">
                     {selectedCustomer.appointments.length}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-500 font-semibold uppercase block">
+                  <span className="text-[10px] text-dim font-semibold uppercase block">
                     Completadas
                   </span>
-                  <span className="text-base font-black text-emerald-400 mt-0.5 block">
+                  <span className="text-base font-semibold text-success-text mt-0.5 block font-display">
                     {selectedCustomer.appointments.filter((a) => a.status === "COMPLETED").length}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-500 font-semibold uppercase block">
-                    Total Invertido
+                  <span className="text-[10px] text-dim font-semibold uppercase block">
+                    Invertido
                   </span>
-                  <span className="text-base font-black text-amber-400 mt-0.5 block">
+                  <span className="text-base font-semibold text-accent-warm mt-0.5 block font-display">
                     $
                     {selectedCustomer.appointments
                       .filter((a) => a.status === "COMPLETED")
@@ -502,83 +474,70 @@ export function CustomerManager({
                 </div>
               </div>
 
-              {/* Notas Internas del Cliente */}
+              {/* Notas */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Notas Internas del Cliente</span>
+                  <label htmlFor="cust-notes-detail" className="text-xs font-semibold uppercase tracking-[0.1em] text-muted flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-accent-hover" />
+                    <span>Notas internas</span>
                   </label>
                   {notesSuccess && (
-                    <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="text-[11px] text-success-text font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Guardado
                     </span>
                   )}
                 </div>
-                <textarea
+                <Textarea
+                  id="cust-notes-detail"
                   rows={3}
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
                   placeholder="Ej. Prefiere degradado alto con tijera arriba. Alérgico a productos mentolados..."
-                  className="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500/80 transition"
                 />
                 <div className="flex justify-end mt-2">
-                  <button
+                  <Button
                     onClick={handleSaveNotes}
-                    disabled={isSavingNotes}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-white font-semibold text-xs border border-zinc-700 transition disabled:opacity-50"
+                    loading={isSavingNotes}
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Save className="w-3.5 h-3.5" />}
                   >
-                    <Save className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{isSavingNotes ? "Guardando..." : "Guardar Nota"}</span>
-                  </button>
+                    {isSavingNotes ? "Guardando..." : "Guardar nota"}
+                  </Button>
                 </div>
               </div>
 
-              {/* Historial de Citas del Cliente */}
+              {/* Historial */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Historial de Citas ({selectedCustomer.appointments.length})</span>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.1em] text-muted mb-3 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-dim" />
+                  <span>Historial de citas ({selectedCustomer.appointments.length})</span>
                 </h4>
 
                 {selectedCustomer.appointments.length === 0 ? (
-                  <p className="text-xs text-zinc-500 italic p-4 rounded-xl bg-zinc-900/40 border border-zinc-850 text-center">
+                  <p className="text-xs text-dim italic p-4 rounded-xl bg-base border border-border text-center">
                     Este cliente aún no registra citas.
                   </p>
                 ) : (
                   <div className="space-y-2.5">
                     {selectedCustomer.appointments.map((apt) => {
                       const startTime = new Date(apt.startTime);
-                      const isCompleted = apt.status === "COMPLETED";
-                      const isCancelled = apt.status === "CANCELLED";
 
                       return (
                         <div
                           key={apt.id}
-                          className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-850 flex items-center justify-between text-xs"
+                          className="p-3 rounded-xl bg-base border border-border flex items-center justify-between text-xs gap-3"
                         >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-zinc-100">{apt.service.name}</span>
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${
-                                  isCompleted
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : isCancelled
-                                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                }`}
-                              >
-                                {isCompleted
-                                  ? "Completada"
-                                  : isCancelled
-                                  ? "Cancelada"
-                                  : "Confirmada"}
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-foreground">
+                                {apt.service.name}
                               </span>
+                              <StatusPill status={apt.status} />
                             </div>
 
-                            <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+                            <div className="flex items-center gap-2 text-[11px] text-muted">
                               <span>
                                 {format(startTime, "EEEE d 'de' MMMM, HH:mm", { locale: es })} hrs
                               </span>
@@ -593,7 +552,7 @@ export function CustomerManager({
                             </div>
                           </div>
 
-                          <div className="text-right font-bold text-zinc-200">
+                          <div className="text-right font-semibold text-foreground whitespace-nowrap">
                             ${Number(apt.totalPrice).toLocaleString("es-MX")}
                           </div>
                         </div>
@@ -604,115 +563,88 @@ export function CustomerManager({
               </div>
             </div>
 
-            {/* Footer Drawer */}
-            <div className="pt-4 border-t border-zinc-850 mt-6 text-center">
-              <button
+            <div className="pt-4 border-t border-border mt-6">
+              <Button
+                variant="secondary"
                 onClick={() => setSelectedCustomer(null)}
-                className="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 text-xs font-semibold text-zinc-300 transition"
+                className="w-full"
               >
-                Cerrar Detalle
-              </button>
+                Cerrar detalle
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Agregar Nuevo Cliente Manualmente */}
+      {/* Modal: nuevo cliente */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-850 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-6 animate-scale-in">
+            <div className="flex items-center justify-between pb-4 border-b border-border mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">Registrar Nuevo Cliente</h3>
-                  <p className="text-[11px] text-zinc-400">Añade un contacto a la agenda del salón</p>
+                  <h3 className="font-semibold text-sm text-foreground">
+                    Registrar nuevo cliente
+                  </h3>
+                  <p className="text-[11px] text-muted">
+                    Añade un contacto a la agenda del salón
+                  </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900"
+                aria-label="Cerrar modal"
+                className="p-1.5 text-muted hover:text-foreground rounded-lg hover:bg-surface-raised transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {modalError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+              <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/25 text-error-text text-xs">
                 {modalError}
               </div>
             )}
 
             <form onSubmit={handleAddCustomer} className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                  Nombre Completo *
-                </label>
-                <input
+              <Field label="Nombre completo" required htmlFor="cust-name">
+                <Input
                   type="text"
                   name="fullName"
                   required
                   placeholder="Ej. Roberto Navarro"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/80"
+                id="cust-name"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                  Teléfono / WhatsApp *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  placeholder="Ej. 55 9876 5432"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/80"
-                />
-              </div>
+              <Field label="Teléfono / WhatsApp" required htmlFor="cust-phone">
+                <Input type="tel" name="phone" required placeholder="Ej. 55 9876 5432" id="cust-phone" />
+              </Field>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                  Correo Electrónico (Opcional)
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="cliente@ejemplo.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/80"
-                />
-              </div>
+              <Field label="Correo electrónico (opcional)" htmlFor="cust-email">
+                <Input type="email" name="email" placeholder="cliente@ejemplo.com" id="cust-email" />
+              </Field>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                  Notas de Preferencia (Opcional)
-                </label>
-                <textarea
+              <Field label="Notas de preferencia (opcional)" htmlFor="cust-notes">
+                <Textarea
                   name="notes"
                   rows={2}
                   placeholder="Preferencias de corte, estilo habitual..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/80"
+                id="cust-notes"
                 />
-              </div>
+              </Field>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-850">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-900"
-                >
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+                <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>
                   Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition shadow-md shadow-amber-500/20 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Guardando..." : "Guardar Cliente"}
-                </button>
+                </Button>
+                <Button type="submit" loading={isSubmitting}>
+                  {isSubmitting ? "Guardando..." : "Guardar cliente"}
+                </Button>
               </div>
             </form>
           </div>

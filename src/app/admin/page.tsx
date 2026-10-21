@@ -3,18 +3,16 @@ import { getSession } from "@/lib/auth";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { AppointmentManager } from "@/components/AppointmentManager";
+import { PageHeader, buttonClasses } from "@/components/ui";
 import {
   Calendar,
   User,
-  Scissors,
   TrendingUp,
   Store,
   Layers,
-  Sparkles,
   Info,
   Clock,
   ExternalLink,
-  ShieldCheck,
 } from "lucide-react";
 
 export default async function AdminDashboardPage() {
@@ -42,7 +40,6 @@ export default async function AdminDashboardPage() {
     });
   }
 
-  // Fallback al tenant demo si no hay sesión
   if (!tenant) {
     tenant = await prisma.tenant.findFirst({
       include: {
@@ -64,21 +61,30 @@ export default async function AdminDashboardPage() {
 
   if (!tenant) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 text-center text-zinc-400">
+      <div className="flex-1 flex items-center justify-center p-6 text-center text-[var(--text-muted)]">
         <div>
-          <h2 className="text-xl font-bold text-white">No hay negocios registrados</h2>
-          <p className="text-sm mt-2">Ejecuta el comando de sembrado con `npm run db:seed`.</p>
+          <h2 className="text-xl font-light text-[var(--text)] font-display">
+            No hay negocios registrados
+          </h2>
+          <p className="text-sm mt-2">
+            Ejecuta <code className="font-mono text-xs">npm run db:seed</code> para sembrar datos de demostración.
+          </p>
         </div>
       </div>
     );
   }
 
-  // Métricas
-  const confirmedOrCompleted = tenant.appointments.filter((a) => a.status !== "CANCELLED");
-  const totalRevenue = confirmedOrCompleted.reduce((acc, app) => acc + Number(app.totalPrice), 0);
-  const completedCount = tenant.appointments.filter((a) => a.status === "COMPLETED").length;
+  const confirmedOrCompleted = tenant.appointments.filter(
+    (a) => a.status !== "CANCELLED"
+  );
+  const totalRevenue = confirmedOrCompleted.reduce(
+    (acc, app) => acc + Number(app.totalPrice),
+    0
+  );
+  const completedCount = tenant.appointments.filter(
+    (a) => a.status === "COMPLETED"
+  ).length;
 
-  // Serialización para AppointmentManager (Client Component)
   const serializedAppointments = tenant.appointments.map((a) => ({
     id: a.id,
     startTime: a.startTime.toISOString(),
@@ -109,154 +115,133 @@ export default async function AdminDashboardPage() {
   });
 
   return (
-    <main className="p-4 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
-      {/* Banner de Modo Demo si no hay sesión */}
+    <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
+      {/* Banner demo */}
       {!session && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+        <div className="px-4 py-3 rounded-lg border border-[var(--border)] text-[var(--text-muted)] text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Info className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <Info className="w-3.5 h-3.5 flex-shrink-0" />
             <span>
-              Estás visualizando el negocio de demostración (<strong>{tenant.name}</strong>). Para gestionar tu propio negocio privado, inicia sesión o crea una cuenta.
+              Modo demostración — negocio{" "}
+              <strong className="text-[var(--text)]">{tenant.name}</strong>.{" "}
+              <Link href="/login" className="underline underline-offset-2 hover:text-[var(--text)] transition">
+                Inicia sesión
+              </Link>{" "}
+              para gestionar tu negocio.
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold border border-zinc-700 transition"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link
-              href="/register"
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition shadow-md shadow-amber-500/20"
-            >
-              Crear Mi Negocio
-            </Link>
-          </div>
+          <Link
+            href="/register"
+            className="flex-shrink-0 text-[11px] font-medium px-3 py-1.5 rounded border border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--text)] transition"
+          >
+            Crear cuenta
+          </Link>
         </div>
       )}
 
-      {/* Header Principal del Dashboard (Dark Luxe) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-zinc-850">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 capitalize mb-1">
-            <Calendar className="w-3.5 h-3.5 text-amber-400" />
-            <span>{todayFormatted}</span>
+      {/* Header */}
+      <PageHeader
+        eyebrow={todayFormatted}
+        title={tenant.name}
+        action={
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/b/${tenant.slug}`}
+              target="_blank"
+              className={buttonClasses("secondary", "sm")}
+            >
+              <span>Portal público</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+            <Link
+              href="/admin/calendario"
+              className={buttonClasses("primary", "sm")}
+            >
+              <Calendar className="w-3 h-3" />
+              <span>Ver calendario</span>
+            </Link>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Resumen Operativo
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Supervisa reservaciones, ingresos estimados y la actividad de tu equipo en tiempo real.
+        }
+      />
+
+      {/* Métricas — informe financiero sobrio */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Ingresos */}
+        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-dim)]">
+              Ingresos estimados
+            </span>
+            <TrendingUp className="w-3.5 h-3.5 text-[var(--text-dim)]" />
+          </div>
+          <p className="text-xl font-light text-[var(--text)] font-display">
+            {formatCurrency(totalRevenue, tenant.currency)}
+          </p>
+          <p className="text-[11px] text-[var(--text-dim)] mt-1">
+            {confirmedOrCompleted.length} cita(s) activas
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Link
-            href="/admin/calendario"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold border border-zinc-800 transition"
-          >
-            <Calendar className="w-4 h-4 text-amber-400" />
-            <span>Ver Calendario Diario</span>
-          </Link>
-
-          <Link
-            href={`/b/${tenant.slug}`}
-            target="_blank"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition shadow-lg shadow-amber-500/20"
-          >
-            <Scissors className="w-4 h-4" />
-            <span>Probar Reserva como Cliente</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Tarjetas de Métricas Dark Luxe */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Ingresos */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Ingresos Estimados
+        {/* Citas */}
+        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-dim)]">
+              Citas registradas
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
+            <Calendar className="w-3.5 h-3.5 text-[var(--text-dim)]" />
           </div>
-          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-emerald-400 transition-colors">
-            {formatCurrency(totalRevenue, tenant.currency)}
-          </h3>
-          <span className="text-[11px] text-zinc-500 mt-1 block">
-            {confirmedOrCompleted.length} cita(s) activas
-          </span>
-        </div>
-
-        {/* Citas Totales */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Citas Registradas
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-amber-400 transition-colors">
+          <p className="text-xl font-light text-[var(--text)] font-display">
             {tenant.appointments.length}
-          </h3>
-          <span className="text-[11px] text-emerald-400 mt-1 block font-medium">
+          </p>
+          <p className="text-[11px] text-[var(--text-dim)] mt-1">
             {completedCount} completadas
-          </span>
+          </p>
         </div>
 
-        {/* Especialistas Activos */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        {/* Equipo */}
+        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-dim)]">
               Especialistas
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-              <User className="w-4 h-4" />
-            </div>
+            <User className="w-3.5 h-3.5 text-[var(--text-dim)]" />
           </div>
-          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-blue-400 transition-colors">
+          <p className="text-xl font-light text-[var(--text)] font-display">
             {tenant.staff.length}
-          </h3>
-          <span className="text-[11px] text-zinc-500 mt-1 block">
+          </p>
+          <p className="text-[11px] text-[var(--text-dim)] mt-1">
             Turnos semanales asignados
-          </span>
+          </p>
         </div>
 
         {/* Servicios */}
-        <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-850 hover:border-zinc-700 transition-all backdrop-blur-md group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Servicios en Catálogo
+        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-dim)]">
+              Servicios
             </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-              <Layers className="w-4 h-4" />
-            </div>
+            <Layers className="w-3.5 h-3.5 text-[var(--text-dim)]" />
           </div>
-          <h3 className="text-2xl font-black text-white mt-2 group-hover:text-purple-400 transition-colors">
+          <p className="text-xl font-light text-[var(--text)] font-display">
             {tenant.services.length}
-          </h3>
-          <span className="text-[11px] text-zinc-500 mt-1 block">
-            Disponibles en el portal web
-          </span>
+          </p>
+          <p className="text-[11px] text-[var(--text-dim)] mt-1">
+            Disponibles en portal web
+          </p>
         </div>
       </div>
 
-      {/* Grid Principal: AppointmentManager + Sidebar de Detalles */}
-      <div className="grid lg:grid-cols-12 gap-8 items-start">
-        {/* Columna de Citas (8 cols) */}
+      {/* Grid principal */}
+      <div className="grid lg:grid-cols-12 gap-6 items-start">
+        {/* Gestión de citas */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-400" />
-              Gestión de Agenda & Citas
-            </h3>
-            <span className="text-xs text-zinc-500 font-medium font-mono">
-              Sincronizado en tiempo real
+            <h2 className="text-sm font-medium text-[var(--text)] flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--text-muted)]" />
+              Agenda y citas
+            </h2>
+            <span className="text-[11px] text-[var(--text-dim)] font-mono">
+              Sincronizado
             </span>
           </div>
 
@@ -267,87 +252,105 @@ export default async function AdminDashboardPage() {
           />
         </div>
 
-        {/* Columna Lateral Informativa (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Tarjeta de Equipo */}
-          <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-850 backdrop-blur-md">
+        {/* Sidebar informativo */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Equipo */}
+          <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                <User className="w-4 h-4 text-amber-400" />
-                Equipo de Especialistas
-              </h4>
+              <h3 className="text-xs font-medium text-[var(--text)] flex items-center gap-2 uppercase tracking-widest">
+                <User className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                Equipo
+              </h3>
               <Link
                 href="/admin/personal"
-                className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition"
+                className="text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] underline underline-offset-2 transition"
               >
                 Gestionar
               </Link>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {tenant.staff.map((st) => (
-                <div key={st.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-zinc-850/50 transition">
-                  <div className="flex items-center gap-3">
+                <div
+                  key={st.id}
+                  className="flex items-center justify-between py-2 border-b border-[var(--border-subtle)] last:border-0"
+                >
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className="w-9 h-9 rounded-full overflow-hidden border-2 flex items-center justify-center bg-zinc-950 flex-shrink-0"
-                      style={{ borderColor: st.colorCode }}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-medium flex-shrink-0 font-display"
+                      style={{
+                        background: "var(--surface-raised)",
+                        border: `1px solid ${st.colorCode}40`,
+                        color: st.colorCode,
+                      }}
                     >
-                      {st.avatarUrl ? (
-                        <img
-                          src={st.avatarUrl}
-                          alt={st.displayName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 text-zinc-500" />
-                      )}
+                      {st.displayName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-zinc-200 block leading-tight">
+                      <span className="text-xs font-medium text-[var(--text)] block leading-tight">
                         {st.displayName}
                       </span>
-                      <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">
-                        {st.phone || "Sin teléfono"}
+                      <span className="text-[10px] text-[var(--text-dim)] block leading-tight">
+                        {st.phone || "—"}
                       </span>
                     </div>
                   </div>
-
                   <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: st.colorCode }}
-                    title={`Color: ${st.colorCode}`}
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: st.colorCode }}
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Tarjeta de Datos del Negocio */}
-          <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-850 backdrop-blur-md text-xs space-y-3">
-            <h4 className="font-bold text-sm text-white flex items-center gap-2 mb-3">
-              <Store className="w-4 h-4 text-amber-400" />
-              Configuración de Local
-            </h4>
-
-            <div>
-              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Identificador Único</span>
-              <code className="text-amber-400 font-mono text-xs mt-0.5 block">/b/{tenant.slug}</code>
+          {/* Datos del negocio */}
+          <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-medium text-[var(--text)] flex items-center gap-2 uppercase tracking-widest">
+                <Store className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                Local
+              </h3>
+              <Link
+                href="/admin/configuracion"
+                className="text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] underline underline-offset-2 transition"
+              >
+                Editar
+              </Link>
             </div>
 
-            <div>
-              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Dirección</span>
-              <span className="text-zinc-300 mt-0.5 block">{tenant.address || "No configurada"}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Teléfono de contacto</span>
-              <span className="text-zinc-300 mt-0.5 block">{tenant.phone || "No configurado"}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block uppercase font-semibold text-[10px]">Moneda configurada</span>
-              <span className="text-zinc-300 mt-0.5 block">{tenant.currency}</span>
-            </div>
+            <dl className="space-y-3 text-xs">
+              <div>
+                <dt className="text-[10px] uppercase tracking-widest text-[var(--text-dim)] mb-0.5">
+                  Enlace público
+                </dt>
+                <dd className="font-mono text-[var(--accent-warm)]">
+                  /b/{tenant.slug}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] uppercase tracking-widest text-[var(--text-dim)] mb-0.5">
+                  Dirección
+                </dt>
+                <dd className="text-[var(--text-muted)]">
+                  {tenant.address || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] uppercase tracking-widest text-[var(--text-dim)] mb-0.5">
+                  Teléfono
+                </dt>
+                <dd className="text-[var(--text-muted)]">
+                  {tenant.phone || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] uppercase tracking-widest text-[var(--text-dim)] mb-0.5">
+                  Moneda
+                </dt>
+                <dd className="text-[var(--text-muted)]">{tenant.currency}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       </div>

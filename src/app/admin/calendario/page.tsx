@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { AdminNav } from "@/components/AdminNav";
 import { InteractiveCalendar } from "@/components/InteractiveCalendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 
@@ -85,23 +84,26 @@ export default async function AdminCalendarPage() {
 
   return (
     <main className="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-      <div className="pb-2 border-b border-zinc-850">
-        <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-          <CalendarIcon className="w-6 h-6 text-amber-400" />
+      <div className="pb-5 border-b border-border">
+        <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim mb-1.5">
+          Administración
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-foreground font-display flex items-center gap-2.5">
+          <CalendarIcon className="w-6 h-6 text-accent-hover" />
           Calendario de Trabajo
         </h2>
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="text-xs text-muted mt-1.5">
           Visualiza los espacios por profesional en tiempo real y registra citas directas en mostrador.
         </p>
       </div>
 
-        <InteractiveCalendar
-          initialDateStr={initialDateStr}
-          staffList={serializedStaff}
-          servicesList={serializedServices}
-          appointments={serializedAppointments}
-          currency={tenant.currency}
-        />
-      </main>
+      <InteractiveCalendar
+        initialDateStr={initialDateStr}
+        staffList={serializedStaff}
+        servicesList={serializedServices}
+        appointments={serializedAppointments}
+        currency={tenant.currency}
+      />
+    </main>
   );
 }
