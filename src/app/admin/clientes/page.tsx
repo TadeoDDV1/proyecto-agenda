@@ -1,25 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { CustomerManager } from "@/components/CustomerManager";
 import { PageHeader } from "@/components/ui";
 
 export default async function AdminClientesPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-    });
-  }
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      where: { slug: "barberia-vintage" },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
 
   const rawCustomers = await prisma.customer.findMany({
     where: { tenantId: tenant.id },

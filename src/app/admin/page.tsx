@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { AppointmentManager } from "@/components/AppointmentManager";
@@ -16,63 +17,27 @@ import {
 } from "lucide-react";
 
 export default async function AdminDashboardPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      staff: true,
+      services: true,
+      appointments: {
+        include: {
+          service: true,
+          staff: true,
+          customer: true,
+        },
+        orderBy: {
+          startTime: "asc",
         },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-    });
-  }
-
-  if (!tenant) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-6 text-center text-muted">
-        <div>
-          <h2 className="text-xl font-light text-foreground font-display">
-            No hay negocios registrados
-          </h2>
-          <p className="text-sm mt-2">
-            Ejecuta <code className="font-mono text-xs">npm run db:seed</code> para sembrar datos de demostración.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!tenant) notFound();
 
   const activeAppointments = tenant.appointments.filter(
     (a) => a.status !== "CANCELLED"

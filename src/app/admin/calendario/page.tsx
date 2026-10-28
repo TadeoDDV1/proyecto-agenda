@@ -1,49 +1,30 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { InteractiveCalendar } from "@/components/InteractiveCalendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { toDateKey } from "@/lib/utils";
 
 export default async function AdminCalendarPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: { startTime: "asc" },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      staff: true,
+      services: true,
+      appointments: {
+        include: {
+          service: true,
+          staff: true,
+          customer: true,
         },
+        orderBy: { startTime: "asc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: { startTime: "asc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
 
   const initialDateStr = toDateKey();
 

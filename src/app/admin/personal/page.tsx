@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { createStaffAction } from "@/app/actions/admin";
 import { Plus, User, Phone, Mail, ShieldCheck } from "lucide-react";
 import {
@@ -23,39 +24,22 @@ const staffColors = [
 ];
 
 export default async function AdminStaffPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        staff: {
-          include: {
-            schedules: true,
-            appointments: true,
-          },
-          orderBy: { createdAt: "asc" },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      staff: {
+        include: {
+          schedules: true,
+          appointments: true,
         },
+        orderBy: { createdAt: "asc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        staff: {
-          include: {
-            schedules: true,
-            appointments: true,
-          },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">

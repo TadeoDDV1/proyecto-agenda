@@ -34,7 +34,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.success) {
-      router.push("/admin");
+      // Solo destinos internos del admin: evita open redirect.
+      const nextParam = new URLSearchParams(window.location.search).get("next");
+      const destination =
+        nextParam && nextParam.startsWith("/admin") ? nextParam : "/admin";
+      router.push(destination);
       router.refresh();
     } else {
       setError(res.error || "No fue posible iniciar sesión.");

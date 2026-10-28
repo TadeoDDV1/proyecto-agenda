@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { createServiceAction } from "@/app/actions/admin";
 import { Layers, Plus, Clock } from "lucide-react";
@@ -16,35 +17,20 @@ import {
 } from "@/components/ui";
 
 export default async function AdminServicesPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        categories: true,
-        services: {
-          include: { category: true },
-          orderBy: { createdAt: "desc" },
-        },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      categories: true,
+      services: {
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        categories: true,
-        services: {
-          include: { category: true },
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">

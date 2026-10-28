@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireTenant } from "@/lib/auth";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
 export default async function AdminLayout({
@@ -7,24 +6,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-    });
-  }
-
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      where: { slug: "barberia-vintage" },
-    });
-  }
-
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst();
-  }
+  const { session, tenant } = await requireTenant();
 
   return (
     <div className="min-h-screen bg-base text-foreground">
@@ -35,15 +17,13 @@ export default async function AdminLayout({
         Saltar al contenido
       </a>
 
-      {tenant && (
-        <AdminSidebar
-          tenantName={tenant.name}
-          tenantSlug={tenant.slug}
-          userEmail={session?.email}
-          userName={session?.fullName}
-          userRole={session?.role}
-        />
-      )}
+      <AdminSidebar
+        tenantName={tenant.name}
+        tenantSlug={tenant.slug}
+        userEmail={session.email}
+        userName={session.fullName}
+        userRole={session.role}
+      />
 
       {/* Área de contenido desplazada para dejar espacio al Sidebar en desktop */}
       <div
