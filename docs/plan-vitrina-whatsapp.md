@@ -505,6 +505,15 @@ Reutilizar `getWhatsAppUrl()` de `src/lib/utils.ts`, corrigiendo el prefijo hard
 
 ## 8. Bot de WhatsApp
 
+> **Decisión de implementación (v1, ya construida):** el piloto usa **Baileys**
+> (WhatsApp Web no oficial) en lugar de Meta Cloud API. Se vincula un número
+> dedicado escaneando un QR desde `/admin/whatsapp`; la sesión vive en disco
+> (`.wa-auth/<tenantId>`) y un worker Node separado (`npm run bot`) mantiene la
+> conexión y responde. No hay webhook, firmas ni templates. El motor
+> (`src/lib/whatsapp/*`) es determinista con menús de texto numerado y cubre
+> reservar, ver próximas citas y cancelar. El resto de esta sección se conserva
+> como referencia del camino oficial (Meta/BSP) si el piloto necesita migrar.
+
 ### 8.1 Proveedor y onboarding
 
 **Recomendación:** Meta WhatsApp Cloud API directo para el piloto. Sin markup de BSP, control total y el mismo modelo sirve para varios tenants. La capa `WhatsAppProvider` permite cambiar a Twilio/360dialog después sin tocar la máquina de estados, y un `MockProvider` permite probar flujos en local sin gastar mensajes.

@@ -10,6 +10,7 @@ import {
   Layers,
   Users,
   Contact,
+  MessageCircle,
   Settings,
   ExternalLink,
   LogOut,
@@ -89,6 +90,7 @@ export function AdminSidebar({
     { name: "Servicios", href: "/admin/servicios", icon: Layers },
     { name: "Equipo", href: "/admin/personal", icon: Users },
     { name: "Clientes", href: "/admin/clientes", icon: Contact },
+    { name: "WhatsApp", href: "/admin/whatsapp", icon: MessageCircle },
     { name: "Configuración", href: "/admin/configuracion", icon: Settings },
   ];
 

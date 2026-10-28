@@ -40,4 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# WhatsApp (Baileys): credenciales locales del bot
+/.wa-auth/
+
 /src/generated/prisma

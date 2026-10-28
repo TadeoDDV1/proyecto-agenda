@@ -36,7 +36,32 @@ npm run db:seed
 
 # Compilar para producción
 npm run build
+
+# Worker del bot de WhatsApp (proceso aparte, mantenerlo corriendo)
+npm run bot
+
+# Prueba de humo del bot: reserva, consulta y cancela contra la base real
+npm run bot:smoke
 ```
+
+---
+
+## 🤖 Bot de WhatsApp
+
+El bot usa **Baileys** (WhatsApp Web no oficial) desde un worker Node separado de Next:
+
+- Se vincula un **número dedicado** escaneando un QR desde `/admin/whatsapp`.
+- Las credenciales quedan en `.wa-auth/<tenantId>` (ignorado por git). La base
+  guarda solo el estado visible: QR, número, errores y actividad.
+- El motor vive en `src/lib/whatsapp/*` y usa el mismo dominio de reservas que
+  la web y el admin. En v1 puede **reservar, ver próximas citas y cancelar**.
+- Los menús son de texto numerado (sin botones ni listas nativas).
+- Si el worker se apaga, el panel lo avisa: la conexión de WhatsApp no vive
+  dentro de Next.
+
+> Baileys no es la API oficial: un uso intensivo puede provocar bloqueos. Por
+> eso conviene un número exclusivo para el bot, nunca el principal del salón.
+
 
 ---
 
@@ -45,6 +70,7 @@ npm run build
 - `/`: Portada SaaS con métricas en tiempo real de la base de datos.
 - `/b/barberia-vintage`: Portal público de agendamiento para clientes del negocio de demostración.
 - `/admin`: Panel de control y agenda del negocio.
+- `/admin/whatsapp`: Conexión del bot, QR y actividad reciente del canal.
 
 ---
 
