@@ -233,6 +233,9 @@ export class WhatsAppSession {
   }) {
     if (update.qr && update.qr !== this.lastQr) {
       this.lastQr = update.qr;
+      // Mientras se espera el escaneo conviene reconectar rápido: el QR
+      // caduca cada ~60 s y Baileys emite uno nuevo.
+      this.reconnectAttempts = 0;
       await this.updateAccount({
         status: "PENDING",
         qr: update.qr,
@@ -246,6 +249,7 @@ export class WhatsAppSession {
 
     if (update.connection === "open") {
       this.reconnectAttempts = 0;
+      this.lastQr = null;
       const user = this.sock?.user;
       const phone = jidToWaId(user?.id);
 
@@ -273,7 +277,23 @@ export class WhatsAppSession {
         | undefined
     )?.output?.statusCode;
 
+    // El QR caducó sin escanear. No es un error para mostrar en el panel: el
+    // worker reconecta y publica un código nuevo.
+    const pairing = this.lastQr !== null;
+
     this.sock = null;
+
+    if (pairing && statusCode === DisconnectReason.timedOut) {
+      this.lastQr = null;
+      await this.updateAccount({
+        status: "PENDING",
+        qr: null,
+        qrUpdatedAt: null,
+        lastError: null,
+      });
+      this.scheduleReconnect();
+      return;
+    }
 
     if (
       statusCode === DisconnectReason.loggedOut ||

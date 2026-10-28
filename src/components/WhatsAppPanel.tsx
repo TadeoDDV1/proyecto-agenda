@@ -55,7 +55,10 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
   // Mientras se espera el QR, refrescamos para mostrarlo apenas el worker lo
   // escriba (Baileys lo regenera cada ~20 segundos).
   const shouldPoll =
-    props.status === "PENDING" || props.disconnectPending || !props.workerOnline;
+    props.status === "PENDING" ||
+    props.status === "ERROR" ||
+    props.disconnectPending ||
+    !props.workerOnline;
 
   useEffect(() => {
     if (!shouldPoll) return;
@@ -303,7 +306,12 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
               <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <p>{props.lastError ?? "La conexión se interrumpió. Se reintenta sola."}</p>
             </div>
-            {props.lastError && !props.workerOnline && (
+            {props.workerOnline ? (
+              <p className="flex items-center gap-1.5 text-[11px] text-dim">
+                <RefreshCw className="w-3 h-3" />
+                Reintentando automáticamente…
+              </p>
+            ) : (
               <p className="text-xs text-muted">
                 El worker no está corriendo, así que no hay reintentos en curso.
               </p>
