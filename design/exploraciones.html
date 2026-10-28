@@ -1,0 +1,3550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgendaSaaS · Cinco exploraciones de diseño</title>
+  <meta name="description" content="Cinco direcciones de diseño estructuralmente distintas para AgendaSaaS: Mostrador, Estudio, Ritmo, Panel y Vitrina." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+/* ============================================================
+   Shell de la página
+   ============================================================ */
+:root {
+  --page-bg: #0a0a0b;
+  --page-surface: #111113;
+  --page-line: #232326;
+  --page-line-soft: #1a1a1d;
+  --page-text: #f1f1f3;
+  --page-muted: #a3a3ab;
+  --page-dim: #8a8a93;
+  --page-highlight: #e9e5da;
+  --page-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --page-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --page-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--page-bg);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(70% 30% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%),
+    var(--page-bg);
+  color: var(--page-text);
+  font-family: var(--page-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+svg { display: block; }
+
+.wrap {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 32px);
+}
+
+.skip {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--page-highlight);
+  color: #111;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip:focus { transform: translateY(0); }
+
+a:focus-visible {
+  outline: 2px solid var(--page-highlight);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--page-dim);
+}
+
+.ico {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  padding-block: clamp(44px, 7vw, 86px) clamp(28px, 4vw, 42px);
+  border-bottom: 1px solid var(--page-line);
+}
+
+.hero h1 {
+  max-width: 20ch;
+  margin: 14px 0 18px;
+  font-family: var(--page-serif);
+  font-size: clamp(2.3rem, 5.2vw, 4.2rem);
+  font-weight: 350;
+  line-height: 1.01;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.hero h1 em { font-style: italic; color: var(--page-muted); }
+
+.hero__lead {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--page-muted);
+  font-size: clamp(0.95rem, 1.3vw, 1.06rem);
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--page-line);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Índice ---------- */
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--page-line);
+  background: color-mix(in srgb, var(--page-bg) 86%, transparent);
+  backdrop-filter: blur(14px);
+}
+.toc__inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-block: 8px;
+  scrollbar-width: none;
+}
+.toc__inner::-webkit-scrollbar { display: none; }
+
+.toc a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.toc a:hover { background: var(--page-surface); color: var(--page-text); }
+.toc a span {
+  color: var(--page-dim);
+  font-family: var(--page-mono);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+/* ---------- Sección ---------- */
+.dir {
+  padding-block: clamp(52px, 7vw, 84px);
+  border-bottom: 1px solid var(--page-line);
+  scroll-margin-top: 66px;
+}
+
+.dir__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.dir__num {
+  display: block;
+  font-family: var(--page-serif);
+  font-style: italic;
+  font-size: clamp(2.4rem, 4.6vw, 3.8rem);
+  line-height: 0.9;
+  color: var(--page-dim);
+}
+
+.dir__title {
+  margin: 8px 0 10px;
+  font-family: var(--page-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 350;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.dir__pitch {
+  max-width: 60ch;
+  margin: 0 0 16px;
+  color: var(--page-muted);
+}
+
+.dir__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--page-line);
+  border-radius: 6px;
+  color: var(--page-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dir__brief {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--page-line);
+  border-radius: 12px;
+  background: var(--page-surface);
+}
+.dir__brief div + div {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--page-line-soft);
+}
+.dir__brief dt {
+  color: var(--page-dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.dir__brief dd {
+  margin: 2px 0 0;
+  color: var(--page-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---------- Marco del mockup ---------- */
+.frame-wrap { margin-top: 4px; }
+
+.frame__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: var(--page-dim);
+  font-family: var(--page-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.frame__label b { color: var(--page-muted); font-weight: 500; }
+
+.frame {
+  overflow: hidden;
+  border: 1px solid var(--page-line);
+  border-radius: 16px;
+  background: #111;
+  box-shadow: 0 30px 70px -40px #000;
+}
+
+/* ---------- Pie de la dirección ---------- */
+.dir__footer {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.9fr;
+  gap: 24px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--page-line);
+}
+
+.dir__col h3 {
+  margin: 0 0 6px;
+  color: var(--page-dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.dir__col ul {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--page-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.dir__col li::marker { color: var(--page-dim); }
+.dir__col p {
+  margin: 0;
+  color: var(--page-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.dir__col code {
+  font-family: var(--page-mono);
+  font-size: 10px;
+  color: var(--page-dim);
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.swatches li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--page-muted);
+  font-size: 10px;
+}
+.swatches i {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+.swatches code { font-family: var(--page-mono); font-size: 9px; color: var(--page-dim); }
+
+/* ---------- Comparativa ---------- */
+.compare {
+  padding-block: clamp(52px, 7vw, 84px);
+  border-bottom: 1px solid var(--page-line);
+  scroll-margin-top: 66px;
+}
+.compare h2,
+.callout h2 {
+  margin: 10px 0 12px;
+  font-family: var(--page-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 350;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.compare__lead { max-width: 68ch; margin: 0; color: var(--page-muted); }
+
+.tablehint { display: none; }
+
+.table-wrap {
+  margin-top: 24px;
+  overflow-x: auto;
+  border: 1px solid var(--page-line);
+  border-radius: 16px;
+}
+table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+th, td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--page-line);
+  text-align: left;
+  vertical-align: top;
+}
+thead th {
+  background: var(--page-surface);
+  color: var(--page-dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+tbody th {
+  color: var(--page-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody td { color: var(--page-text); }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+.col-rec { background: rgba(255, 255, 255, 0.03); }
+.mark {
+  display: block;
+  margin-top: 3px;
+  color: var(--page-highlight);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.callout {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(24px, 4vw, 48px);
+  margin-top: 32px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--page-line);
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--page-surface), #0d0d0f);
+}
+.callout p { max-width: 58ch; margin: 0; color: var(--page-muted); }
+.callout__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.callout__list li {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--page-line-soft);
+  color: var(--page-muted);
+  font-size: 12px;
+}
+.callout__list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.callout__list b {
+  flex: none;
+  padding-top: 2px;
+  color: var(--page-text);
+  font-family: var(--page-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.footer { padding-block: 30px 42px; }
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--page-dim);
+  font-size: 11px;
+}
+.footer__inner code { font-family: var(--page-mono); font-size: 10px; }
+
+/* ---------- Responsive y accesibilidad ---------- */
+@media (max-width: 980px) {
+  .dir__intro { grid-template-columns: 1fr; align-items: start; }
+  .dir__footer { grid-template-columns: 1fr 1fr; }
+  .callout { grid-template-columns: 1fr; }
+  .tablehint {
+    display: block;
+    margin-top: 18px;
+    color: var(--page-dim);
+    font-family: var(--page-mono);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .table-wrap { margin-top: 8px; }
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: clamp(2.1rem, 10vw, 3rem); }
+  .dir__title { font-size: 1.8rem; }
+  .dir__footer { grid-template-columns: 1fr; }
+  .toc a { padding: 0 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* ============================================================
+   01 · Mostrador — cockpit de recepción
+   ============================================================ */
+.mst {
+  --mst-ink: #16181c;
+  --mst-muted: #5f636b;
+  --mst-dim: #7a7e86;
+  --mst-line: #e4e5e8;
+  --mst-line-soft: #eff0f2;
+  --mst-bg: #f7f7f5;
+  --mst-surface: #ffffff;
+  --mst-accent: #2563eb;
+  --mst-accent-soft: #eff4ff;
+  --mst-green: #15803d;
+  --mst-amber: #b45309;
+  --mst-staff-1: #2563eb;
+  --mst-staff-2: #c026d3;
+  --mst-staff-3: #0d9488;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--mst-bg);
+  color: var(--mst-ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.mst__top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 50px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+}
+
+.mst__brand { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.mst__logo {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 4px;
+  background: var(--mst-ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mst__brand strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__crumb {
+  padding-left: 7px;
+  border-left: 1px solid var(--mst-line);
+  color: var(--mst-dim);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mst__tabs { display: flex; gap: 16px; font-size: 10px; font-weight: 600; color: var(--mst-muted); }
+.mst__tab { padding: 17px 0; }
+.mst__tab.is-active { color: var(--mst-ink); box-shadow: inset 0 -2px 0 var(--mst-accent); }
+
+.mst__actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.mst__search {
+  padding: 5px 7px;
+  border: 1px solid var(--mst-line);
+  border-radius: 3px;
+  color: var(--mst-dim);
+  font-family: var(--page-mono);
+  font-size: 9px;
+  white-space: nowrap;
+}
+.mst__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 9px;
+  border: 1px solid var(--mst-line);
+  border-radius: 3px;
+  background: var(--mst-surface);
+  color: var(--mst-ink);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mst__btn--primary { border-color: var(--mst-accent); background: var(--mst-accent); color: #fff; }
+.mst__btn--ghost { color: var(--mst-muted); }
+
+.mst__status {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 28px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--mst-line);
+  background: #f4f5f6;
+  color: var(--mst-muted);
+  font-family: var(--page-mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mst__status strong { color: var(--mst-ink); }
+.mst__status .mst__open { margin-left: auto; color: var(--mst-green); }
+
+.mst__grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 258px;
+}
+
+/* Cola de llegadas */
+.mst__queue {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+}
+.mst__panelhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--mst-line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mst__panelhead b {
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--mst-ink);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 600;
+}
+.mst__list { flex: 1; margin: 0; padding: 0; list-style: none; }
+.mst__item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--mst-line-soft);
+}
+.mst__item time { color: var(--mst-muted); font-family: var(--page-mono); font-size: 9px; }
+.mst__item strong {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__item div > span {
+  display: block;
+  overflow: hidden;
+  color: var(--mst-dim);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__item em {
+  padding: 2px 5px;
+  border: 1px solid var(--mst-line);
+  border-radius: 3px;
+  color: var(--mst-muted);
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mst__item.is-now { background: var(--mst-accent-soft); box-shadow: inset 3px 0 0 var(--mst-accent); }
+.mst__item.is-now time { color: var(--mst-accent); font-weight: 700; }
+.mst__item.is-now em { border-color: #bfdbfe; color: var(--mst-accent); }
+.mst__queuefoot {
+  padding: 9px 12px;
+  border-top: 1px solid var(--mst-line);
+  color: var(--mst-dim);
+  font-size: 8px;
+}
+
+/* Pista del equipo */
+.mst__track { display: flex; flex-direction: column; min-width: 0; background: #fbfbfa; }
+.mst__trackhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mst-muted);
+}
+.mst__scale { display: flex; font-family: var(--page-mono); font-size: 8px; font-weight: 400; letter-spacing: 0; color: var(--mst-dim); }
+.mst__scale i { width: 46px; font-style: normal; }
+
+.mst__staffrow {
+  display: grid;
+  grid-template-columns: 56px repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+}
+.mst__staffrow > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 7px 7px;
+  overflow: hidden;
+  color: var(--mst-muted);
+  font-size: 9px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__dot { width: 5px; height: 5px; flex: none; border-radius: 50%; background: var(--mst-staff-1); }
+.mst__dot--2 { background: var(--mst-staff-2); }
+.mst__dot--3 { background: var(--mst-staff-3); }
+
+.mst__lane {
+  display: grid;
+  grid-template-columns: 56px repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 46px;
+  flex: 1;
+  position: relative;
+  border-bottom: 1px solid var(--mst-line-soft);
+  background-image: linear-gradient(var(--mst-line-soft) 1px, transparent 1px);
+  background-size: 100% 46px;
+}
+.mst__time {
+  grid-column: 1;
+  z-index: 1;
+  align-self: start;
+  padding: 4px 0 0 6px;
+  background: #fbfbfa;
+  color: var(--mst-dim);
+  font-family: var(--page-mono);
+  font-size: 8px;
+}
+.mst__block {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin: 2px 4px;
+  padding: 5px 6px;
+  overflow: hidden;
+  border-left: 2px solid var(--mst-staff-1);
+  border-radius: 2px;
+  background: var(--mst-accent-soft);
+}
+.mst__block--2 { border-left-color: var(--mst-staff-2); background: #fdf2fa; }
+.mst__block--3 { border-left-color: var(--mst-staff-3); background: #f0fdfa; }
+.mst__block strong {
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__block span {
+  overflow: hidden;
+  color: var(--mst-muted);
+  font-family: var(--page-mono);
+  font-size: 7px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mst__block.is-selected { outline: 1px solid var(--mst-accent); outline-offset: -1px; background: #dbeafe; }
+.mst__now {
+  grid-column: 1 / -1;
+  z-index: 3;
+  position: relative;
+  border-top: 1px solid #dc2626;
+  pointer-events: none;
+}
+.mst__now::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dc2626;
+}
+
+/* Ficha del cliente */
+.mst__client {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px;
+  border-left: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+}
+.mst__clienttop { display: flex; align-items: center; gap: 8px; }
+.mst__avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--mst-accent-soft);
+  color: var(--mst-accent);
+  font-size: 10px;
+  font-weight: 700;
+}
+.mst__client h3 { margin: 0; font-size: 14px; line-height: 1.2; }
+.mst__clienttop div > span { color: var(--mst-dim); font-family: var(--page-mono); font-size: 8px; }
+.mst__section { padding-top: 8px; border-top: 1px solid var(--mst-line-soft); }
+.mst__label {
+  color: var(--mst-dim);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mst__value { margin: 3px 0 0; font-size: 10px; font-weight: 600; }
+.mst__sub { margin: 1px 0 0; color: var(--mst-muted); font-size: 8px; }
+.mst__note {
+  margin: 4px 0 0;
+  padding: 6px 7px;
+  border-left: 2px solid #d9dadf;
+  background: var(--mst-bg);
+  color: var(--mst-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.mst__actions2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: auto; }
+.mst__actions2 .mst__btn { padding: 7px 5px; }
+
+.mst__foot {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  height: 26px;
+  padding: 0 16px;
+  border-top: 1px solid var(--mst-line);
+  background: var(--mst-surface);
+  color: var(--mst-dim);
+  font-family: var(--page-mono);
+  font-size: 8px;
+}
+.mst__footright { margin-left: auto; color: var(--mst-green); }
+
+@container (max-width: 860px) {
+  .mst__tabs { display: none; }
+  .mst__grid { grid-template-columns: 198px minmax(0, 1fr); }
+  .mst__client { display: none; }
+  .mst__item em { display: none; }
+}
+
+@container (max-width: 620px) {
+  .mst__grid { grid-template-columns: 1fr; }
+  .mst__track { display: none; }
+  .mst__queue { border-right: 0; }
+  .mst__item em { display: inline; }
+}
+
+@container (max-width: 520px) {
+  .mst__search { display: none; }
+  .mst__status span:nth-child(2) { display: none; }
+  .mst__item { padding: 10px 12px; }
+}
+/* ============================================================
+   02 · Estudio — portal editorial de reservas
+   ============================================================ */
+.est {
+  --est-paper: #f7f4ee;
+  --est-surface: #fffdf8;
+  --est-surface-2: #f1ece1;
+  --est-ink: #1b1a17;
+  --est-muted: #615c52;
+  --est-dim: #7b756a;
+  --est-line: #e2dccf;
+  --est-line-soft: #ece7db;
+  --est-olive: #3f5d45;
+  --est-olive-soft: #e9efe4;
+  --est-clay: #a8502c;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--est-paper);
+  color: var(--est-ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* --- barra superior --- */
+.est__nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 58px;
+  padding: 0 clamp(16px, 3vw, 32px);
+  border-bottom: 1px solid var(--est-line);
+  background: color-mix(in srgb, var(--est-paper) 92%, #fff);
+}
+
+.est__brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.est__mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid var(--est-ink);
+  border-radius: 50%;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 13px;
+  font-style: italic;
+}
+.est__brand strong {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.est__brand span {
+  display: block;
+  color: var(--est-dim);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.est__links { display: flex; gap: 18px; margin-left: 14px; color: var(--est-muted); font-size: 10.5px; font-weight: 500; }
+.est__links .is-active { color: var(--est-ink); box-shadow: inset 0 -1px 0 var(--est-ink); padding-bottom: 2px; }
+
+.est__navright { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.est__phone { color: var(--est-muted); font-family: var(--page-mono); font-size: 9.5px; }
+
+.est__pillbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: var(--est-olive);
+  color: #fbf9f4;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* --- hero --- */
+.est__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: clamp(20px, 3.5vw, 44px);
+  align-items: center;
+  padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px) clamp(20px, 3vw, 34px);
+  border-bottom: 1px solid var(--est-line);
+}
+
+.est__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  color: var(--est-clay);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.est__kicker::before { content: ""; width: 22px; height: 1px; background: currentColor; }
+
+.est__h1 {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2.1rem, 4.6vw, 3.5rem);
+  font-weight: 350;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.est__h1 em { font-style: italic; color: var(--est-olive); }
+
+.est__lead {
+  max-width: 46ch;
+  margin: 14px 0 0;
+  color: var(--est-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.est__meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+.est__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 25px;
+  padding: 0 9px;
+  border: 1px solid var(--est-line);
+  border-radius: 999px;
+  color: var(--est-muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+/* tarjeta de horario / imagen */
+.est__feature {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 220px;
+  padding: 16px;
+  border-radius: 3px 3px 90px 3px;
+  background:
+    radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.35), transparent 55%),
+    linear-gradient(150deg, #d9dcc8 0%, #b9c2a6 42%, #6f8168 100%);
+  color: #14200f;
+  overflow: hidden;
+}
+.est__feature::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(20, 32, 15, 0.22);
+  border-radius: 2px 2px 78px 2px;
+  pointer-events: none;
+}
+.est__featuretag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.82);
+  color: #2c3a26;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.est__featuretime {
+  position: relative;
+  z-index: 1;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.est__featuretime small { display: block; font-family: "Inter", sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; }
+.est__featurefoot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(20, 32, 15, 0.25);
+  font-family: var(--page-mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* --- cuerpo: carta + rail --- */
+.est__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 314px;
+  gap: clamp(20px, 3vw, 36px);
+  align-items: start;
+  padding: clamp(20px, 3vw, 34px) clamp(16px, 3vw, 32px) clamp(24px, 3vw, 36px);
+}
+
+.est__sechead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--est-ink); }
+.est__sechead h2 {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.est__sechead span { color: var(--est-dim); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.est__list { margin: 0; padding: 0; list-style: none; }
+
+.est__svc {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 58px 52px 26px;
+  gap: 8px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--est-line-soft);
+}
+.est__svc:hover { background: color-mix(in srgb, var(--est-surface) 60%, transparent); }
+.est__idx { color: var(--est-dim); font-family: var(--page-mono); font-size: 9px; }
+.est__svcname { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.3; }
+.est__svcdesc { margin: 2px 0 0; color: var(--est-muted); font-size: 9.5px; line-height: 1.45; }
+.est__svcmeta { color: var(--est-muted); font-family: var(--page-mono); font-size: 9px; }
+.est__price { font-family: "Fraunces", Georgia, serif; font-size: 13px; font-weight: 500; text-align: right; }
+.est__add {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--est-line);
+  border-radius: 50%;
+  background: var(--est-surface);
+  color: var(--est-olive);
+  font-size: 12px;
+  line-height: 1;
+}
+.est__add.is-on { border-color: var(--est-olive); background: var(--est-olive); color: #fff; }
+
+/* equipo */
+.est__team { margin-top: 22px; }
+.est__teamrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.est__person {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid var(--est-line);
+  border-radius: 999px;
+  background: var(--est-surface);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.est__person i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--est-olive-soft);
+  color: var(--est-olive);
+  font-size: 8px;
+  font-style: normal;
+}
+.est__person small { color: var(--est-dim); font-size: 8px; font-weight: 500; }
+
+.est__note {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-left: 2px solid var(--est-clay);
+  background: color-mix(in srgb, var(--est-surface) 70%, transparent);
+  color: var(--est-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.est__note b { color: var(--est-ink); font-weight: 600; }
+
+/* --- rail de reserva --- */
+.est__rail {
+  position: sticky;
+  top: 12px;
+  border: 1px solid var(--est-line);
+  border-radius: 4px;
+  background: var(--est-surface);
+  box-shadow: 0 18px 40px -34px rgba(27, 26, 23, 0.6);
+  overflow: hidden;
+}
+.est__railhead {
+  padding: 13px 14px 11px;
+  border-bottom: 1px solid var(--est-line);
+  background: linear-gradient(180deg, #fbf8f1, var(--est-surface));
+}
+.est__railhead span { color: var(--est-dim); font-size: 8px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+.est__railhead h3 { margin: 2px 0 0; font-family: "Fraunces", Georgia, serif; font-size: 16px; font-weight: 400; letter-spacing: -0.015em; }
+
+.est__block { padding: 12px 14px; border-bottom: 1px solid var(--est-line-soft); }
+.est__blocktitle { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; color: var(--est-dim); font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.est__blocktitle b { color: var(--est-olive); font-size: 8px; font-weight: 600; letter-spacing: 0.04em; text-transform: none; }
+
+.est__days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.est__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  border: 1px solid var(--est-line);
+  border-radius: 3px;
+  color: var(--est-muted);
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.est__day b { color: var(--est-ink); font-family: "Fraunces", Georgia, serif; font-size: 12px; font-weight: 500; letter-spacing: -0.01em; }
+.est__day.is-active { border-color: var(--est-olive); background: var(--est-olive); color: rgba(255, 255, 255, 0.78); }
+.est__day.is-active b { color: #fff; }
+.est__day.is-off { opacity: 0.4; }
+
+.est__times { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.est__time {
+  padding: 6px 0;
+  border: 1px solid var(--est-line);
+  border-radius: 3px;
+  color: var(--est-muted);
+  font-family: var(--page-mono);
+  font-size: 9px;
+  text-align: center;
+}
+.est__time.is-active { border-color: var(--est-olive); background: var(--est-olive-soft); color: var(--est-olive); font-weight: 600; }
+.est__time.is-off { opacity: 0.34; text-decoration: line-through; }
+
+.est__summary { padding: 12px 14px; }
+.est__line { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; color: var(--est-muted); font-size: 9.5px; }
+.est__line b { color: var(--est-ink); font-weight: 600; }
+.est__total { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; padding-top: 9px; border-top: 1px solid var(--est-line); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--est-dim); }
+.est__total strong { color: var(--est-ink); font-family: "Fraunces", Georgia, serif; font-size: 20px; font-weight: 500; letter-spacing: -0.02em; text-transform: none; }
+.est__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 14px 12px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--est-ink);
+  color: #fbf9f4;
+  font-size: 10px;
+  font-weight: 600;
+}
+.est__railtail { margin: 0 14px 14px; color: var(--est-dim); font-size: 8px; text-align: center; }
+
+/* --- pie --- */
+.est__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px clamp(16px, 3vw, 32px);
+  border-top: 1px solid var(--est-line);
+  color: var(--est-dim);
+  font-size: 8.5px;
+}
+.est__foot b { color: var(--est-muted); font-weight: 600; }
+
+@container (max-width: 900px) {
+  .est__links { display: none; }
+  .est__hero { grid-template-columns: 1fr; }
+  .est__feature { min-height: 150px; border-radius: 3px 3px 60px 3px; }
+  .est__body { grid-template-columns: 1fr; }
+  .est__rail { position: static; }
+}
+
+@container (max-width: 560px) {
+  .est__phone { display: none; }
+  .est__hero { padding-block: 20px 24px; }
+  .est__h1 { font-size: clamp(1.9rem, 8.5vw, 2.5rem); }
+  .est__svc { grid-template-columns: 22px minmax(0, 1fr) auto 24px; }
+  .est__svcmeta { display: none; }
+  .est__price { font-size: 12px; }
+  .est__sechead span { display: none; }
+  .est__navright .est__pillbtn span { display: none; }
+}
+/* ============================================================
+   03 · Ritmo — reserva por chat + pulso del equipo
+   ============================================================ */
+.rtm {
+  --rtm-bg: #ebe9f4;
+  --rtm-surface: #ffffff;
+  --rtm-surface-2: #f5f3fb;
+  --rtm-ink: #17162a;
+  --rtm-muted: #5c5a74;
+  --rtm-dim: #7b7992;
+  --rtm-line: #e3e1ee;
+  --rtm-line-soft: #efedf7;
+  --rtm-accent: #5b4bf5;
+  --rtm-accent-soft: #ece9ff;
+  --rtm-lime: #ccf26d;
+  --rtm-green: #0f7a5a;
+  --rtm-amber: #a6620a;
+  container-type: inline-size;
+  overflow: hidden;
+  background:
+    radial-gradient(80% 60% at 0% 0%, #f3f1fb 0%, transparent 60%),
+    var(--rtm-bg);
+  color: var(--rtm-ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rtm__wrap {
+  display: grid;
+  grid-template-columns: 366px minmax(0, 1fr);
+  gap: clamp(16px, 2.6vw, 28px);
+  align-items: start;
+  padding: clamp(14px, 2.4vw, 26px);
+}
+
+/* ---------- teléfono ---------- */
+.rtm__phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 620px;
+  border: 1px solid #d6d3e6;
+  border-radius: 30px;
+  background: var(--rtm-surface);
+  box-shadow: 0 24px 50px -30px rgba(23, 22, 42, 0.45), inset 0 0 0 1px #fff;
+  overflow: hidden;
+}
+.rtm__notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 3;
+  width: 70px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: #d9d6e8;
+}
+
+.rtm__appbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px 9px;
+  border-bottom: 1px solid var(--rtm-line-soft);
+  background: color-mix(in srgb, var(--rtm-surface) 88%, var(--rtm-accent-soft));
+}
+.rtm__avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--rtm-accent);
+  color: #fff;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 12px;
+  font-style: italic;
+}
+.rtm__who { min-width: 0; }
+.rtm__who strong { display: block; font-size: 11px; font-weight: 650; letter-spacing: -0.01em; }
+.rtm__who span { display: flex; align-items: center; gap: 4px; color: var(--rtm-green); font-size: 8px; font-weight: 600; }
+.rtm__who i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.rtm__appicons { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--rtm-dim); font-size: 13px; }
+.rtm__back { color: var(--rtm-dim); font-size: 14px; }
+
+.rtm__chat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  padding: 12px 12px 8px;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 40% at 100% 0%, rgba(91, 75, 245, 0.05), transparent 70%),
+    var(--rtm-surface-2);
+}
+.rtm__day { flex: none; align-self: center; padding: 2px 9px; border-radius: 99px; background: #e5e2f0; color: var(--rtm-muted); font-size: 7.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.rtm__msg {
+  flex: none;
+  max-width: 84%;
+  padding: 7px 10px;
+  border-radius: 14px;
+  font-size: 10px;
+  line-height: 1.5;
+  box-shadow: 0 1px 1px rgba(23, 22, 42, 0.05);
+}
+.rtm__msg--in { align-self: flex-start; border-bottom-left-radius: 5px; background: var(--rtm-surface); }
+.rtm__msg--out { align-self: flex-end; border-bottom-right-radius: 5px; background: var(--rtm-accent); color: #fff; }
+.rtm__msg b { font-weight: 650; }
+.rtm__msg small { display: block; margin-top: 2px; font-size: 7px; opacity: 0.6; text-align: right; }
+.rtm__msg--in small { color: var(--rtm-dim); }
+
+.rtm__bubblecard {
+  flex: none;
+  align-self: flex-start;
+  width: 84%;
+  border: 1px solid var(--rtm-line);
+  border-radius: 14px;
+  border-bottom-left-radius: 5px;
+  background: var(--rtm-surface);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(23, 22, 42, 0.06);
+}
+.rtm__bubblecard header { display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-bottom: 1px solid var(--rtm-line-soft); background: var(--rtm-accent-soft); color: var(--rtm-accent); font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.rtm__rowline { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 9px; font-size: 9px; }
+.rtm__rowline span { color: var(--rtm-muted); }
+.rtm__rowline b { font-weight: 600; }
+.rtm__rowline--total { border-top: 1px dashed var(--rtm-line); margin-top: 2px; padding-top: 6px; }
+.rtm__rowline--total b { font-family: "Fraunces", Georgia, serif; font-size: 14px; font-weight: 600; }
+
+.rtm__slotgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 0 9px 9px; }
+.rtm__slot { padding: 5px 0; border: 1px solid var(--rtm-line); border-radius: 7px; color: var(--rtm-muted); font-family: var(--page-mono); font-size: 8px; text-align: center; }
+.rtm__slot.is-active { border-color: var(--rtm-accent); background: var(--rtm-accent-soft); color: var(--rtm-accent); font-weight: 700; }
+.rtm__slot.is-off { opacity: 0.32; text-decoration: line-through; }
+
+.rtm__quick { display: flex; gap: 5px; padding: 0 12px 7px; background: var(--rtm-surface-2); overflow: hidden; }
+.rtm__quick span { padding: 5px 9px; border: 1px solid var(--rtm-line); border-radius: 99px; background: var(--rtm-surface); color: var(--rtm-accent); font-size: 8px; font-weight: 600; white-space: nowrap; }
+
+.rtm__composer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 12px;
+  border-top: 1px solid var(--rtm-line-soft);
+  background: var(--rtm-surface);
+}
+.rtm__input { flex: 1; padding: 8px 10px; border: 1px solid var(--rtm-line); border-radius: 99px; color: var(--rtm-dim); font-size: 9px; }
+.rtm__send { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--rtm-accent); color: #fff; font-size: 11px; }
+.rtm__wa { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px; color: var(--rtm-green); font-size: 7.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ---------- columna lateral ---------- */
+.rtm__side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+.rtm__sidehead { display: flex; align-items: center; gap: 10px; }
+.rtm__logo { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--rtm-ink); color: var(--rtm-lime); font-size: 11px; font-weight: 800; }
+.rtm__sidehead h2 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.rtm__sidehead p { margin: 1px 0 0; color: var(--rtm-dim); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+.rtm__seg { display: flex; gap: 2px; margin-left: auto; padding: 2px; border: 1px solid var(--rtm-line); border-radius: 99px; background: var(--rtm-surface); font-size: 8px; font-weight: 600; color: var(--rtm-muted); }
+.rtm__seg span { padding: 4px 9px; border-radius: 99px; }
+.rtm__seg .is-active { background: var(--rtm-ink); color: #fff; }
+
+.rtm__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rtm__stat { padding: 9px 10px; border: 1px solid var(--rtm-line); border-radius: 13px; background: var(--rtm-surface); }
+.rtm__stat span { display: block; color: var(--rtm-dim); font-size: 7px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.rtm__stat strong { display: block; margin-top: 2px; font-family: "Fraunces", Georgia, serif; font-size: 18px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; }
+.rtm__stat small { display: block; color: var(--rtm-green); font-size: 8px; font-weight: 600; }
+.rtm__stat small.is-warn { color: var(--rtm-amber); }
+
+.rtm__panel { padding: 11px 12px; border: 1px solid var(--rtm-line); border-radius: 15px; background: var(--rtm-surface); }
+.rtm__panelhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.rtm__panelhead h3 { margin: 0; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.rtm__panelhead span { display: inline-flex; align-items: center; gap: 4px; color: var(--rtm-green); font-size: 7.5px; font-weight: 600; }
+.rtm__panelhead i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.rtm__feed { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.rtm__feed li { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--rtm-line-soft); }
+.rtm__feed li:last-child { border-bottom: 0; padding-bottom: 0; }
+.rtm__feed i { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; background: var(--rtm-accent-soft); color: var(--rtm-accent); font-size: 7px; font-style: normal; font-weight: 700; }
+.rtm__feed p { margin: 0; font-size: 9.5px; line-height: 1.4; }
+.rtm__feed p b { font-weight: 650; }
+.rtm__feed time { display: block; color: var(--rtm-dim); font-family: var(--page-mono); font-size: 7.5px; }
+.rtm__feed .is-lime i { background: #f1fcd9; color: #4c6b0c; }
+
+.rtm__floor { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rtm__person { padding: 7px 8px; border: 1px solid var(--rtm-line-soft); border-radius: 11px; background: var(--rtm-surface-2); }
+.rtm__person strong { display: block; font-size: 9px; font-weight: 650; }
+.rtm__person span { display: block; color: var(--rtm-dim); font-size: 7.5px; }
+.rtm__bar { height: 3px; margin-top: 5px; border-radius: 99px; background: #ded9ee; overflow: hidden; }
+.rtm__bar i { display: block; height: 100%; border-radius: 99px; background: var(--rtm-accent); }
+.rtm__bar.is-lime i { background: #8cc327; }
+.rtm__bar.is-free i { background: #22a06b; }
+
+.rtm__connect { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid #c9edd9; border-radius: 15px; background: #f0fdf6; }
+.rtm__connect i { display: grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 8px; background: #d9f7e6; color: #0f7a5a; font-size: 12px; font-style: normal; }
+.rtm__connect p { margin: 0; font-size: 8.5px; line-height: 1.4; color: #256b52; }
+.rtm__connect b { display: block; color: #0b4f3b; font-size: 9.5px; }
+.rtm__connect .rtm__toggle { margin-left: auto; width: 28px; height: 16px; flex: none; border-radius: 99px; background: #17a673; position: relative; }
+.rtm__connect .rtm__toggle::after { content: ""; position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+
+@container (max-width: 900px) {
+  .rtm__wrap { grid-template-columns: 1fr; }
+  .rtm__phone { max-width: 366px; margin-inline: auto; width: 100%; }
+}
+
+@container (max-width: 560px) {
+  .rtm__wrap { padding: 12px; gap: 12px; }
+  .rtm__phone { height: 610px; border-radius: 24px; }
+  .rtm__stats { gap: 6px; }
+  .rtm__stat { padding: 8px; }
+  .rtm__stat strong { font-size: 15px; }
+  .rtm__floor { grid-template-columns: 1fr 1fr; }
+}
+/* ============================================================
+   04 · Panel — calendario semanal profesional
+   ============================================================ */
+.pnl {
+  --pnl-bg: #0b0d12;
+  --pnl-surface: #11141b;
+  --pnl-surface-2: #171b24;
+  --pnl-line: #232936;
+  --pnl-line-soft: #1a1f29;
+  --pnl-text: #e9eef7;
+  --pnl-muted: #97a1b3;
+  --pnl-dim: #76818f;
+  --pnl-lime: #c6f24e;
+  --pnl-lime-soft: rgba(198, 242, 78, 0.12);
+  --pnl-teal: #5eead4;
+  --pnl-pink: #f472b6;
+  --pnl-amber: #fbbf24;
+  --pnl-danger: #fb7185;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--pnl-bg);
+  color: var(--pnl-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pnl__app {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 254px;
+  min-height: 604px;
+}
+
+/* ---------- rail de iconos ---------- */
+.pnl__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0 12px;
+  border-right: 1px solid var(--pnl-line);
+  background: #0a0c10;
+}
+.pnl__logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: var(--pnl-lime);
+  color: #10140a;
+  font-size: 12px;
+  font-weight: 800;
+}
+.pnl__railitem {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--pnl-dim);
+  font-size: 14px;
+}
+.pnl__railitem.is-active { background: var(--pnl-lime-soft); color: var(--pnl-lime); }
+.pnl__railtail { margin-top: auto; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pnl-surface-2); color: var(--pnl-teal); font-size: 8px; font-weight: 700; }
+
+/* ---------- barra de comandos ---------- */
+.pnl__main { display: flex; flex-direction: column; min-width: 0; }
+
+.pnl__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--pnl-line);
+  background: var(--pnl-surface);
+}
+.pnl__weeknav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.pnl__arrow { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--pnl-line); border-radius: 6px; color: var(--pnl-muted); font-size: 9px; }
+.pnl__weeklabel { font-size: 12.5px; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.pnl__today { margin-left: 4px; padding: 3px 7px; border: 1px solid var(--pnl-line); border-radius: 5px; color: var(--pnl-muted); font-size: 8px; font-weight: 600; }
+
+.pnl__topright { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.pnl__cmd { display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border: 1px solid var(--pnl-line); border-radius: 6px; color: var(--pnl-dim); font-size: 9px; }
+.pnl__cmd kbd { padding: 1px 3px; border: 1px solid var(--pnl-line); border-radius: 3px; background: var(--pnl-surface-2); font-family: var(--page-mono); font-size: 7px; }
+.pnl__avatars { display: flex; }
+.pnl__avatars i { display: grid; place-items: center; width: 22px; height: 22px; margin-left: -5px; border: 2px solid var(--pnl-surface); border-radius: 50%; background: var(--pnl-surface-2); color: var(--pnl-teal); font-size: 7px; font-style: normal; font-weight: 700; }
+.pnl__avatars i:first-child { margin-left: 0; }
+.pnl__newbtn { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: 6px; background: var(--pnl-lime); color: #12170a; font-size: 9px; font-weight: 700; white-space: nowrap; }
+
+/* ---------- ribbon de KPIs ---------- */
+.pnl__ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--pnl-line);
+  background: var(--pnl-bg);
+}
+.pnl__kpi { padding: 8px 12px; border-right: 1px solid var(--pnl-line-soft); min-width: 0; }
+.pnl__kpi:last-child { border-right: 0; }
+.pnl__kpi span { display: block; color: var(--pnl-dim); font-size: 7px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.pnl__kpi strong { display: block; margin-top: 1px; font-family: var(--page-mono); font-size: 16px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; }
+.pnl__kpi strong em { font-style: normal; color: var(--pnl-muted); font-size: 9px; }
+.pnl__kpi small { display: flex; align-items: center; gap: 4px; color: var(--pnl-dim); font-size: 8px; }
+.pnl__kpi small b { color: var(--pnl-lime); font-weight: 600; }
+.pnl__kpi small b.is-down { color: var(--pnl-danger); }
+.pnl__spark { display: flex; align-items: flex-end; gap: 2px; height: 12px; margin-top: 3px; }
+.pnl__spark i { width: 6px; border-radius: 1px; background: var(--pnl-lime); opacity: 0.55; }
+.pnl__spark i:last-child { opacity: 1; }
+
+/* ---------- cabecera de días ---------- */
+.pnl__scrollhint { display: none; }
+
+.pnl__days {
+  display: grid;
+  grid-template-columns: 44px repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--pnl-line);
+  background: var(--pnl-surface);
+}
+.pnl__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 2px;
+  border-left: 1px solid var(--pnl-line-soft);
+  color: var(--pnl-dim);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pnl__day b { color: var(--pnl-text); font-size: 11px; font-weight: 650; }
+.pnl__day.is-today { background: var(--pnl-lime-soft); color: var(--pnl-lime); }
+.pnl__day.is-today b { color: var(--pnl-lime); }
+.pnl__tz { display: flex; align-items: flex-end; justify-content: flex-end; padding: 0 5px 3px 0; color: var(--pnl-dim); font-family: var(--page-mono); font-size: 7px; }
+
+/* ---------- rejilla semanal ---------- */
+.pnl__week {
+  display: grid;
+  grid-template-columns: 44px repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 42px;
+  position: relative;
+  flex: 1;
+  border-bottom: 1px solid var(--pnl-line);
+  background-image:
+    linear-gradient(var(--pnl-line-soft) 1px, transparent 1px);
+  background-size: 100% 42px;
+}
+.pnl__hour {
+  grid-column: 1;
+  z-index: 1;
+  align-self: start;
+  padding: 2px 5px 0 0;
+  background: var(--pnl-bg);
+  color: var(--pnl-dim);
+  font-family: var(--page-mono);
+  font-size: 7.5px;
+  text-align: right;
+}
+.pnl__col { grid-row: 1 / -1; border-left: 1px solid var(--pnl-line-soft); }
+.pnl__col.is-today { background: rgba(198, 242, 78, 0.025); }
+
+.pnl__ev {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin: 1px 3px;
+  padding: 3px 5px;
+  overflow: hidden;
+  border: 1px solid var(--pnl-line);
+  border-left: 2px solid var(--pnl-teal);
+  border-radius: 4px;
+  background: #16202a;
+}
+.pnl__ev--pink { border-left-color: var(--pnl-pink); background: #241826; }
+.pnl__ev--lime { border-left-color: var(--pnl-lime); background: #1a2114; }
+.pnl__ev--amber { border-left-color: var(--pnl-amber); background: #241f14; }
+.pnl__ev.is-focus { border-color: var(--pnl-lime); box-shadow: 0 0 0 1px var(--pnl-lime) inset; }
+.pnl__ev strong { overflow: hidden; font-size: 8.5px; font-weight: 650; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.pnl__ev span { overflow: hidden; color: var(--pnl-muted); font-size: 7px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.pnl__ev em { color: var(--pnl-dim); font-family: var(--page-mono); font-size: 6.5px; font-style: normal; }
+
+.pnl__nowline { grid-column: 2 / -1; z-index: 3; position: relative; border-top: 1px solid var(--pnl-danger); pointer-events: none; }
+.pnl__nowline::before { content: ""; position: absolute; top: -3px; left: -2px; width: 5px; height: 5px; border-radius: 50%; background: var(--pnl-danger); }
+
+/* ---------- inspector ---------- */
+.pnl__inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border-left: 1px solid var(--pnl-line);
+  background: var(--pnl-surface);
+}
+.pnl__inshead { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pnl__inshead span { color: var(--pnl-dim); font-size: 7px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.pnl__inshead i { color: var(--pnl-dim); font-size: 10px; font-style: normal; }
+
+.pnl__clientbox { display: flex; align-items: center; gap: 8px; padding: 9px; border: 1px solid var(--pnl-line); border-radius: 8px; background: var(--pnl-surface-2); }
+.pnl__bigavatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 8px; background: var(--pnl-lime-soft); color: var(--pnl-lime); font-family: "Inter", sans-serif; font-size: 10px; font-weight: 700; }
+.pnl__clientbox h3 { margin: 0; font-size: 11.5px; font-weight: 650; line-height: 1.2; }
+.pnl__clientbox p { margin: 1px 0 0; color: var(--pnl-dim); font-family: var(--page-mono); font-size: 7.5px; }
+.pnl__clientbox .pnl__tag { margin-left: auto; padding: 2px 5px; border: 1px solid rgba(198, 242, 78, 0.3); border-radius: 4px; color: var(--pnl-lime); font-size: 6.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.pnl__facts { display: flex; flex-direction: column; gap: 6px; padding: 9px 0; border-top: 1px solid var(--pnl-line-soft); border-bottom: 1px solid var(--pnl-line-soft); }
+.pnl__fact { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 9px; }
+.pnl__fact span { color: var(--pnl-dim); }
+.pnl__fact b { color: var(--pnl-text); font-weight: 600; text-align: right; }
+.pnl__fact b.is-money { font-family: var(--page-mono); font-size: 11px; }
+
+.pnl__timeline { display: flex; flex-direction: column; gap: 0; }
+.pnl__step { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 7px; }
+.pnl__stepdot { position: relative; display: flex; justify-content: center; }
+.pnl__stepdot::before { content: ""; position: absolute; top: 4px; bottom: -2px; width: 1px; background: var(--pnl-line); }
+.pnl__step:last-child .pnl__stepdot::before { display: none; }
+.pnl__stepdot i { z-index: 1; width: 6px; height: 6px; margin-top: 3px; border-radius: 50%; background: var(--pnl-line); }
+.pnl__step.is-done .pnl__stepdot i { background: var(--pnl-lime); }
+.pnl__step.is-now .pnl__stepdot i { background: var(--pnl-teal); box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.15); }
+.pnl__step p { margin: 0 0 8px; font-size: 8.5px; line-height: 1.35; }
+.pnl__step p b { display: block; font-weight: 600; }
+.pnl__step p span { color: var(--pnl-dim); font-family: var(--page-mono); font-size: 7px; }
+
+.pnl__insnotes { margin: 0; padding: 7px 8px; border-left: 2px solid var(--pnl-line); background: var(--pnl-bg); color: var(--pnl-muted); font-size: 8.5px; line-height: 1.5; }
+
+.pnl__insactions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: auto; }
+.pnl__btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 27px; border: 1px solid var(--pnl-line); border-radius: 6px; background: var(--pnl-surface-2); color: var(--pnl-text); font-size: 8.5px; font-weight: 600; }
+.pnl__btn--lime { border-color: var(--pnl-lime); background: var(--pnl-lime); color: #12170a; }
+.pnl__btn--ghost { background: transparent; color: var(--pnl-muted); }
+
+/* ---------- barra inferior ---------- */
+.pnl__status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 24px;
+  margin-top: auto;
+  padding: 0 12px;
+  border-top: 1px solid var(--pnl-line);
+  background: #0a0c10;
+  color: var(--pnl-dim);
+  font-family: var(--page-mono);
+  font-size: 7px;
+  letter-spacing: 0.03em;
+}
+.pnl__status .is-live { display: inline-flex; align-items: center; gap: 4px; color: var(--pnl-lime); }
+.pnl__status .is-live i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.pnl__status .pnl__sync { margin-left: auto; }
+
+@container (max-width: 980px) {
+  .pnl__app { grid-template-columns: 52px minmax(0, 1fr); }
+  .pnl__inspector { display: none; }
+}
+
+@container (max-width: 700px) {
+  .pnl__app { grid-template-columns: minmax(0, 1fr); }
+  .pnl__rail { display: none; }
+  .pnl__cmd { display: none; }
+  .pnl__week,
+  .pnl__days { min-width: 620px; }
+  .pnl__main { overflow-x: auto; scrollbar-width: thin; }
+  .pnl__scrollhint {
+    display: block;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    width: max-content;
+    padding: 5px 12px;
+    background: var(--pnl-bg);
+    color: var(--pnl-dim);
+    font-family: var(--page-mono);
+    font-size: 7.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pnl__ribbon { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pnl__kpi:nth-child(2) { border-right: 0; }
+  .pnl__kpi:nth-child(-n + 2) { border-bottom: 1px solid var(--pnl-line-soft); }
+  .pnl__top { position: sticky; left: 0; }
+}
+
+@container (max-width: 480px) {
+  .pnl__weeklabel { font-size: 11px; }
+  .pnl__today { display: none; }
+  .pnl__newbtn span { display: none; }
+  .pnl__avatars { display: none; }
+  .pnl__kpi strong { font-size: 14px; }
+}
+/* ============================================================
+   05 · Vitrina — micrositio de marca multi-tenant
+   ============================================================ */
+.vit {
+  --vit-brand: #b3402c;
+  --vit-brand-deep: #6d1f16;
+  --vit-accent: #f0b429;
+  --vit-cream: #fbf7f0;
+  --vit-surface: #ffffff;
+  --vit-ink: #17110f;
+  --vit-muted: #6a5f59;
+  --vit-dim: #8a7d76;
+  --vit-line: #e8e0d5;
+  --vit-line-soft: #f2ece3;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--vit-cream);
+  color: var(--vit-ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ---------- barra de marca ---------- */
+.vit__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 54px;
+  padding: 0 clamp(14px, 3vw, 28px);
+  background: var(--vit-cream);
+  border-bottom: 1px solid var(--vit-line);
+}
+.vit__logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.vit__logo i {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--vit-brand);
+  color: var(--vit-cream);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 12px;
+  font-style: italic;
+}
+.vit__logo strong { font-family: "Fraunces", Georgia, serif; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; }
+.vit__logo span { display: block; color: var(--vit-dim); font-size: 6.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+
+.vit__nav { display: flex; gap: 16px; margin-left: 9px; color: var(--vit-muted); font-size: 9.5px; font-weight: 500; }
+.vit__nav .is-active { color: var(--vit-ink); }
+.vit__barright { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.vit__powered { color: var(--vit-dim); font-size: 7px; letter-spacing: 0.04em; white-space: nowrap; }
+.vit__powered b { color: var(--vit-muted); font-weight: 600; }
+.vit__bookpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--vit-brand);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ---------- hero ---------- */
+.vit__hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 18px;
+  align-items: center;
+  padding: clamp(22px, 3.6vw, 40px) clamp(14px, 3vw, 28px);
+  background:
+    radial-gradient(90% 120% at 88% 12%, rgba(240, 180, 41, 0.28), transparent 58%),
+    radial-gradient(70% 90% at 4% 96%, rgba(0, 0, 0, 0.35), transparent 62%),
+    linear-gradient(128deg, var(--vit-brand-deep) 0%, var(--vit-brand) 62%, #d1613f 100%);
+  color: var(--vit-cream);
+  overflow: hidden;
+}
+.vit__hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: 7px 7px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.vit__heroleft { position: relative; z-index: 1; }
+
+.vit__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  color: #f7e3c2;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.vit__eyebrow::after { content: ""; width: 18px; height: 1px; background: currentColor; opacity: 0.6; }
+
+.vit__h1 {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  font-weight: 400;
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.vit__h1 em { font-style: italic; color: var(--vit-accent); }
+
+.vit__lead { max-width: 40ch; margin: 11px 0 0; color: rgba(251, 247, 240, 0.82); font-size: 10.5px; line-height: 1.6; }
+
+.vit__heroctas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.vit__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--vit-cream);
+  color: var(--vit-brand-deep);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.vit__cta--ghost { background: transparent; border: 1px solid rgba(251, 247, 240, 0.4); color: var(--vit-cream); font-weight: 500; }
+
+.vit__herometa { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; color: rgba(251, 247, 240, 0.72); font-size: 8px; }
+.vit__herometa b { display: block; color: var(--vit-cream); font-family: "Fraunces", Georgia, serif; font-size: 13px; font-weight: 600; }
+
+/* composición gráfica */
+.vit__art { position: relative; height: 208px; }
+.vit__disc {
+  position: absolute;
+  top: 6%;
+  right: 4%;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.5), transparent 44%),
+    conic-gradient(from 210deg, #f5cf7d, #c85a3d 45%, #7d2419 70%, #f0b429 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 24px 50px -24px rgba(0, 0, 0, 0.6);
+}
+.vit__disc::after {
+  content: "";
+  position: absolute;
+  inset: 16%;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+}
+.vit__stamp {
+  position: absolute;
+  right: 2%;
+  bottom: 4%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: var(--vit-cream);
+  color: var(--vit-brand-deep);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 9px;
+  font-style: italic;
+  line-height: 1.2;
+  text-align: center;
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.5);
+}
+.vit__rating {
+  position: absolute;
+  left: 0;
+  bottom: 8%;
+  z-index: 2;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(23, 17, 15, 0.55);
+  backdrop-filter: blur(6px);
+  color: var(--vit-cream);
+}
+.vit__stars { display: block; color: var(--vit-accent); font-size: 9px; letter-spacing: 1px; }
+.vit__rating b { display: block; margin-top: 2px; font-size: 9px; font-weight: 600; }
+.vit__rating span { color: rgba(251, 247, 240, 0.66); font-size: 7.5px; }
+
+/* ---------- cinta de servicios ---------- */
+.vit__strip {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 8px clamp(14px, 3vw, 28px);
+  border-bottom: 1px solid var(--vit-line);
+  background: var(--vit-ink);
+  color: #f7efe4;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.vit__strip i { color: var(--vit-accent); font-style: normal; }
+
+/* ---------- servicios ---------- */
+.vit__section { padding: clamp(18px, 3vw, 30px) clamp(14px, 3vw, 28px); }
+.vit__sechead { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.vit__sechead h2 { margin: 0; font-family: "Fraunces", Georgia, serif; font-size: clamp(1.25rem, 2.3vw, 1.7rem); font-weight: 400; letter-spacing: -0.03em; line-height: 1.05; }
+.vit__sechead p { margin: 3px 0 0; color: var(--vit-muted); font-size: 9px; }
+.vit__link { color: var(--vit-brand); font-size: 9px; font-weight: 700; white-space: nowrap; }
+
+.vit__cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.vit__card { display: flex; flex-direction: column; border: 1px solid var(--vit-line); border-radius: 12px; background: var(--vit-surface); overflow: hidden; }
+.vit__thumb {
+  position: relative;
+  height: 84px;
+  background: linear-gradient(140deg, #e7d9c6, #c9ab8b 60%, #a8825f);
+}
+.vit__card:nth-child(2) .vit__thumb { background: linear-gradient(140deg, #dfe4d4, #a9bb96 58%, #7c8f6c); }
+.vit__card:nth-child(3) .vit__thumb { background: linear-gradient(140deg, #26201d, #4a3a33 55%, #7a5a44); }
+.vit__thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 10px);
+}
+.vit__thumb::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  bottom: -22px;
+  width: 82px;
+  height: 82px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 50%;
+}
+.vit__badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(251, 247, 240, 0.9);
+  color: var(--vit-ink);
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.vit__cardbody { display: flex; flex-direction: column; flex: 1; padding: 9px 10px 10px; }
+.vit__cardbody h3 { margin: 0; font-family: "Fraunces", Georgia, serif; font-size: 13px; font-weight: 600; letter-spacing: -0.015em; }
+.vit__cardbody p { flex: 1; margin: 3px 0 8px; color: var(--vit-muted); font-size: 8.5px; line-height: 1.5; }
+.vit__cardfoot { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-top: 7px; border-top: 1px solid var(--vit-line-soft); }
+.vit__cardfoot b { font-family: "Fraunces", Georgia, serif; font-size: 13px; font-weight: 600; }
+.vit__cardfoot span { color: var(--vit-dim); font-size: 8px; }
+.vit__cardfoot em { color: var(--vit-brand); font-size: 8px; font-style: normal; font-weight: 700; }
+
+/* ---------- equipo ---------- */
+.vit__team { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vit__person { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--vit-line); border-radius: 12px; background: var(--vit-surface); }
+.vit__face {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #e8d3c0, #b98b6d);
+  color: #3a2317;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 11px;
+  font-weight: 600;
+}
+.vit__person:nth-child(2) .vit__face { background: linear-gradient(140deg, #d9e0cd, #8fa07c); color: #2f3a26; }
+.vit__person:nth-child(3) .vit__face { background: linear-gradient(140deg, #ded7e6, #9c8fb0); color: #362d43; }
+.vit__person strong { display: block; font-size: 9.5px; font-weight: 650; }
+.vit__person span { display: block; color: var(--vit-dim); font-size: 7.5px; }
+.vit__person small { display: block; margin-top: 1px; color: var(--vit-brand); font-size: 7px; font-weight: 600; }
+
+/* ---------- cita ---------- */
+.vit__quote {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 18px;
+  align-items: center;
+  padding: clamp(18px, 3vw, 28px);
+  background: var(--vit-ink);
+  color: var(--vit-cream);
+}
+.vit__quote blockquote { margin: 0; font-family: "Fraunces", Georgia, serif; font-size: 15px; font-weight: 300; font-style: italic; line-height: 1.35; letter-spacing: -0.015em; }
+.vit__quote blockquote em { color: var(--vit-accent); font-style: italic; }
+.vit__byline { display: flex; align-items: center; gap: 7px; margin-top: 12px; color: rgba(251, 247, 240, 0.6); font-size: 8px; font-style: normal; }
+.vit__byline i { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #3a2b25; color: var(--vit-accent); font-size: 7px; font-style: normal; font-weight: 700; }
+.vit__quotemeta { display: flex; flex-direction: column; gap: 6px; padding-left: 16px; border-left: 1px solid rgba(251, 247, 240, 0.16); }
+.vit__quotemeta b { font-family: "Fraunces", Georgia, serif; font-size: 22px; font-weight: 500; line-height: 1; }
+.vit__quotemeta span { color: rgba(251, 247, 240, 0.62); font-size: 7.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ---------- barra de reserva ---------- */
+.vit__bookbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px clamp(14px, 3vw, 28px);
+  border-top: 1px solid var(--vit-line);
+  background: var(--vit-surface);
+}
+.vit__field { flex: 1; min-width: 0; padding: 5px 8px; border: 1px solid var(--vit-line); border-radius: 8px; }
+.vit__field span { display: block; color: var(--vit-dim); font-size: 6.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.vit__field b { display: block; overflow: hidden; font-size: 9px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.vit__bookbar .vit__cta { flex: none; height: 32px; background: var(--vit-brand); color: #fff; }
+
+@container (max-width: 840px) {
+  .vit__nav { display: none; }
+  .vit__hero { grid-template-columns: 1fr; }
+  .vit__strip {
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, #000 88%, transparent);
+  }
+  .vit__art { display: none; }
+  .vit__cards { grid-template-columns: 1fr 1fr; }
+  .vit__quote { grid-template-columns: 1fr; }
+  .vit__quotemeta { flex-direction: row; align-items: baseline; gap: 8px; padding: 10px 0 0; border-left: 0; border-top: 1px solid rgba(251, 247, 240, 0.16); }
+}
+
+@container (max-width: 560px) {
+  .vit__powered { display: none; }
+  .vit__cards,
+  .vit__team { grid-template-columns: 1fr; }
+  .vit__team { gap: 5px; }
+  .vit__person { padding: 6px 8px; }
+  .vit__h1 { font-size: clamp(1.9rem, 9vw, 2.6rem); }
+  .vit__herometa { gap: 8px; }
+  .vit__field:nth-child(3) { display: none; }
+  .vit__bookbar .vit__cta { padding: 0 12px; }
+  .vit__strip { gap: 12px; }
+}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.5-3.3 2.7-5 5.5-5s5 1.7 5.5 5"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 20c-.2-1.8-.8-3.2-1.8-4.2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></symbol>
+    <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.3 6.5 20.2l1.1-6.2L3 9.6l6.3-.9L12 3Z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5.5-8 11-8 11s-8-5.5-8-11a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3Z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-8-8-4L21 3Z"/></symbol>
+    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.5 9.5 0 0 1-3.7-.8L3 21l1.9-4.1A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><path d="M8.2 7.6 20 18M20 6 8.2 16.4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.5 9.5 0 0 1-3.7-.8L3 21l1.9-4.1A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/><path d="M8.6 8.4c.3 2.2 2.8 4.7 5 5l1-1.3 1.8.8v1.4c0 .5-.5.9-1 .8A7 7 0 0 1 7.2 8.2c0-.5.4-1 .9-1h1.4l.8 1.8-1.3 1"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.5 20a2 2 0 0 0 3 0"/></symbol>
+  </svg>
+
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">AgendaSaaS · Exploraciones de producto</p>
+      <h1>Cinco agendas. <em>Cinco formas de trabajarlas.</em></h1>
+      <p class="hero__lead">
+        No son temas sobre el mismo panel. Cada dirección cambia la navegación, la
+        jerarquía, el flujo de reserva y el tipo de interacción. Mostrador para quien
+        atiende, Estudio para quien reserva, Ritmo para quien escribe por WhatsApp,
+        Panel para quien planifica la semana y Vitrina para vender la marca del salón.
+      </p>
+      <div class="hero__meta">
+        <span class="pill">5 pantallas distintas</span>
+        <span class="pill">HTML + CSS estático</span>
+        <span class="pill">Container queries</span>
+        <span class="pill">Sin tocar la app</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Direcciones de diseño">
+    <div class="wrap toc__inner">
+      <a href="#mostrador"><span>01</span>Mostrador</a>
+      <a href="#estudio"><span>02</span>Estudio</a>
+      <a href="#ritmo"><span>03</span>Ritmo</a>
+      <a href="#panel"><span>04</span>Panel</a>
+      <a href="#vitrina"><span>05</span>Vitrina</a>
+      <a href="#comparativa"><span>→</span>Comparativa</a>
+    </div>
+  </nav>
+
+  <main id="contenido">
+    <!-- ==================== 01 · MOSTRADOR ==================== -->
+    <section id="mostrador" class="dir">
+      <div class="wrap">
+        <header class="dir__intro">
+          <div>
+            <span class="dir__num">01</span>
+            <h2 class="dir__title">Mostrador</h2>
+            <p class="dir__pitch">
+              Un cockpit de recepción. Tres paneles que responden a la vez: quién está
+              llegando, qué está haciendo el equipo y quién es la persona enfrente.
+              Densidad alta, cero scroll, todo a un clic.
+            </p>
+            <div class="dir__tags">
+              <span class="tag">Admin de recepción</span>
+              <span class="tag">3 paneles</span>
+              <span class="tag">Claro</span>
+              <span class="tag">Densidad alta</span>
+            </div>
+          </div>
+          <dl class="dir__brief">
+            <div><dt>Para quién</dt><dd>Quien atiende el salón de pie, con el cliente delante.</dd></div>
+            <div><dt>Navegación</dt><dd>Tabs horizontales + cola lateral. Sin sidebar.</dd></div>
+            <div><dt>Reserva</dt><dd>Seleccionar hueco en la pista → ficha del cliente → cobrar.</dd></div>
+          </dl>
+        </header>
+
+        <div class="frame-wrap">
+          <div class="frame__label"><span>PANTALLA · Recepción / Hoy</span><b>TRES COLUMNAS · 12 PX BASE</b></div>
+          <div class="frame">
+            <div class="mst">
+              <div class="mst__top">
+                <div class="mst__brand">
+                  <span class="mst__logo">BV</span>
+                  <div>
+                    <strong>Barbería Vintage</strong>
+                    <span class="mst__crumb">Recepción</span>
+                  </div>
+                </div>
+                <nav class="mst__tabs" aria-label="Navegación de Mostrador">
+                  <span class="mst__tab is-active">Hoy</span>
+                  <span class="mst__tab">Calendario</span>
+                  <span class="mst__tab">Clientes</span>
+                  <span class="mst__tab">Equipo</span>
+                  <span class="mst__tab">Caja</span>
+                </nav>
+                <div class="mst__actions">
+                  <span class="mst__search">⌘K buscar</span>
+                  <span class="mst__btn mst__btn--ghost">Cobrar</span>
+                  <span class="mst__btn mst__btn--primary">+ Nueva cita</span>
+                </div>
+              </div>
+
+              <div class="mst__status">
+                <span>MIÉ 28 OCT · <strong>10:24</strong></span>
+                <span>ABIERTO <strong>09:00–19:00</strong></span>
+                <span>3 SILLONES · 1 LIBRE</span>
+                <span class="mst__open">● EN LÍNEA</span>
+              </div>
+
+              <div class="mst__grid">
+                <section class="mst__queue" aria-label="Cola de llegadas">
+                  <div class="mst__panelhead">Llegadas <b>5</b></div>
+                  <ul class="mst__list">
+                    <li class="mst__item is-now">
+                      <time>10:00</time>
+                      <div><strong>Carlos Ruiz</strong><span>Corte clásico · Mateo</span></div>
+                      <em>En curso</em>
+                    </li>
+                    <li class="mst__item">
+                      <time>10:30</time>
+                      <div><strong>María Belén O.</strong><span>Corte + barba · Mateo</span></div>
+                      <em>Llegó</em>
+                    </li>
+                    <li class="mst__item">
+                      <time>11:00</time>
+                      <div><strong>Luis Vega</strong><span>Barba + toalla · Lucas</span></div>
+                      <em>15 min</em>
+                    </li>
+                    <li class="mst__item">
+                      <time>11:30</time>
+                      <div><strong>Ana Torres</strong><span>Tinte · Valentina</span></div>
+                      <em>Sin conf.</em>
+                    </li>
+                    <li class="mst__item">
+                      <time>12:00</time>
+                      <div><strong>Julián P.</strong><span>Fade · Lucas</span></div>
+                      <em>Sin conf.</em>
+                    </li>
+                  </ul>
+                  <div class="mst__queuefoot">1 tardanza · 2 por confirmar</div>
+                </section>
+
+                <section class="mst__track" aria-label="Pista del equipo">
+                  <div class="mst__trackhead">
+                    <span>Pista del equipo · 10:00–14:00</span>
+                    <span class="mst__scale" style="letter-spacing:0.08em">10:00 — 14:00</span>
+                  </div>
+                  <div class="mst__staffrow">
+                    <span></span>
+                    <span><i class="mst__dot"></i>Mateo</span>
+                    <span><i class="mst__dot mst__dot--2"></i>Valentina</span>
+                    <span><i class="mst__dot mst__dot--3"></i>Lucas</span>
+                  </div>
+                  <div class="mst__lane">
+                    <span class="mst__time" style="grid-row:1">10:00</span>
+                    <span class="mst__time" style="grid-row:3">11:00</span>
+                    <span class="mst__time" style="grid-row:5">12:00</span>
+                    <span class="mst__time" style="grid-row:7">13:00</span>
+
+                    <div class="mst__block" style="grid-column:2;grid-row:1">
+                      <strong>Carlos Ruiz</strong><span>10:00 · 30 min</span>
+                    </div>
+                    <div class="mst__block is-selected" style="grid-column:2;grid-row:2 / 4">
+                      <strong>María Belén O.</strong><span>10:30 · 60 min</span>
+                    </div>
+                    <div class="mst__block" style="grid-column:2;grid-row:4">
+                      <strong>Luis Vega</strong><span>11:30 · 30 min</span>
+                    </div>
+                    <div class="mst__block" style="grid-column:2;grid-row:6">
+                      <strong>Julián P.</strong><span>12:30 · 30 min</span>
+                    </div>
+
+                    <div class="mst__block mst__block--2" style="grid-column:3;grid-row:1 / 4">
+                      <strong>Tinte completo</strong><span>10:00 · 90 min</span>
+                    </div>
+                    <div class="mst__block mst__block--2" style="grid-column:3;grid-row:4 / 6">
+                      <strong>Brushing</strong><span>11:30 · 60 min</span>
+                    </div>
+                    <div class="mst__block mst__block--2" style="grid-column:3;grid-row:6">
+                      <strong>Color</strong><span>12:30 · 30 min</span>
+                    </div>
+
+                    <div class="mst__block mst__block--3" style="grid-column:4;grid-row:2">
+                      <strong>Fade</strong><span>10:30 · 30 min</span>
+                    </div>
+                    <div class="mst__block mst__block--3" style="grid-column:4;grid-row:3 / 5">
+                      <strong>Corte niño</strong><span>11:00 · 60 min</span>
+                    </div>
+                    <div class="mst__block mst__block--3" style="grid-column:4;grid-row:5">
+                      <strong>Barba</strong><span>12:00 · 30 min</span>
+                    </div>
+                    <div class="mst__block mst__block--3" style="grid-column:4;grid-row:6 / 8">
+                      <strong>Fade + barba</strong><span>12:30 · 60 min</span>
+                    </div>
+
+                    <div class="mst__now" style="grid-row:1;transform:translateY(37px)" aria-hidden="true"></div>
+                  </div>
+                </section>
+
+                <aside class="mst__client" aria-label="Ficha del cliente">
+                  <div class="mst__clienttop">
+                    <span class="mst__avatar">MB</span>
+                    <div>
+                      <h3>María Belén Ortiz</h3>
+                      <span>+54 11 5842 9931</span>
+                    </div>
+                  </div>
+
+                  <div class="mst__section">
+                    <div class="mst__label">Cita seleccionada</div>
+                    <p class="mst__value">Corte + barba</p>
+                    <p class="mst__sub">10:30–11:30 · Mateo · $420</p>
+                  </div>
+
+                  <div class="mst__section">
+                    <div class="mst__label">Cliente</div>
+                    <p class="mst__value">14 visitas · desde 2022</p>
+                    <p class="mst__sub">Ticket promedio $380 · 3 inasistencias</p>
+                  </div>
+
+                  <div class="mst__section">
+                    <div class="mst__label">Nota del barbero</div>
+                    <p class="mst__note">Prefiere máquina 1 a los lados. Alergia al after-shave con alcohol.</p>
+                  </div>
+
+                  <div class="mst__section">
+                    <div class="mst__label">Última visita</div>
+                    <p class="mst__value">12 sep · Corte clásico</p>
+                    <p class="mst__sub">“Quedó muy conforme con el degradado.”</p>
+                  </div>
+
+                  <div class="mst__actions2">
+                    <span class="mst__btn mst__btn--primary">Cobrar $420</span>
+                    <span class="mst__btn">Reprogramar</span>
+                  </div>
+                </aside>
+              </div>
+
+              <div class="mst__foot">
+                <span>4 EN COLA</span>
+                <span>OCUPACIÓN 78%</span>
+                <span>CAJA $1.030</span>
+                <span class="mst__footright">● SINCRONIZADO HACE 8 S</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="dir__footer">
+          <div class="dir__col">
+            <h3>Qué cambia</h3>
+            <ul>
+              <li>La recepción deja de navegar entre páginas: todo ocurre en una pantalla.</li>
+              <li>La cola ordena por hora de llegada, no por cita; el estado es visible.</li>
+              <li>La ficha del cliente es contextual al hueco seleccionado.</li>
+            </ul>
+          </div>
+          <div class="dir__col">
+            <h3>Riesgo</h3>
+            <p>Necesita disciplina de una sola acción primaria por panel. Si se agregan métricas al top, la densidad se vuelve ruido. En móvil hay que elegir entre cola y pista, no mostrar ambas.</p>
+          </div>
+          <div class="dir__col">
+            <h3>Paleta</h3>
+            <ul class="swatches">
+              <li><i style="background:#F7F7F5"></i><code>#F7F7F5</code></li>
+              <li><i style="background:#FFFFFF"></i><code>#FFFFFF</code></li>
+              <li><i style="background:#2563EB"></i><code>#2563EB</code></li>
+              <li><i style="background:#16181C"></i><code>#16181C</code></li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+    <!-- ==================== 02 · ESTUDIO ==================== -->
+    <section id="estudio" class="dir">
+      <div class="wrap">
+        <header class="dir__intro">
+          <div>
+            <span class="dir__num">02</span>
+            <h2 class="dir__title">Estudio</h2>
+            <p class="dir__pitch">
+              El portal público como una carta editorial. El cliente lee servicios,
+              elige con calma y arma su reserva en un rail que nunca desaparece.
+              Sin wizard de cuatro pasos: una sola página que se completa sola.
+            </p>
+            <div class="dir__tags">
+              <span class="tag">Portal público</span>
+              <span class="tag">Editorial</span>
+              <span class="tag">Rail de reserva</span>
+              <span class="tag">Sin wizard</span>
+            </div>
+          </div>
+          <dl class="dir__brief">
+            <div><dt>Para quién</dt><dd>El cliente final que llega desde Instagram o Google.</dd></div>
+            <div><dt>Navegación</dt><dd>Una sola página con anclas; el rail concentra la acción.</dd></div>
+            <div><dt>Reserva</dt><dd>Sumar servicios a la carta → fecha y hora en el rail → confirmar.</dd></div>
+          </dl>
+        </header>
+
+        <div class="frame-wrap">
+          <div class="frame__label"><span>PANTALLA · /b/barberia-vintage</span><b>EDITORIAL · SERIF + RAIL STICKY</b></div>
+          <div class="frame">
+            <div class="est">
+              <div class="est__nav">
+                <div class="est__brand">
+                  <span class="est__mark">BV</span>
+                  <div>
+                    <strong>Barbería Vintage</strong>
+                    <span>Estudio de barbería</span>
+                  </div>
+                </div>
+                <nav class="est__links" aria-label="Navegación del portal">
+                  <span class="is-active">Servicios</span>
+                  <span>El equipo</span>
+                  <span>El espacio</span>
+                  <span>Diario</span>
+                </nav>
+                <div class="est__navright">
+                  <span class="est__phone">+54 11 5555 0198</span>
+                  <span class="est__pillbtn">Reservar turno</span>
+                </div>
+              </div>
+
+              <div class="est__hero">
+                <div>
+                  <p class="est__kicker">Palermo · desde 2014</p>
+                  <p class="est__h1">Cortes que <em>duran</em> más que el turno.</p>
+                  <p class="est__lead">
+                    Tres barberos, una sola idea: que salgas queriendo volver.
+                    Trabajamos con turno, sin espera y con el tiempo justo.
+                  </p>
+                  <div class="est__meta">
+                    <span>★ 4,9 · 312 reseñas</span>
+                    <span>Abierto hoy hasta 19:00</span>
+                    <span>3 profesionales</span>
+                  </div>
+                </div>
+
+                <div class="est__feature">
+                  <span class="est__featuretag">● Próximo turno libre</span>
+                  <div class="est__featuretime">
+                    Hoy 15:30
+                    <small>Con Mateo · 45 min</small>
+                  </div>
+                  <div class="est__featurefoot">
+                    <span>Av. Serrano 1284</span>
+                    <span>2,4 km</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="est__body">
+                <div>
+                  <div class="est__sechead">
+                    <h2>La carta</h2>
+                    <span>6 servicios · precios finales</span>
+                  </div>
+                  <ul class="est__list">
+                    <li class="est__svc">
+                      <span class="est__idx">01</span>
+                      <div>
+                        <p class="est__svcname">Corte clásico</p>
+                        <p class="est__svcdesc">Tijera y máquina, lavado y peinado.</p>
+                      </div>
+                      <span class="est__svcmeta">30 min</span>
+                      <span class="est__price">$250</span>
+                      <span class="est__add is-on">✓</span>
+                    </li>
+                    <li class="est__svc">
+                      <span class="est__idx">02</span>
+                      <div>
+                        <p class="est__svcname">Barba + toalla caliente</p>
+                        <p class="est__svcdesc">Perfilado, aceite y masaje breve.</p>
+                      </div>
+                      <span class="est__svcmeta">30 min</span>
+                      <span class="est__price">$220</span>
+                      <span class="est__add is-on">✓</span>
+                    </li>
+                    <li class="est__svc">
+                      <span class="est__idx">03</span>
+                      <div>
+                        <p class="est__svcname">Fade / degradado</p>
+                        <p class="est__svcdesc">Degradado a máquina con terminación a navaja.</p>
+                      </div>
+                      <span class="est__svcmeta">45 min</span>
+                      <span class="est__price">$300</span>
+                      <span class="est__add">+</span>
+                    </li>
+                    <li class="est__svc">
+                      <span class="est__idx">04</span>
+                      <div>
+                        <p class="est__svcname">Corte + barba</p>
+                        <p class="est__svcdesc">El ritual completo, con tiempo para el café.</p>
+                      </div>
+                      <span class="est__svcmeta">60 min</span>
+                      <span class="est__price">$420</span>
+                      <span class="est__add">+</span>
+                    </li>
+                    <li class="est__svc">
+                      <span class="est__idx">05</span>
+                      <div>
+                        <p class="est__svcname">Color y tono</p>
+                        <p class="est__svcdesc">Cobertura de canas o cambio de tono sutil.</p>
+                      </div>
+                      <span class="est__svcmeta">90 min</span>
+                      <span class="est__price">$480</span>
+                      <span class="est__add">+</span>
+                    </li>
+                    <li class="est__svc">
+                      <span class="est__idx">06</span>
+                      <div>
+                        <p class="est__svcname">Corte niño</p>
+                        <p class="est__svcdesc">Hasta 12 años. Con paciencia incluida.</p>
+                      </div>
+                      <span class="est__svcmeta">30 min</span>
+                      <span class="est__price">$200</span>
+                      <span class="est__add">+</span>
+                    </li>
+                  </ul>
+
+                  <div class="est__team">
+                    <div class="est__sechead">
+                      <h2>Quién te atiende</h2>
+                      <span>Elegís en el rail</span>
+                    </div>
+                    <div class="est__teamrow">
+                      <span class="est__person"><i>M</i>Mateo <small>Cortes y fade</small></span>
+                      <span class="est__person"><i>V</i>Valentina <small>Color</small></span>
+                      <span class="est__person"><i>L</i>Lucas <small>Barba</small></span>
+                    </div>
+                  </div>
+
+                  <div class="est__note">
+                    <b>Sin cargo hasta 24 h antes.</b> Si necesitás mover el turno,
+                    escribinos por WhatsApp y lo resolvemos sin costo.
+                  </div>
+                </div>
+
+                <aside class="est__rail" aria-label="Resumen de reserva">
+                  <div class="est__railhead">
+                    <span>Tu reserva</span>
+                    <h3>Dos servicios</h3>
+                  </div>
+
+                  <div class="est__block">
+                    <div class="est__blocktitle">Fecha <b>Octubre</b></div>
+                    <div class="est__days">
+                      <span class="est__day"><span>Lun</span><b>26</b></span>
+                      <span class="est__day"><span>Mar</span><b>27</b></span>
+                      <span class="est__day is-active"><span>Mié</span><b>28</b></span>
+                      <span class="est__day"><span>Jue</span><b>29</b></span>
+                      <span class="est__day"><span>Vie</span><b>30</b></span>
+                    </div>
+                  </div>
+
+                  <div class="est__block">
+                    <div class="est__blocktitle">Horario <b>3 libres</b></div>
+                    <div class="est__times">
+                      <span class="est__time is-off">14:00</span>
+                      <span class="est__time is-off">14:30</span>
+                      <span class="est__time is-active">15:30</span>
+                      <span class="est__time">16:15</span>
+                      <span class="est__time">17:00</span>
+                      <span class="est__time">17:45</span>
+                      <span class="est__time is-off">18:30</span>
+                      <span class="est__time">19:00</span>
+                    </div>
+                  </div>
+
+                  <div class="est__block">
+                    <div class="est__blocktitle">Profesional <b>Mateo</b></div>
+                    <div class="est__teamrow">
+                      <span class="est__person"><i>M</i>Mateo</span>
+                      <span class="est__person"><i>V</i>Valentina</span>
+                    </div>
+                  </div>
+
+                  <div class="est__summary">
+                    <div class="est__line"><span>Corte clásico</span><b>$250</b></div>
+                    <div class="est__line"><span>Barba + toalla</span><b>$220</b></div>
+                    <div class="est__line"><span>Duración total</span><b>60 min</b></div>
+                    <div class="est__total"><span>Total</span><strong>$470</strong></div>
+                  </div>
+
+                  <div class="est__cta">Confirmar reserva →</div>
+                  <p class="est__railtail">Sin cargo hasta 24 h antes</p>
+                </aside>
+              </div>
+
+              <div class="est__foot">
+                <span><b>Av. Serrano 1284</b> · Palermo, CABA</span>
+                <span>Mar a sáb · 09:00–19:00</span>
+                <span>Reservas gestionadas con AgendaSaaS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="dir__footer">
+          <div class="dir__col">
+            <h3>Qué cambia</h3>
+            <ul>
+              <li>El portal deja de ser un formulario y pasa a ser una página de marca.</li>
+              <li>El precio y la duración se leen antes de decidir; no hay sorpresas.</li>
+              <li>El rail acumula la reserva sin bloquear la lectura.</li>
+            </ul>
+          </div>
+          <div class="dir__col">
+            <h3>Riesgo</h3>
+            <p>El rail necesita una regla clara cuando hay muchos servicios: se colapsa a resumen. En móvil pasa a barra inferior, no a pantalla completa, para no perder la carta.</p>
+          </div>
+          <div class="dir__col">
+            <h3>Paleta</h3>
+            <ul class="swatches">
+              <li><i style="background:#F7F4EE"></i><code>#F7F4EE</code></li>
+              <li><i style="background:#FFFDF8"></i><code>#FFFDF8</code></li>
+              <li><i style="background:#3F5D45"></i><code>#3F5D45</code></li>
+              <li><i style="background:#A8502C"></i><code>#A8502C</code></li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+    <!-- ==================== 03 · RITMO ==================== -->
+    <section id="ritmo" class="dir">
+      <div class="wrap">
+        <header class="dir__intro">
+          <div>
+            <span class="dir__num">03</span>
+            <h2 class="dir__title">Ritmo</h2>
+            <p class="dir__pitch">
+              La reserva ocurre donde ya ocurre la conversación: en el chat. Un hilo
+              con respuestas rápidas, tarjetas de turno y un pulso del equipo al lado.
+              Mobile-first de verdad, no una app de escritorio encogida.
+            </p>
+            <div class="dir__tags">
+              <span class="tag">Cliente + equipo</span>
+              <span class="tag">Chat</span>
+              <span class="tag">Mobile-first</span>
+              <span class="tag">WhatsApp</span>
+            </div>
+          </div>
+          <dl class="dir__brief">
+            <div><dt>Para quién</dt><dd>Clientes que escriben por WhatsApp y equipos chicos.</dd></div>
+            <div><dt>Navegación</dt><dd>Hilo de conversación + panel de actividad.</dd></div>
+            <div><dt>Reserva</dt><dd>Elegir servicio en tarjeta → tocar horario → confirmar en el chat.</dd></div>
+          </dl>
+        </header>
+
+        <div class="frame-wrap">
+          <div class="frame__label"><span>PANTALLA · Móvil + escritorio</span><b>CHAT DE RESERVA · FEED DEL EQUIPO</b></div>
+          <div class="frame">
+            <div class="rtm">
+              <div class="rtm__wrap">
+                <div class="rtm__phone">
+                  <span class="rtm__notch" aria-hidden="true"></span>
+
+                  <div class="rtm__appbar">
+                    <span class="rtm__back">‹</span>
+                    <span class="rtm__avatar">BV</span>
+                    <div class="rtm__who">
+                      <strong>Barbería Vintage</strong>
+                      <span><i></i>En línea · responde en 4 s</span>
+                    </div>
+                    <div class="rtm__appicons">
+                      <span>☏</span>
+                      <span>⋯</span>
+                    </div>
+                  </div>
+
+                  <div class="rtm__chat">
+                    <span class="rtm__day">Hoy · mié 28 oct</span>
+
+                    <div class="rtm__msg rtm__msg--in">
+                      ¡Hola! ¿Tienen turno hoy después de las 15? Quiero corte y barba.
+                      <small>10:02</small>
+                    </div>
+
+                    <div class="rtm__msg rtm__msg--out">
+                      ¡Hola, Sofía! Sí. Nos queda <b>15:30 con Mateo</b> o 16:15 con Lucas.
+                      ¿Cuál preferís?
+                      <small>10:03 ✓✓</small>
+                    </div>
+
+                    <div class="rtm__bubblecard">
+                      <header>✂ Reserva sugerida · 60 min</header>
+                      <div class="rtm__rowline"><span>Corte + barba</span><b>Mateo</b></div>
+                      <div class="rtm__rowline"><span>Hoy</span><b>mié 28 oct</b></div>
+                      <div class="rtm__slotgrid" style="padding-top:5px">
+                        <span class="rtm__slot is-active">15:30</span>
+                        <span class="rtm__slot">16:15</span>
+                        <span class="rtm__slot">17:00</span>
+                        <span class="rtm__slot is-off">17:45</span>
+                        <span class="rtm__slot">18:30</span>
+                        <span class="rtm__slot is-off">19:00</span>
+                      </div>
+                      <div class="rtm__rowline rtm__rowline--total"><span>Total</span><b>$470</b></div>
+                    </div>
+
+                    <div class="rtm__msg rtm__msg--out">
+                      Te reservo <b>15:30 con Mateo</b>. ¿Confirmás?
+                      <small>10:05 ✓✓</small>
+                    </div>
+
+                    <div class="rtm__msg rtm__msg--in">
+                      Sí, confirmá. ¡Gracias!
+                      <small>10:06</small>
+                    </div>
+                  </div>
+
+                  <div class="rtm__quick">
+                    <span>Confirmar 15:30</span>
+                    <span>Cambiar hora</span>
+                    <span>Agregar servicio</span>
+                  </div>
+
+                  <div class="rtm__composer">
+                    <span class="rtm__input">Escribí un mensaje…</span>
+                    <span class="rtm__send">➤</span>
+                  </div>
+
+                  <div class="rtm__composer" style="border-top:0;padding-top:0">
+                    <span class="rtm__wa">● Gestionado con AgendaSaaS</span>
+                    <span style="margin-left:auto;color:var(--rtm-dim);font-size:7px">WhatsApp Business</span>
+                  </div>
+                </div>
+
+                <div class="rtm__side">
+                  <div class="rtm__sidehead">
+                    <span class="rtm__logo">R</span>
+                    <div>
+                      <h2>Ritmo</h2>
+                      <p>Miércoles 28 · 10:24</p>
+                    </div>
+                    <div class="rtm__seg">
+                      <span class="is-active">Hoy</span>
+                      <span>Semana</span>
+                    </div>
+                  </div>
+
+                  <div class="rtm__stats">
+                    <div class="rtm__stat">
+                      <span>Turnos</span>
+                      <strong>9</strong>
+                      <small>+2 vs. ayer</small>
+                    </div>
+                    <div class="rtm__stat">
+                      <span>Ocupación</span>
+                      <strong>78%</strong>
+                      <small>6 h de 8 h</small>
+                    </div>
+                    <div class="rtm__stat">
+                      <span>Mensajes</span>
+                      <strong>62</strong>
+                      <small class="is-warn">4 sin leer</small>
+                    </div>
+                  </div>
+
+                  <div class="rtm__panel">
+                    <div class="rtm__panelhead">
+                      <h3>Actividad del equipo</h3>
+                      <span><i></i>En vivo</span>
+                    </div>
+                    <ul class="rtm__feed">
+                      <li class="is-lime">
+                        <i>SC</i>
+                        <div>
+                          <p><b>Sofía confirmó</b> 15:30 · Corte + barba con Mateo</p>
+                          <time>10:22</time>
+                        </div>
+                      </li>
+                      <li>
+                        <i>LV</i>
+                        <div>
+                          <p><b>Lucas cobró</b> un fade · $300 en efectivo</p>
+                          <time>10:18</time>
+                        </div>
+                      </li>
+                      <li>
+                        <i>PR</i>
+                        <div>
+                          <p><b>Pablo escribió</b> por WhatsApp: “¿precio de color?”</p>
+                          <time>10:14</time>
+                        </div>
+                      </li>
+                      <li>
+                        <i>AT</i>
+                        <div>
+                          <p><b>Ana llegó</b> para su tinte con Valentina</p>
+                          <time>10:09</time>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="rtm__panel">
+                    <div class="rtm__panelhead">
+                      <h3>En el salón</h3>
+                      <span>3 sillones</span>
+                    </div>
+                    <div class="rtm__floor">
+                      <div class="rtm__person">
+                        <strong>Mateo</strong>
+                        <span>Carlos · hasta 10:30</span>
+                        <div class="rtm__bar" style="--w:80%"><i style="width:80%"></i></div>
+                      </div>
+                      <div class="rtm__person">
+                        <strong>Valentina</strong>
+                        <span>Tinte · hasta 11:30</span>
+                        <div class="rtm__bar is-lime"><i style="width:62%"></i></div>
+                      </div>
+                      <div class="rtm__person">
+                        <strong>Lucas</strong>
+                        <span>Libre hasta 11:00</span>
+                        <div class="rtm__bar is-free"><i style="width:22%"></i></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rtm__connect">
+                    <i>✓</i>
+                    <p><b>WhatsApp Business conectado</b>Responde en 4 s · 62 mensajes hoy</p>
+                    <span class="rtm__toggle" aria-hidden="true"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="dir__footer">
+          <div class="dir__col">
+            <h3>Qué cambia</h3>
+            <ul>
+              <li>La reserva se negocia, no se completa: horarios alternativos en el hilo.</li>
+              <li>El equipo ve el mismo turno desde el feed, sin abrir otra pantalla.</li>
+              <li>Las respuestas rápidas reducen el tiempo de respuesta a segundos.</li>
+            </ul>
+          </div>
+          <div class="dir__col">
+            <h3>Riesgo</h3>
+            <p>Un chat no escala a agendas complejas ni a equipos grandes. Necesita reglas de negocio fuera del hilo (disponibilidad, cobros) y una salida clara a la agenda completa. Es una capa, no un reemplazo del panel.</p>
+          </div>
+          <div class="dir__col">
+            <h3>Paleta</h3>
+            <ul class="swatches">
+              <li><i style="background:#EBE9F4"></i><code>#EBE9F4</code></li>
+              <li><i style="background:#FFFFFF"></i><code>#FFFFFF</code></li>
+              <li><i style="background:#5B4BF5"></i><code>#5B4BF5</code></li>
+              <li><i style="background:#CCF26D"></i><code>#CCF26D</code></li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+    <!-- ==================== 04 · PANEL ==================== -->
+    <section id="panel" class="dir">
+      <div class="wrap">
+        <header class="dir__intro">
+          <div>
+            <span class="dir__num">04</span>
+            <h2 class="dir__title">Panel</h2>
+            <p class="dir__pitch">
+              La agenda como instrumento. Semana completa a la vista, rail de iconos,
+              cifras en una cinta y un inspector que aparece al seleccionar. Pensado
+              para quien planifica, no solo para quien atiende.
+            </p>
+            <div class="dir__tags">
+              <span class="tag">Admin semanal</span>
+              <span class="tag">Rail de iconos</span>
+              <span class="tag">Dark</span>
+              <span class="tag">Inspector</span>
+            </div>
+          </div>
+          <dl class="dir__brief">
+            <div><dt>Para quién</dt><dd>Dueños y coordinadores que miran la semana, no el día.</dd></div>
+            <div><dt>Navegación</dt><dd>Rail de iconos + barra de semana + inspector lateral.</dd></div>
+            <div><dt>Reserva</dt><dd>Doble clic en el hueco; el inspector confirma sin salir.</dd></div>
+          </dl>
+        </header>
+
+        <div class="frame-wrap">
+          <div class="frame__label"><span>PANTALLA · Admin / Semana</span><b>REJILLA 7 DÍAS · INSPECTOR · 8 PX RADIO</b></div>
+          <div class="frame">
+            <div class="pnl">
+              <div class="pnl__app">
+                <div class="pnl__rail" aria-label="Navegación de Panel">
+                  <span class="pnl__logo">A</span>
+                  <span class="pnl__railitem is-active"><svg class="ico" aria-hidden="true"><use href="#i-grid"></use></svg></span>
+                  <span class="pnl__railitem"><svg class="ico" aria-hidden="true"><use href="#i-calendar"></use></svg></span>
+                  <span class="pnl__railitem"><svg class="ico" aria-hidden="true"><use href="#i-users"></use></svg></span>
+                  <span class="pnl__railitem"><svg class="ico" aria-hidden="true"><use href="#i-chart"></use></svg></span>
+                  <span class="pnl__railitem"><svg class="ico" aria-hidden="true"><use href="#i-settings"></use></svg></span>
+                  <span class="pnl__railtail">TD</span>
+                </div>
+
+                <div class="pnl__main">
+                  <div class="pnl__top">
+                    <div class="pnl__weeknav">
+                      <span class="pnl__arrow">‹</span>
+                      <span class="pnl__arrow">›</span>
+                      <span class="pnl__weeklabel">26 oct – 1 nov 2026</span>
+                      <span class="pnl__today">Hoy</span>
+                    </div>
+                    <div class="pnl__topright">
+                      <span class="pnl__cmd">⌕ Buscar <kbd>⌘K</kbd></span>
+                      <span class="pnl__avatars"><i>M</i><i>V</i><i>L</i></span>
+                      <span class="pnl__newbtn">+ Turno</span>
+                    </div>
+                  </div>
+
+                  <div class="pnl__ribbon">
+                    <div class="pnl__kpi">
+                      <span>Ingresos semana</span>
+                      <strong>$4.820</strong>
+                      <small><b>+12%</b> vs. anterior</small>
+                    </div>
+                    <div class="pnl__kpi">
+                      <span>Turnos</span>
+                      <strong>42 <em>/ 52</em></strong>
+                      <small><b>81%</b> de ocupación</small>
+                    </div>
+                    <div class="pnl__kpi">
+                      <span>Ticket medio</span>
+                      <strong>$114 <em>USD</em></strong>
+                      <small><b class="is-down">−3%</b> esta semana</small>
+                    </div>
+                    <div class="pnl__kpi">
+                      <span>Demanda 7 días</span>
+                      <span class="pnl__spark" aria-hidden="true">
+                        <i style="height:38%"></i><i style="height:62%"></i><i style="height:48%"></i>
+                        <i style="height:80%"></i><i style="height:56%"></i><i style="height:92%"></i>
+                        <i style="height:70%"></i><i style="height:100%"></i>
+                      </span>
+                      <small>Pico sábado 11:00</small>
+                    </div>
+                  </div>
+
+                  <div class="pnl__scrollhint">Deslizá para ver la semana completa →</div>
+
+                  <div class="pnl__days">
+                    <span class="pnl__tz">UTC−3</span>
+                    <span class="pnl__day">Lun <b>26</b></span>
+                    <span class="pnl__day">Mar <b>27</b></span>
+                    <span class="pnl__day is-today">Mié <b>28</b></span>
+                    <span class="pnl__day">Jue <b>29</b></span>
+                    <span class="pnl__day">Vie <b>30</b></span>
+                    <span class="pnl__day">Sáb <b>31</b></span>
+                    <span class="pnl__day">Dom <b>1</b></span>
+                  </div>
+
+                  <div class="pnl__week">
+                    <span class="pnl__hour" style="grid-row:1">08:00</span>
+                    <span class="pnl__hour" style="grid-row:3">09:00</span>
+                    <span class="pnl__hour" style="grid-row:5">10:00</span>
+                    <span class="pnl__hour" style="grid-row:7">11:00</span>
+                    <span class="pnl__hour" style="grid-row:9">12:00</span>
+                    <span class="pnl__hour" style="grid-row:11">13:00</span>
+
+                    <div class="pnl__col" style="grid-column:2" aria-hidden="true"></div>
+                    <div class="pnl__col" style="grid-column:3" aria-hidden="true"></div>
+                    <div class="pnl__col is-today" style="grid-column:4" aria-hidden="true"></div>
+                    <div class="pnl__col" style="grid-column:5" aria-hidden="true"></div>
+                    <div class="pnl__col" style="grid-column:6" aria-hidden="true"></div>
+                    <div class="pnl__col" style="grid-column:7" aria-hidden="true"></div>
+                    <div class="pnl__col" style="grid-column:8" aria-hidden="true"></div>
+
+                    <div class="pnl__ev" style="grid-column:2;grid-row:3 / 5">
+                      <strong>Corte clásico</strong><span>Ana P. · Mateo</span><em>09:00</em>
+                    </div>
+                    <div class="pnl__ev pnl__ev--pink" style="grid-column:2;grid-row:7 / 9">
+                      <strong>Color</strong><span>Lucía G. · Valentina</span><em>11:00</em>
+                    </div>
+                    <div class="pnl__ev" style="grid-column:2;grid-row:9 / 12">
+                      <strong>Corte + barba</strong><span>Tomás R. · Mateo</span><em>12:00</em>
+                    </div>
+
+                    <div class="pnl__ev pnl__ev--amber" style="grid-column:3;grid-row:5 / 7">
+                      <strong>Barba</strong><span>Julián P. · Lucas</span><em>10:00</em>
+                    </div>
+                    <div class="pnl__ev" style="grid-column:3;grid-row:9 / 10">
+                      <strong>Corte niño</strong><span>Benja · Mateo</span><em>12:00</em>
+                    </div>
+
+                    <div class="pnl__ev pnl__ev--lime is-focus" style="grid-column:4;grid-row:5 / 8">
+                      <strong>Corte + barba</strong><span>Carlos Ruiz · Mateo</span><em>10:00–11:30</em>
+                    </div>
+                    <div class="pnl__ev pnl__ev--pink" style="grid-column:4;grid-row:8 / 11">
+                      <strong>Tinte</strong><span>Ana Torres · Valen.</span><em>11:30</em>
+                    </div>
+
+                    <div class="pnl__ev" style="grid-column:5;grid-row:3 / 4">
+                      <strong>Corte</strong><span>Pedro M. · Lucas</span><em>09:00</em>
+                    </div>
+                    <div class="pnl__ev pnl__ev--amber" style="grid-column:5;grid-row:7 / 9">
+                      <strong>Barba</strong><span>Diego S. · Mateo</span><em>11:00</em>
+                    </div>
+                    <div class="pnl__ev" style="grid-column:5;grid-row:10 / 12">
+                      <strong>Fade</strong><span>Nico A. · Lucas</span><em>12:30</em>
+                    </div>
+
+                    <div class="pnl__ev pnl__ev--pink" style="grid-column:6;grid-row:3 / 7">
+                      <strong>Color completo</strong><span>Marta L. · Valentina</span><em>09:00</em>
+                    </div>
+                    <div class="pnl__ev" style="grid-column:6;grid-row:8 / 9">
+                      <strong>Corte</strong><span>Rulo · Mateo</span><em>11:30</em>
+                    </div>
+
+                    <div class="pnl__ev" style="grid-column:7;grid-row:2 / 3">
+                      <strong>Corte</strong><span>Fede · Lucas</span><em>08:30</em>
+                    </div>
+                    <div class="pnl__ev pnl__ev--amber" style="grid-column:7;grid-row:4 / 6">
+                      <strong>Barba</strong><span>Martín C. · Mateo</span><em>09:30</em>
+                    </div>
+                    <div class="pnl__ev pnl__ev--lime" style="grid-column:7;grid-row:7 / 9">
+                      <strong>Fade</strong><span>Eze · Lucas</span><em>11:00</em>
+                    </div>
+                    <div class="pnl__ev" style="grid-column:7;grid-row:10 / 11">
+                      <strong>Barba</strong><span>Juan · Mateo</span><em>12:30</em>
+                    </div>
+
+                    <div class="pnl__nowline" style="grid-row:5" aria-hidden="true"></div>
+                  </div>
+
+                  <div class="pnl__status">
+                    <span class="is-live"><i></i>LIVE · 10:24</span>
+                    <span>7 días · 3 profesionales</span>
+                    <span class="pnl__sync">Sincronizado hace 8 s</span>
+                  </div>
+                </div>
+
+                <aside class="pnl__inspector" aria-label="Detalle del turno">
+                  <div class="pnl__inshead">
+                    <span>Turno seleccionado</span>
+                    <i>⋯</i>
+                  </div>
+
+                  <div class="pnl__clientbox">
+                    <span class="pnl__bigavatar">CR</span>
+                    <div>
+                      <h3>Carlos Ruiz</h3>
+                      <p>+54 11 6033 1180</p>
+                    </div>
+                    <span class="pnl__tag">Confirmado</span>
+                  </div>
+
+                  <div class="pnl__facts">
+                    <div class="pnl__fact"><span>Servicio</span><b>Corte + barba</b></div>
+                    <div class="pnl__fact"><span>Cuándo</span><b>Mié 28 · 10:00–11:30</b></div>
+                    <div class="pnl__fact"><span>Profesional</span><b>Mateo</b></div>
+                    <div class="pnl__fact"><span>Duración</span><b>90 min</b></div>
+                    <div class="pnl__fact"><span>Total</span><b class="is-money">$420</b></div>
+                  </div>
+
+                  <div class="pnl__timeline">
+                    <div class="pnl__step is-done">
+                      <span class="pnl__stepdot"><i></i></span>
+                      <p><b>Reserva creada</b><span>Lun 26 · 18:40 · portal</span></p>
+                    </div>
+                    <div class="pnl__step is-done">
+                      <span class="pnl__stepdot"><i></i></span>
+                      <p><b>Recordatorio enviado</b><span>Mar 27 · 10:00 · WhatsApp</span></p>
+                    </div>
+                    <div class="pnl__step is-now">
+                      <span class="pnl__stepdot"><i></i></span>
+                      <p><b>En curso</b><span>10:00 · sillón 1</span></p>
+                    </div>
+                  </div>
+
+                  <p class="pnl__insnotes">
+                    Cliente habitual. Prefiere máquina 1 a los lados y sin after-shave.
+                  </p>
+
+                  <div class="pnl__insactions">
+                    <span class="pnl__btn pnl__btn--lime">Cobrar</span>
+                    <span class="pnl__btn">Reprogramar</span>
+                    <span class="pnl__btn pnl__btn--ghost">No vino</span>
+                    <span class="pnl__btn pnl__btn--ghost">Nota</span>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="dir__footer">
+          <div class="dir__col">
+            <h3>Qué cambia</h3>
+            <ul>
+              <li>La unidad de trabajo es la semana, no el día: se ven los huecos reales.</li>
+              <li>El inspector evita abrir modales para tareas frecuentes.</li>
+              <li>El rail de iconos libera ancho para la rejilla, que es el contenido.</li>
+            </ul>
+          </div>
+          <div class="dir__col">
+            <h3>Riesgo</h3>
+            <p>En móvil una semana de 7 columnas no entra: hay que degradar a 3 días o a lista. El dark exige contraste alto y estados muy distinguibles; el acento lima no debe usarse como decoración.</p>
+          </div>
+          <div class="dir__col">
+            <h3>Paleta</h3>
+            <ul class="swatches">
+              <li><i style="background:#0B0D12"></i><code>#0B0D12</code></li>
+              <li><i style="background:#11141B"></i><code>#11141B</code></li>
+              <li><i style="background:#C6F24E"></i><code>#C6F24E</code></li>
+              <li><i style="background:#5EEAD4"></i><code>#5EEAD4</code></li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+    <!-- ==================== 05 · VITRINA ==================== -->
+    <section id="vitrina" class="dir">
+      <div class="wrap">
+        <header class="dir__intro">
+          <div>
+            <span class="dir__num">05</span>
+            <h2 class="dir__title">Vitrina</h2>
+            <p class="dir__pitch">
+              Cada salón como una marca, no como una fila en un directorio. Micrositio
+              con hero gráfico, carta de servicios, equipo y una barra de reserva que
+              acompaña todo el scroll. El color del negocio manda; la app desaparece.
+            </p>
+            <div class="dir__tags">
+              <span class="tag">Multi-tenant</span>
+              <span class="tag">Marca propia</span>
+              <span class="tag">Barra de reserva</span>
+              <span class="tag">Venta</span>
+            </div>
+          </div>
+          <dl class="dir__brief">
+            <div><dt>Para quién</dt><dd>Salones que venden su marca y compiten por posicionamiento.</dd></div>
+            <div><dt>Navegación</dt><dd>Landing de marca con anclas y barra de reserva fija.</dd></div>
+            <div><dt>Reserva</dt><dd>Elegir servicio → fecha y hora en la barra → checkout corto.</dd></div>
+          </dl>
+        </header>
+
+        <div class="frame-wrap">
+          <div class="frame__label"><span>PANTALLA · /b/casa-nube</span><b>MICROSITIO DE MARCA · COLOR POR TENANT</b></div>
+          <div class="frame">
+            <div class="vit">
+              <div class="vit__bar">
+                <div class="vit__logo">
+                  <i>CN</i>
+                  <div>
+                    <strong>Casa Nube</strong>
+                    <span>Peluquería &amp; ritual</span>
+                  </div>
+                </div>
+                <nav class="vit__nav" aria-label="Navegación de Vitrina">
+                  <span class="is-active">Servicios</span>
+                  <span>Equipo</span>
+                  <span>El espacio</span>
+                  <span>Diario</span>
+                </nav>
+                <div class="vit__barright">
+                  <span class="vit__powered">con <b>AgendaSaaS</b></span>
+                  <span class="vit__bookpill">Reservar</span>
+                </div>
+              </div>
+
+              <div class="vit__hero">
+                <div class="vit__heroleft">
+                  <p class="vit__eyebrow">Palermo · Buenos Aires</p>
+                  <p class="vit__h1">El pelo como <em>ritual</em>, no como trámite.</p>
+                  <p class="vit__lead">
+                    Un espacio pequeño, seis manos y tiempo real para cada persona.
+                    Color, corte y tratamientos con diagnóstico previo.
+                  </p>
+                  <div class="vit__heroctas">
+                    <span class="vit__cta">Reservar mi turno →</span>
+                    <span class="vit__cta vit__cta--ghost">Ver la carta</span>
+                  </div>
+                  <div class="vit__herometa">
+                    <span><b>4,9 ★</b>312 reseñas</span>
+                    <span><b>12 años</b>en el barrio</span>
+                    <span><b>6</b>estilistas</span>
+                  </div>
+                </div>
+
+                <div class="vit__art" aria-hidden="true">
+                  <div class="vit__disc"></div>
+                  <span class="vit__stamp">hecho<br />a mano<br />desde 2014</span>
+                  <div class="vit__rating">
+                    <span class="vit__stars">★★★★★</span>
+                    <b>“Salí distinta.”</b>
+                    <span>— Lucía, hace 2 días</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vit__strip">
+                <i>✂</i> Corte
+                <i>◐</i> Color
+                <i>❋</i> Tratamientos
+                <i>♡</i> Novias
+                <i>✧</i> Barbería
+                <i>☺</i> Kids
+              </div>
+
+              <div class="vit__section">
+                <div class="vit__sechead">
+                  <div>
+                    <h2>La carta de Casa Nube</h2>
+                    <p>Precios finales · incluye diagnóstico y lavado</p>
+                  </div>
+                  <span class="vit__link">Ver los 12 servicios →</span>
+                </div>
+
+                <div class="vit__cards">
+                  <article class="vit__card">
+                    <div class="vit__thumb">
+                      <span class="vit__badge">Más pedido</span>
+                    </div>
+                    <div class="vit__cardbody">
+                      <h3>Corte + styling</h3>
+                      <p>Diagnóstico, corte a tijera y peinado con producto.</p>
+                      <div class="vit__cardfoot">
+                        <b>$18.000</b>
+                        <span>45 min</span>
+                        <em>Reservar</em>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="vit__card">
+                    <div class="vit__thumb">
+                      <span class="vit__badge">Color</span>
+                    </div>
+                    <div class="vit__cardbody">
+                      <h3>Color a medida</h3>
+                      <p>Rubios, cobrizos y baños de color con prueba previa.</p>
+                      <div class="vit__cardfoot">
+                        <b>$42.000</b>
+                        <span>120 min</span>
+                        <em>Reservar</em>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="vit__card">
+                    <div class="vit__thumb">
+                      <span class="vit__badge">Ritual</span>
+                    </div>
+                    <div class="vit__cardbody">
+                      <h3>Ritual de hidratación</h3>
+                      <p>Masaje capilar, vapor y máscara según diagnóstico.</p>
+                      <div class="vit__cardfoot">
+                        <b>$26.000</b>
+                        <span>60 min</span>
+                        <em>Reservar</em>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <div class="vit__section" style="padding-top:0">
+                <div class="vit__sechead">
+                  <div>
+                    <h2>Quién te va a escuchar</h2>
+                    <p>Elegís profesional al reservar</p>
+                  </div>
+                </div>
+                <div class="vit__team">
+                  <div class="vit__person">
+                    <span class="vit__face">M</span>
+                    <div>
+                      <strong>Mora</strong>
+                      <span>Color y rubios</span>
+                      <small>Próximo: hoy 15:30</small>
+                    </div>
+                  </div>
+                  <div class="vit__person">
+                    <span class="vit__face">J</span>
+                    <div>
+                      <strong>Julieta</strong>
+                      <span>Cortes y flequillos</span>
+                      <small>Próximo: mañana 10:00</small>
+                    </div>
+                  </div>
+                  <div class="vit__person">
+                    <span class="vit__face">T</span>
+                    <div>
+                      <strong>Tomás</strong>
+                      <span>Barbería y textura</span>
+                      <small>Próximo: hoy 18:00</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vit__quote">
+                <div>
+                  <blockquote>
+                    “Vine por una recomendación y me quedé por cómo me explicaron
+                    <em>por qué</em> mi pelo hacía lo que hacía.”
+                  </blockquote>
+                  <div class="vit__byline">
+                    <i>LM</i>
+                    Lucía M. · clienta desde 2021
+                  </div>
+                </div>
+                <div class="vit__quotemeta">
+                  <b>4,9</b>
+                  <span>Promedio de 312 reseñas verificadas</span>
+                </div>
+              </div>
+
+              <div class="vit__bookbar">
+                <div class="vit__field">
+                  <span>Servicio</span>
+                  <b>Corte + styling</b>
+                </div>
+                <div class="vit__field">
+                  <span>Fecha</span>
+                  <b>Mié 28 oct</b>
+                </div>
+                <div class="vit__field">
+                  <span>Hora</span>
+                  <b>15:30 · Mora</b>
+                </div>
+                <span class="vit__cta">Confirmar →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="dir__footer">
+          <div class="dir__col">
+            <h3>Qué cambia</h3>
+            <ul>
+              <li>El tenant define color, tipografía y portada; la estructura es la misma.</li>
+              <li>La reserva vive en una barra persistente, no en una página aparte.</li>
+              <li>El equipo y las reseñas son parte de la venta, no un anexo.</li>
+            </ul>
+          </div>
+          <div class="dir__col">
+            <h3>Riesgo</h3>
+            <p>Es la opción más costosa de construir y mantener: cada tenant puede romper el contraste. Hay que limitar la personalización a tokens validados y no permitir CSS libre. La barra fija puede tapar contenido en pantallas bajas.</p>
+          </div>
+          <div class="dir__col">
+            <h3>Paleta</h3>
+            <ul class="swatches">
+              <li><i style="background:#FBF7F0"></i><code>#FBF7F0</code></li>
+              <li><i style="background:#B3402C"></i><code>#B3402C</code></li>
+              <li><i style="background:#6D1F16"></i><code>#6D1F16</code></li>
+              <li><i style="background:#F0B429"></i><code>#F0B429</code></li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+    <!-- ==================== COMPARATIVA ==================== -->
+    <section id="comparativa" class="compare">
+      <div class="wrap">
+        <p class="eyebrow">Lectura rápida</p>
+        <h2>Cinco direcciones, cinco apuestas</h2>
+        <p class="compare__lead">
+          Ninguna es “la misma app con otro color”. Cambian la pantalla principal, el
+          modelo de navegación y el trabajo que la persona hace con la agenda. La
+          decisión depende de quién es el usuario principal, no del gusto.
+        </p>
+
+        <p class="tablehint">Deslizá para comparar las cinco direcciones →</p>
+
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Comparación de las cinco direcciones de diseño</caption>
+            <thead>
+              <tr>
+                <th scope="col">Criterio</th>
+                <th scope="col">01 · Mostrador</th>
+                <th scope="col" class="col-rec">02 · Estudio <span class="mark">Portal</span></th>
+                <th scope="col">03 · Ritmo</th>
+                <th scope="col" class="col-rec">04 · Panel <span class="mark">Admin</span></th>
+                <th scope="col">05 · Vitrina</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Pantalla principal</th>
+                <td>Cola + pista + ficha</td>
+                <td class="col-rec">Carta de servicios</td>
+                <td>Chat de reserva</td>
+                <td class="col-rec">Semana completa</td>
+                <td>Landing de marca</td>
+              </tr>
+              <tr>
+                <th scope="row">Navegación</th>
+                <td>Tabs superiores</td>
+                <td class="col-rec">Anclas + rail</td>
+                <td>Hilo + feed</td>
+                <td class="col-rec">Rail de iconos</td>
+                <td>Barra + barra fija</td>
+              </tr>
+              <tr>
+                <th scope="row">Flujo de reserva</th>
+                <td>Hueco → ficha → cobrar</td>
+                <td class="col-rec">Sumar servicios → rail → confirmar</td>
+                <td>Conversar → tocar hora → confirmar</td>
+                <td class="col-rec">Doble clic → inspector</td>
+                <td>Servicio → fecha → barra</td>
+              </tr>
+              <tr>
+                <th scope="row">Fortaleza</th>
+                <td>Velocidad en mostrador</td>
+                <td class="col-rec">Marca y confianza</td>
+                <td>Naturalidad y adopción</td>
+                <td class="col-rec">Control y planificación</td>
+                <td>Diferenciación comercial</td>
+              </tr>
+              <tr>
+                <th scope="row">Debilidad</th>
+                <td>Densa en móvil</td>
+                <td class="col-rec">Poca escala a many-services</td>
+                <td>No reemplaza la agenda</td>
+                <td>Requiere aprendizaje</td>
+                <td>Caro de mantener</td>
+              </tr>
+              <tr>
+                <th scope="row">Esfuerzo</th>
+                <td>Medio</td>
+                <td class="col-rec">Medio</td>
+                <td>Medio-alto</td>
+                <td class="col-rec">Alto</td>
+                <td>Alto</td>
+              </tr>
+              <tr>
+                <th scope="row">Cuándo elegirla</th>
+                <td>El cuello de botella es la recepción</td>
+                <td class="col-rec">El cliente decide antes de escribir</td>
+                <td>El negocio vive en WhatsApp</td>
+                <td class="col-rec">Hay equipo y varias sedes</td>
+                <td>Se compite por marca y precio</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="callout">
+          <div>
+            <p class="eyebrow">Recomendación</p>
+            <h2>No es una sola. Son dos capas.</h2>
+            <p>
+              <b>Mostrador</b> para el admin y <b>Estudio</b> para el portal público:
+              resuelven los dos trabajos reales —atender y reservar— con la misma
+              base de datos y sin obligar al cliente a un wizard. <b>Ritmo</b> entra
+              después como capa de WhatsApp, y <b>Panel</b> o <b>Vitrina</b> según el
+              segmento: operación multi-sede o marca premium.
+            </p>
+            <p style="margin-top:10px">
+              Si hay que elegir una sola para empezar: <b>Mostrador</b>. Es donde se
+              pierde el dinero cuando la agenda falla.
+            </p>
+          </div>
+          <ul class="callout__list">
+            <li><b>01</b><span>Tokens semánticos y componentes base reutilizables entre las cinco pantallas.</span></li>
+            <li><b>02</b><span>Vertical slice: Mostrador (Hoy) + Estudio (portal) con datos reales.</span></li>
+            <li><b>03</b><span>Validar a 390, 768 y 1440 px con recepcionistas y clientes reales.</span></li>
+            <li><b>04</b><span>Sumar Ritmo como integración, no como rediseño: el chat es un canal.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <span>Exploración estática · no forma parte del build de Next.js</span>
+      <code>AgendaSaaS / design / exploraciones.html</code>
+    </div>
+  </footer>
+</body>
+</html>

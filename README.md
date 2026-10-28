@@ -45,3 +45,11 @@ npm run build
 - `/`: Portada SaaS con métricas en tiempo real de la base de datos.
 - `/b/barberia-vintage`: Portal público de agendamiento para clientes del negocio de demostración.
 - `/admin`: Panel de control y agenda del negocio.
+
+---
+
+## 📐 Plan de evolución
+
+- [Vitrina + reservas por WhatsApp](docs/plan-vitrina-whatsapp.md): plan de producto y arquitectura para el portal de marca y el bot de WhatsApp.
+- [Exploraciones de diseño](design/README.md): mockups estáticos de las direcciones evaluadas.
+
