@@ -34,7 +34,7 @@ async function main() {
 
   // 3. Crear Usuario Administrador/Dueño (contraseña: password123)
   const passwordHash = await bcrypt.hash("password123", 10);
-  const ownerUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       tenantId: tenant.id,
       email: "admin@barberiavintage.com",

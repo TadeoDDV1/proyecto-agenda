@@ -25,6 +25,11 @@ export default async function PublicBookingPage({ params }: PageProps) {
       },
       staff: {
         where: { isActive: true },
+        include: {
+          services: {
+            select: { serviceId: true },
+          },
+        },
       },
     },
   });
@@ -49,6 +54,7 @@ export default async function PublicBookingPage({ params }: PageProps) {
     displayName: st.displayName,
     colorCode: st.colorCode,
     avatarUrl: st.avatarUrl,
+    serviceIds: st.services.map((svc) => svc.serviceId),
   }));
 
   return (
@@ -102,7 +108,7 @@ export default async function PublicBookingPage({ params }: PageProps) {
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] mb-3 text-accent-warm">
             Portal de reservas
           </p>
-          <h2 className="text-3xl sm:text-4xl font-light tracking-tight leading-tight font-display text-foreground">
+          <h2 className="text-3xl sm:text-4xl font-light tracking-tight leading-tight font-display text-foreground text-balance">
             {tenant.name}
           </h2>
 

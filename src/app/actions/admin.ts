@@ -206,12 +206,40 @@ export async function createManualAppointmentAction(input: CreateManualAppointme
     });
     if (!service) return { success: false, error: "Servicio no válido." };
 
+    const staff = await prisma.staffProfile.findFirst({
+      where: { id: staffId, tenantId, isActive: true },
+    });
+    if (!staff) {
+      return { success: false, error: "El colaborador seleccionado no pertenece a este negocio." };
+    }
+
     const [hours, minutes] = timeStr.split(":").map(Number);
     const [year, month, day] = dateStr.split("-").map(Number);
+
+    if (![hours, minutes, year, month, day].every(Number.isFinite)) {
+      return { success: false, error: "Fecha u hora no válida." };
+    }
+
     const startTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
     const endTime = new Date(startTime);
     endTime.setMinutes(endTime.getMinutes() + service.durationMinutes);
+
+    const overlapping = await prisma.appointment.findFirst({
+      where: {
+        staffId,
+        status: { in: ["CONFIRMED", "PENDING"] },
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
+      },
+    });
+
+    if (overlapping) {
+      return {
+        success: false,
+        error: "El colaborador ya tiene una cita que se solapa con ese horario.",
+      };
+    }
 
     // Buscar o registrar cliente
     let customer = await prisma.customer.findFirst({

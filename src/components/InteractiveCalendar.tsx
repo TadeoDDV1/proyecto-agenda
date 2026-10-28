@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatCurrency, getWhatsAppUrl } from "@/lib/utils";
+import { addDaysToDateKey, formatCurrency, getWhatsAppUrl, toDateKey } from "@/lib/utils";
 import { updateAppointmentStatusAction, createManualAppointmentAction } from "@/app/actions/admin";
 import { AppointmentStatus } from "@prisma/client";
 import {
@@ -107,24 +107,25 @@ export function InteractiveCalendar({
     return () => clearInterval(interval);
   }, []);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = toDateKey();
   const isSelectedDateToday = selectedDate === todayStr;
   const currentHour = currentTimeMinutes !== null ? Math.floor(currentTimeMinutes / 60) : null;
 
   function handleShiftDay(offset: number) {
-    const [y, m, d] = selectedDate.split("-").map(Number);
-    const date = new Date(y, m - 1, d);
-    date.setDate(date.getDate() + offset);
-    setSelectedDate(date.toISOString().split("T")[0]);
+    setSelectedDate(addDaysToDateKey(selectedDate, offset));
   }
 
   function handleSetToday() {
     setSelectedDate(todayStr);
   }
 
-  const dateAppointments = appointments.filter((app) =>
-    app.startTime.startsWith(selectedDate)
+  const dateAppointments = appointments.filter(
+    (app) => toDateKey(new Date(app.startTime)) === selectedDate
   );
+
+  const dayRevenue = dateAppointments
+    .filter((app) => app.status !== "CANCELLED")
+    .reduce((acc, app) => acc + Number(app.totalPrice), 0);
 
   const hours = [
     "09:00", "10:00", "11:00", "12:00", "13:00",
@@ -230,7 +231,7 @@ export function InteractiveCalendar({
           </button>
 
           <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-base border border-border">
-            <CalendarIcon className="w-4 h-4 text-accent-hover" />
+            <CalendarIcon className="w-4 h-4 text-accent-hover" aria-hidden="true" />
             <input
               type="date"
               aria-label="Seleccionar fecha"
@@ -244,7 +245,13 @@ export function InteractiveCalendar({
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted font-mono hidden sm:inline">
             <strong className="text-accent-warm font-semibold">{dateAppointments.length}</strong>{" "}
-            cita(s) programada(s)
+            {dateAppointments.length === 1 ? "cita programada" : "citas programadas"}
+          </span>
+          <span
+            className="hidden md:inline font-mono text-[11px] text-dim"
+            aria-label={`Ingresos estimados del día: ${formatCurrency(dayRevenue, currency)}`}
+          >
+            {formatCurrency(dayRevenue, currency)}
           </span>
 
           <Button
@@ -261,15 +268,42 @@ export function InteractiveCalendar({
       </div>
 
       {/* Rejilla del calendario */}
+      {dateAppointments.length === 0 && (
+        <div
+          role="status"
+          className="rounded-xl border border-dashed border-border bg-surface px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+        >
+          <p className="text-xs text-muted flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-accent-warm flex-shrink-0" aria-hidden="true" />
+            No hay citas para este día. Registra una cita en mostrador o comparte el portal de reservas.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setManualError(null);
+              setIsModalOpen(true);
+            }}
+            className="self-start sm:self-auto text-[11px] font-semibold text-accent-warm hover:text-foreground transition"
+          >
+            + Agendar primera cita
+          </button>
+        </div>
+      )}
+      {staffList.length > 1 && (
+        <p className="flex items-center justify-end gap-1.5 text-[11px] text-dim lg:hidden">
+          Desliza para ver al resto del equipo
+          <ChevronRight className="h-3 w-3" aria-hidden="true" />
+        </p>
+      )}
       <div className="bg-surface rounded-xl border border-border overflow-x-auto">
         <div className="min-w-[850px]">
           {/* Header: especialistas */}
-          <div className="grid grid-cols-12 border-b border-border bg-surface-raised sticky top-0 z-20">
-            <div className="col-span-2 p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border flex items-center">
+          <div className="flex border-b border-border bg-surface-raised sticky top-0 z-20">
+            <div className="w-[120px] flex-shrink-0 p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border flex items-center">
               Línea de tiempo
             </div>
             <div
-              className="col-span-10 grid"
+              className="flex-1 grid"
               style={{ gridTemplateColumns: `repeat(${staffList.length}, minmax(0, 1fr))` }}
             >
               {staffList.map((st) => (
@@ -315,18 +349,29 @@ export function InteractiveCalendar({
               const isCurrentHour = isSelectedDateToday && hourNum === currentHour;
 
               return (
-                <div key={hour} className="grid grid-cols-12 min-h-[96px]">
+                <div key={hour} className="flex min-h-[96px]">
                   <div
-                    className={`col-span-2 p-3.5 text-xs font-mono font-semibold border-r border-border flex items-start gap-2 select-none ${
+                    className={`w-[120px] flex-shrink-0 p-3.5 text-xs font-mono font-semibold border-r border-border flex items-start gap-2 select-none ${
                       isCurrentHour ? "text-accent-warm bg-accent-soft" : "text-muted bg-base/60"
                     }`}
                   >
                     <Clock className="w-3.5 h-3.5 mt-0.5" />
-                    <span>{hour} hrs</span>
+                    <span className="flex flex-col gap-1 whitespace-nowrap">
+                      <span>{hour} hrs</span>
+                      {isCurrentHour && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.1em]">
+                          <span
+                            className="h-1 w-1 rounded-full bg-accent-warm"
+                            aria-hidden="true"
+                          />
+                          Ahora
+                        </span>
+                      )}
+                    </span>
                   </div>
 
                   <div
-                    className="col-span-10 grid divide-x divide-border-subtle"
+                    className="flex-1 grid divide-x divide-border-subtle"
                     style={{ gridTemplateColumns: `repeat(${staffList.length}, minmax(0, 1fr))` }}
                   >
                     {staffList.map((st) => {
@@ -697,6 +742,7 @@ export function InteractiveCalendar({
             <form onSubmit={handleCreateManual} className="space-y-4">
               <div>
                 <label htmlFor="manual-service" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                  Servicio
                 </label>
                 <select id="manual-service"
                   value={manualServiceId}
@@ -713,6 +759,7 @@ export function InteractiveCalendar({
 
               <div>
                 <label htmlFor="manual-staff" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                  Especialista
                 </label>
                 <select id="manual-staff"
                   value={manualStaffId}
@@ -730,6 +777,7 @@ export function InteractiveCalendar({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="manual-date" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Fecha
                   </label>
                   <input id="manual-date"
                     type="date"
@@ -741,6 +789,7 @@ export function InteractiveCalendar({
 
                 <div>
                   <label htmlFor="manual-time" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Hora
                   </label>
                   <select id="manual-time"
                     value={manualTime}
@@ -763,6 +812,7 @@ export function InteractiveCalendar({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="manual-name" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Nombre del cliente
                   </label>
                   <input id="manual-name"
                     type="text"
@@ -776,6 +826,7 @@ export function InteractiveCalendar({
 
                 <div>
                   <label htmlFor="manual-phone" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Teléfono / WhatsApp
                   </label>
                   <input id="manual-phone"
                     type="tel"
@@ -790,6 +841,7 @@ export function InteractiveCalendar({
 
               <div>
                 <label htmlFor="manual-notes" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                  Notas (opcional)
                 </label>
                 <input id="manual-notes"
                   type="text"

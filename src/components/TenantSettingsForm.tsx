@@ -95,7 +95,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
               href={`/b/${tenant.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg bg-accent text-accent-fg text-xs font-medium hover:bg-accent-hover transition"
+              className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg bg-accent text-accent-fg text-xs font-medium hover:bg-accent-dim transition"
             >
               <span>Abrir portal</span>
               <ExternalLink className="w-3.5 h-3.5" />

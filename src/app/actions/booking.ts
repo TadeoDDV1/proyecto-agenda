@@ -25,8 +25,8 @@ export async function createBooking(input: CreateBookingInput) {
       return { success: false, error: "Negocio no encontrado." };
     }
 
-    const service = await prisma.service.findUnique({
-      where: { id: input.serviceId },
+    const service = await prisma.service.findFirst({
+      where: { id: input.serviceId, tenantId: tenant.id, isActive: true },
     });
 
     if (!service) {
@@ -36,30 +36,79 @@ export async function createBooking(input: CreateBookingInput) {
     // Calcular hora de inicio y fin
     const [hours, minutes] = input.timeStr.split(":").map(Number);
     const [year, month, day] = input.dateStr.split("-").map(Number);
+
+    if (
+      ![hours, minutes, year, month, day].every(Number.isFinite) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return { success: false, error: "Fecha u hora no válida." };
+    }
+
     const startTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
+
+    if (startTime.getTime() <= Date.now()) {
+      return { success: false, error: "No es posible agendar en una fecha u hora pasada." };
+    }
 
     const endTime = new Date(startTime);
     endTime.setMinutes(endTime.getMinutes() + service.durationMinutes);
+
+    // Validar que el profesional pertenece al negocio y ofrece el servicio
+    const staff = await prisma.staffProfile.findFirst({
+      where: { id: input.staffId, tenantId: tenant.id, isActive: true },
+      include: {
+        services: { where: { serviceId: service.id } },
+        schedules: { where: { dayOfWeek: startTime.getDay() } },
+      },
+    });
+
+    if (!staff) {
+      return { success: false, error: "Profesional no válido para este negocio." };
+    }
+
+    if (staff.services.length === 0) {
+      return { success: false, error: "El profesional seleccionado no ofrece este servicio." };
+    }
+
+    const schedule = staff.schedules[0];
+    if (!schedule || !schedule.isWorkingDay) {
+      return { success: false, error: "El profesional no trabaja en la fecha seleccionada." };
+    }
+
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    const startMinutes = hours * 60 + minutes;
+    const endMinutes = startMinutes + service.durationMinutes;
+    const workStart = toMinutes(schedule.startTime);
+    const workEnd = toMinutes(schedule.endTime);
+
+    if (startMinutes < workStart || endMinutes > workEnd) {
+      return { success: false, error: "El horario seleccionado está fuera del turno del profesional." };
+    }
+
+    if (
+      schedule.hasBreak &&
+      schedule.breakStart &&
+      schedule.breakEnd &&
+      startMinutes < toMinutes(schedule.breakEnd) &&
+      endMinutes > toMinutes(schedule.breakStart)
+    ) {
+      return { success: false, error: "El horario seleccionado coincide con el descanso del profesional." };
+    }
 
     // Verificar si el staff ya tiene una cita solapada
     const overlapping = await prisma.appointment.findFirst({
       where: {
         staffId: input.staffId,
         status: { in: ["CONFIRMED", "PENDING"] },
-        OR: [
-          {
-            startTime: { lte: startTime },
-            endTime: { gt: startTime },
-          },
-          {
-            startTime: { lt: endTime },
-            endTime: { gte: endTime },
-          },
-          {
-            startTime: { gte: startTime },
-            endTime: { lte: endTime },
-          },
-        ],
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
       },
     });
 
@@ -148,11 +197,32 @@ export async function getAvailableSlotsAction(input: GetAvailableSlotsInput) {
       return { success: false, slots: [], error: "Parámetros incompletos." };
     }
 
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId },
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug: tenantSlug },
+    });
+    if (!tenant) {
+      return { success: false, slots: [], error: "Negocio no encontrado." };
+    }
+
+    const service = await prisma.service.findFirst({
+      where: { id: serviceId, tenantId: tenant.id, isActive: true },
     });
     if (!service) {
       return { success: false, slots: [], error: "Servicio no encontrado." };
+    }
+
+    const staff = await prisma.staffProfile.findFirst({
+      where: { id: staffId, tenantId: tenant.id, isActive: true },
+      include: {
+        services: { where: { serviceId: service.id } },
+      },
+    });
+    if (!staff || staff.services.length === 0) {
+      return {
+        success: false,
+        slots: [],
+        error: "El profesional seleccionado no ofrece este servicio.",
+      };
     }
 
     // Parse date sin desviación de zona horaria

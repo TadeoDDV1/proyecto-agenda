@@ -118,11 +118,8 @@ export default async function AdminStaffPage() {
                       className="sr-only peer"
                     />
                     <div
-                      className="w-7 h-7 rounded-full border-2 ring-2 ring-transparent peer-checked:ring-accent peer-checked:scale-110 transition-all"
-                      style={{
-                        backgroundColor: color,
-                        borderColor: "var(--border-strong)",
-                      }}
+                      className="w-7 h-7 rounded-full border-2 border-border-strong ring-2 ring-transparent peer-checked:ring-accent peer-checked:scale-110 transition-all"
+                      style={{ backgroundColor: color }}
                     />
                   </label>
                 ))}

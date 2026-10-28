@@ -5,6 +5,32 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Devuelve la fecha en formato "YYYY-MM-DD" usando la zona horaria local.
+ * Evita el desfase de `toISOString()`, que convierte a UTC y puede devolver
+ * el día siguiente en zonas horarias negativas (p. ej. México).
+ */
+export function toDateKey(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** Suma (o resta) días a una fecha local "YYYY-MM-DD" sin desfase de zona. */
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return toDateKey(date);
+}
+
+/** Interpreta una fecha "YYYY-MM-DD" como medianoche local. */
+export function parseDateKey(dateKey: string): Date {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function formatCurrency(
   amount: number | string | { toString(): string },
   currency = "USD"

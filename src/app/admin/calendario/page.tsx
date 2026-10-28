@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { InteractiveCalendar } from "@/components/InteractiveCalendar";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { toDateKey } from "@/lib/utils";
 
 export default async function AdminCalendarPage() {
   const session = await getSession();
@@ -44,7 +45,7 @@ export default async function AdminCalendarPage() {
 
   if (!tenant) return null;
 
-  const initialDateStr = new Date().toISOString().split("T")[0];
+  const initialDateStr = toDateKey();
 
   const serializedStaff = tenant.staff.map((st) => ({
     id: st.id,

@@ -93,19 +93,13 @@ export function AppointmentManager({
   return (
     <div className="space-y-4">
       {/* Filtros */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl border"
-        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-      >
-        <div
-          className="flex items-center gap-2 text-[11px] font-medium px-1"
-          style={{ color: "var(--text-dim)" }}
-        >
-          <Filter className="w-3.5 h-3.5" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-surface">
+        <div className="flex items-center gap-2 text-[11px] font-medium px-1 text-dim">
+          <Filter className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Filtrar</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
           {[
             { key: "ALL", label: "Todas" },
             { key: "CONFIRMED", label: "Confirmadas" },
@@ -120,20 +114,20 @@ export function AppointmentManager({
                 key={st.key}
                 type="button"
                 onClick={() => setFilter(st.key)}
-                className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition"
-                style={{
-                  background: isActive ? "var(--accent)" : "transparent",
-                  borderColor: isActive ? "var(--accent)" : "var(--border)",
-                  color: isActive ? "var(--accent-fg)" : "var(--text-muted)",
-                }}
+                aria-pressed={isActive}
+                className={`flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition ${
+                  isActive
+                    ? "bg-accent text-accent-fg border-accent"
+                    : "bg-transparent text-muted border-border hover:text-foreground hover:border-border-strong"
+                }`}
               >
                 <span>{st.label}</span>
                 <span
-                  className="text-[10px] font-mono px-1 rounded"
-                  style={{
-                    background: isActive ? "rgba(255,255,255,0.18)" : "var(--surface-raised)",
-                    color: isActive ? "var(--accent-fg)" : "var(--text-dim)",
-                  }}
+                  className={`text-[10px] font-mono px-1 rounded ${
+                    isActive
+                      ? "bg-white/20 text-accent-fg"
+                      : "bg-surface-raised text-dim"
+                  }`}
                 >
                   {count}
                 </span>
@@ -145,21 +139,12 @@ export function AppointmentManager({
 
       {/* Lista de citas */}
       {filteredAppointments.length === 0 ? (
-        <div
-          className="p-12 text-center rounded-xl border"
-          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-        >
-          <Calendar
-            className="w-8 h-8 mx-auto mb-3"
-            style={{ color: "var(--text-dim)" }}
-          />
-          <h4
-            className="text-sm font-medium mb-1"
-            style={{ color: "var(--text-muted)" }}
-          >
+        <div className="p-12 text-center rounded-xl border border-border bg-surface">
+          <Calendar className="w-8 h-8 mx-auto mb-3 text-dim" aria-hidden="true" />
+          <h4 className="text-sm font-medium mb-1 text-muted">
             Sin citas en este filtro
           </h4>
-          <p className="text-xs" style={{ color: "var(--text-dim)" }}>
+          <p className="text-xs text-dim">
             Cambia de pestaña o agenda desde el portal de clientes.
           </p>
         </div>
@@ -173,46 +158,35 @@ export function AppointmentManager({
             return (
               <div
                 key={app.id}
-                className="p-4 rounded-xl border transition flex flex-col md:flex-row md:items-center justify-between gap-4"
-                style={{
-                  background: "var(--surface)",
-                  borderColor: "var(--border)",
-                  opacity: isCancelled ? 0.6 : 1,
-                }}
+                className={`p-4 rounded-xl border border-border bg-surface transition flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  isCancelled ? "opacity-60" : ""
+                }`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
                   {/* Indicador de color del especialista */}
                   <div
                     className="w-1 h-12 rounded-full flex-shrink-0 mt-1"
                     style={{ backgroundColor: app.staff.colorCode }}
+                    aria-hidden="true"
                   />
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h4
-                        className="text-sm font-medium"
-                        style={{ color: "var(--text)" }}
-                      >
+                      <h4 className="text-sm font-medium text-foreground">
                         {app.customer.fullName}
                       </h4>
                       <StatusPill status={app.status} />
                     </div>
 
-                    <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-                      <span style={{ color: "var(--text)" }}>{app.service.name}</span>
-                      <span className="mx-1.5" style={{ color: "var(--text-dim)" }}>·</span>
+                    <p className="text-xs mb-2 text-muted">
+                      <span className="text-foreground">{app.service.name}</span>
+                      <span className="mx-1.5 text-dim">·</span>
                       <span className="font-mono">{app.service.durationMinutes} min</span>
                     </p>
 
-                    <div
-                      className="flex flex-wrap items-center gap-4 text-xs"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      <span
-                        className="flex items-center gap-1.5 font-mono"
-                        style={{ color: "var(--accent-warm)" }}
-                      >
-                        <Clock className="w-3 h-3" />
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
+                      <span className="flex items-center gap-1.5 font-mono text-accent-warm">
+                        <Clock className="w-3 h-3" aria-hidden="true" />
                         {new Date(app.startTime).toLocaleString("es-MX", {
                           weekday: "short",
                           day: "numeric",
@@ -223,30 +197,22 @@ export function AppointmentManager({
                       </span>
 
                       <span className="flex items-center gap-1.5">
-                        <User className="w-3 h-3" style={{ color: "var(--text-dim)" }} />
+                        <User className="w-3 h-3 text-dim" aria-hidden="true" />
                         {app.staff.displayName}
                       </span>
 
                       <a
                         href={`tel:${app.customer.phone}`}
-                        className="flex items-center gap-1.5 transition"
-                        style={{ color: "var(--text-muted)" }}
+                        className="flex items-center gap-1.5 transition hover:text-foreground"
                       >
-                        <Phone className="w-3 h-3" style={{ color: "var(--text-dim)" }} />
+                        <Phone className="w-3 h-3 text-dim" aria-hidden="true" />
                         {app.customer.phone}
                       </a>
                     </div>
 
                     {app.customerNotes && (
-                      <p
-                        className="text-xs mt-2 px-3 py-2 rounded-lg border"
-                        style={{
-                          background: "var(--base)",
-                          borderColor: "var(--border)",
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        <span style={{ color: "var(--text)" }}>Nota: </span>
+                      <p className="text-xs mt-2 px-3 py-2 rounded-lg border border-border bg-base text-muted">
+                        <span className="text-foreground">Nota: </span>
                         {app.customerNotes}
                       </p>
                     )}
@@ -254,8 +220,7 @@ export function AppointmentManager({
                 </div>
 
                 {/* Precio + acciones */}
-                <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-3 pt-3 md:pt-0 border-t md:border-t-0"
-                  style={{ borderColor: "var(--border)" }}>
+                <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-border">
                   <span className="text-base font-light font-display text-foreground">
                     {formatCurrency(app.totalPrice, currency)}
                   </span>
@@ -269,13 +234,9 @@ export function AppointmentManager({
                         rel="noreferrer"
                         title="Enviar recordatorio WhatsApp"
                         aria-label="Enviar recordatorio por WhatsApp"
-                        className="p-1.5 rounded-lg border transition text-xs flex items-center gap-1"
-                        style={{
-                          borderColor: "var(--border)",
-                          color: "var(--text-muted)",
-                        }}
+                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong text-xs flex items-center gap-1"
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
+                        <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline text-[11px]">WA</span>
                       </a>
                     )}
@@ -288,13 +249,9 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "COMPLETED")}
                         title="Marcar como completada"
                         aria-label="Marcar como completada"
-                        className="p-1.5 rounded-lg border transition flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
-                        style={{
-                          borderColor: "var(--border)",
-                          color: "var(--text-muted)",
-                        }}
+                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" />
+                        <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline">Completar</span>
                       </button>
                     )}
@@ -307,13 +264,9 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "CANCELLED")}
                         title="Cancelar cita"
                         aria-label="Cancelar cita"
-                        className="p-1.5 rounded-lg border transition disabled:opacity-40"
-                        style={{
-                          borderColor: "var(--border)",
-                          color: "var(--text-dim)",
-                        }}
+                        className="p-1.5 rounded-lg border border-border text-dim transition hover:text-foreground hover:border-border-strong disabled:opacity-40"
                       >
-                        <XCircle className="w-3.5 h-3.5" />
+                        <XCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
                     )}
 
@@ -325,13 +278,9 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "CONFIRMED")}
                         title="Reactivar cita"
                         aria-label="Reactivar cita"
-                        className="px-2.5 py-1.5 rounded-lg border transition text-[11px] font-medium flex items-center gap-1.5 disabled:opacity-40"
-                        style={{
-                          borderColor: "var(--border)",
-                          color: "var(--text-muted)",
-                        }}
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong text-[11px] font-medium flex items-center gap-1.5 disabled:opacity-40"
                       >
-                        <RotateCcw className="w-3 h-3" />
+                        <RotateCcw className="w-3 h-3" aria-hidden="true" />
                         <span>Reactivar</span>
                       </button>
                     )}

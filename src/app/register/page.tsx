@@ -5,6 +5,7 @@ import { registerTenantAction } from "@/app/actions/auth";
 import Link from "next/link";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { AuthShell } from "@/components/AuthShell";
 import { Button, Card, Field, Input, Select } from "@/components/ui";
 
 export default function RegisterPage() {
@@ -55,36 +56,35 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-base flex flex-col justify-center py-16 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-lg text-center mb-10">
-        <Link href="/" className="inline-block mb-8">
-          <span className="font-display italic text-muted text-sm tracking-wider">
-            AgendaSaaS
-          </span>
-        </Link>
-        <h1 className="text-3xl font-light tracking-tight text-foreground font-display">
-          Registrar negocio
-        </h1>
-        <p className="mt-2 text-sm text-muted">
-          Configura tu agenda en minutos, sin tarjeta requerida
-        </p>
-      </div>
+    <AuthShell
+      eyebrow="Crear cuenta"
+      title="Abrir mi agenda"
+      description="Configura tu negocio en minutos. Sin tarjeta requerida."
+      maxWidth="max-w-lg"
+    >
+      <Card className="p-6 sm:p-8">
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 flex items-center gap-2.5 rounded-lg border border-error/25 bg-error/10 p-3 text-xs text-error-text"
+          >
+            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-lg">
-        <Card className="p-8">
-          {error && (
-            <div className="mb-6 p-3 rounded-lg bg-error/10 border border-error/25 text-error-text text-xs flex items-center gap-2.5">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+        <form onSubmit={handleSubmit}>
+          <fieldset className="space-y-4">
+            <legend className="mb-4 w-full border-b border-border-subtle pb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
+              01 · Tu negocio
+            </legend>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
             <Field label="Nombre del negocio" required htmlFor="businessName">
               <Input
                 id="businessName"
                 type="text"
                 required
+                autoComplete="organization"
                 placeholder="Ej. Barbería Élite"
                 value={businessName}
                 onChange={(e) => handleBusinessNameChange(e.target.value)}
@@ -98,12 +98,13 @@ export default function RegisterPage() {
               htmlFor="slug"
             >
               <div className="relative flex items-center">
-                <span className="absolute left-3.5 text-dim text-xs font-mono pointer-events-none select-none">
+                <span className="pointer-events-none absolute left-3.5 select-none font-mono text-xs text-dim">
                   /b/
                 </span>
                 <Input
                   type="text"
                   required
+                  autoComplete="off"
                   placeholder="barberia-elite"
                   id="slug"
                   value={slug}
@@ -114,13 +115,20 @@ export default function RegisterPage() {
                 />
               </div>
             </Field>
+          </fieldset>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <fieldset className="mt-7 space-y-4">
+            <legend className="mb-4 w-full border-b border-border-subtle pb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
+              02 · Administrador
+            </legend>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre del admin" required htmlFor="ownerName">
                 <Input
                   id="ownerName"
                   type="text"
                   required
+                  autoComplete="name"
                   placeholder="Carlos Ramos"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
@@ -131,6 +139,7 @@ export default function RegisterPage() {
                   id="phone"
                   type="tel"
                   required
+                  autoComplete="tel"
                   placeholder="55 1234 5678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -138,12 +147,13 @@ export default function RegisterPage() {
               </Field>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Correo electrónico" required htmlFor="reg-email">
                 <Input
                   id="reg-email"
                   type="email"
                   required
+                  autoComplete="email"
                   placeholder="admin@tu-salon.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -152,6 +162,7 @@ export default function RegisterPage() {
               <Field label="Moneda" htmlFor="currency">
                 <Select
                   id="currency"
+                  autoComplete="off"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
                 >
@@ -173,39 +184,36 @@ export default function RegisterPage() {
                 id="reg-password"
                 type="password"
                 required
+                autoComplete="new-password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Field>
+          </fieldset>
 
-            <Button
-              type="submit"
-              loading={loading}
-              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-              className="w-full mt-2"
+          <Button
+            type="submit"
+            loading={loading}
+            rightIcon={<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />}
+            className="mt-6 w-full"
+          >
+            {loading ? "Creando agenda..." : "Abrir mi agenda"}
+          </Button>
+        </form>
+
+        <div className="mt-6 border-t border-border pt-6 text-center">
+          <p className="text-xs text-dim">
+            ¿Ya tienes cuenta?{" "}
+            <Link
+              href="/login"
+              className="text-muted underline underline-offset-2 transition hover:text-foreground"
             >
-              {loading ? "Creando agenda..." : "Abrir mi agenda"}
-            </Button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-border text-center">
-            <p className="text-xs text-dim">
-              ¿Ya tienes cuenta?{" "}
-              <Link
-                href="/login"
-                className="text-muted hover:text-foreground underline underline-offset-2 transition"
-              >
-                Iniciar sesión
-              </Link>
-            </p>
-          </div>
-        </Card>
-
-        <p className="text-center text-[11px] text-dim mt-5">
-          Base de datos aislada por tenant · Sin tarjeta requerida
-        </p>
-      </div>
-    </div>
+              Iniciar sesión
+            </Link>
+          </p>
+        </div>
+      </Card>
+    </AuthShell>
   );
 }

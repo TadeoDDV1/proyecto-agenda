@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toDateKey } from "@/lib/utils";
 import { createBooking, getAvailableSlotsAction } from "@/app/actions/booking";
 import {
   Clock,
@@ -30,6 +30,7 @@ interface StaffItem {
   displayName: string;
   colorCode: string;
   avatarUrl: string | null;
+  serviceIds?: string[];
 }
 
 interface ConfirmedBooking {
@@ -65,11 +66,15 @@ export function BookingWizard({
   const [step, setStep] = useState<number>(1);
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedServiceId, setSelectedServiceId] = useState<string>(services[0]?.id || "");
-  const [selectedStaffId, setSelectedStaffId] = useState<string>(staffMembers[0]?.id || "");
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
+  const [selectedStaffId, setSelectedStaffId] = useState<string>(() => {
+    const firstServiceId = services[0]?.id;
+    return (
+      staffMembers.find((st) => st.serviceIds?.includes(firstServiceId || ""))?.id ||
+      staffMembers[0]?.id ||
+      ""
+    );
   });
+  const [selectedDate, setSelectedDate] = useState<string>(() => toDateKey());
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
@@ -86,7 +91,17 @@ export function BookingWizard({
   const [slotsMessage, setSlotsMessage] = useState<string | null>(null);
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
-  const selectedStaff = staffMembers.find((st) => st.id === selectedStaffId);
+
+  // Solo los profesionales que ofrecen el servicio seleccionado
+  const eligibleStaff = staffMembers.filter(
+    (st) => !st.serviceIds || st.serviceIds.includes(selectedServiceId)
+  );
+
+  // Si el profesional elegido no ofrece el servicio actual, usar el primero disponible
+  const effectiveStaffId = eligibleStaff.some((st) => st.id === selectedStaffId)
+    ? selectedStaffId
+    : eligibleStaff[0]?.id || "";
+  const selectedStaff = staffMembers.find((st) => st.id === effectiveStaffId);
 
   // Extraer categorías únicas
   const categories = Array.from(
@@ -102,7 +117,7 @@ export function BookingWizard({
   const upcomingDays = Array.from({ length: 10 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split("T")[0];
+    const dateStr = toDateKey(d);
     const dayName = d.toLocaleDateString("es-ES", { weekday: "short" });
     const dayNum = d.getDate();
     const monthName = d.toLocaleDateString("es-ES", { month: "short" });
@@ -111,7 +126,7 @@ export function BookingWizard({
 
   // Consultar disponibilidad en tiempo real
   useEffect(() => {
-    if (!selectedStaffId || !selectedServiceId || !selectedDate) return;
+    if (!effectiveStaffId || !selectedServiceId || !selectedDate) return;
 
     let isMounted = true;
     async function fetchSlots() {
@@ -121,7 +136,7 @@ export function BookingWizard({
 
       const res = await getAvailableSlotsAction({
         tenantSlug,
-        staffId: selectedStaffId,
+        staffId: effectiveStaffId,
         serviceId: selectedServiceId,
         dateStr: selectedDate,
       });
@@ -144,7 +159,7 @@ export function BookingWizard({
     return () => {
       isMounted = false;
     };
-  }, [tenantSlug, selectedStaffId, selectedServiceId, selectedDate]);
+  }, [tenantSlug, effectiveStaffId, selectedServiceId, selectedDate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -159,7 +174,7 @@ export function BookingWizard({
     const res = await createBooking({
       tenantSlug,
       serviceId: selectedServiceId,
-      staffId: selectedStaffId,
+      staffId: effectiveStaffId,
       customerName,
       customerPhone,
       customerEmail,
@@ -182,14 +197,14 @@ export function BookingWizard({
 
   const canProceed =
     (step === 1 && selectedServiceId) ||
-    (step === 2 && selectedStaffId) ||
+    (step === 2 && effectiveStaffId) ||
     (step === 3 && selectedDate && selectedTime) ||
     (step === 4 && customerName && customerPhone);
 
   return (
     <div className="grid lg:grid-cols-12 gap-8 items-start">
       {/* Columna izquierda: asistente */}
-      <div className="lg:col-span-8 space-y-6">
+      <div className="lg:col-span-8 min-w-0 space-y-6">
         {/* Stepper */}
         <div className="bg-surface border border-border rounded-xl p-4 sm:p-5">
           <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
@@ -202,8 +217,9 @@ export function BookingWizard({
                   key={s.num}
                   type="button"
                   disabled={s.num > step}
+                  aria-current={isActive ? "step" : undefined}
                   onClick={() => s.num < step && setStep(s.num)}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                  className={`flex flex-1 sm:flex-none items-center justify-center sm:justify-start gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                     isActive
                       ? "bg-accent-soft border border-accent/40 text-accent-warm"
                       : isPast
@@ -222,7 +238,7 @@ export function BookingWizard({
                   >
                     {isPast ? <Check className="w-3.5 h-3.5" /> : s.num}
                   </div>
-                  <span>{s.label}</span>
+                  <span className="hidden sm:inline">{s.label}</span>
                 </button>
               );
             })}
@@ -232,7 +248,10 @@ export function BookingWizard({
         {/* Contenedor principal del paso */}
         <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 relative overflow-hidden">
           {errorMessage && (
-            <div className="mb-6 p-4 rounded-xl bg-error/10 border border-error/25 text-error-text flex items-center gap-3 text-xs">
+            <div
+              role="alert"
+              className="mb-6 p-4 rounded-xl bg-error/10 border border-error/25 text-error-text flex items-center gap-3 text-xs"
+            >
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -254,10 +273,11 @@ export function BookingWizard({
               </div>
 
               {categories.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible">
                   <button
                     type="button"
                     onClick={() => setSelectedCategory("ALL")}
+                    aria-pressed={selectedCategory === "ALL"}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                       selectedCategory === "ALL"
                         ? "bg-accent text-accent-fg"
@@ -271,6 +291,7 @@ export function BookingWizard({
                       key={cat}
                       type="button"
                       onClick={() => setSelectedCategory(cat)}
+                      aria-pressed={selectedCategory === cat}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                         selectedCategory === cat
                           ? "bg-accent text-accent-fg"
@@ -291,6 +312,7 @@ export function BookingWizard({
                       key={srv.id}
                       type="button"
                       onClick={() => setSelectedServiceId(srv.id)}
+                      aria-pressed={isSelected}
                       className={`text-left p-5 rounded-xl border transition-all flex flex-col justify-between group relative overflow-hidden ${
                         isSelected
                           ? "bg-accent-soft border-accent/60"
@@ -360,13 +382,14 @@ export function BookingWizard({
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
-                {staffMembers.map((staff) => {
-                  const isSelected = selectedStaffId === staff.id;
+                {eligibleStaff.map((staff) => {
+                  const isSelected = effectiveStaffId === staff.id;
                   return (
                     <button
                       key={staff.id}
                       type="button"
                       onClick={() => setSelectedStaffId(staff.id)}
+                      aria-pressed={isSelected}
                       className={`text-center p-6 rounded-xl border transition-all flex flex-col items-center relative group ${
                         isSelected
                           ? "bg-accent-soft border-accent/60"
@@ -428,7 +451,7 @@ export function BookingWizard({
                 </Button>
                 <Button
                   type="button"
-                  disabled={!selectedStaffId}
+                  disabled={!effectiveStaffId}
                   onClick={() => setStep(3)}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
@@ -467,6 +490,7 @@ export function BookingWizard({
                         key={d.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(d.dateStr)}
+                        aria-pressed={isSelected}
                         className={`flex flex-col items-center justify-center min-w-[76px] py-3.5 px-3 rounded-xl border transition-all text-center flex-shrink-0 ${
                           isSelected
                             ? "bg-accent text-accent-fg border-accent"
@@ -495,7 +519,7 @@ export function BookingWizard({
               </div>
 
               {/* Horarios */}
-              <div role="group" aria-labelledby="bk-slots-label">
+              <div role="group" aria-labelledby="bk-slots-label" aria-live="polite">
                 <div className="flex items-center justify-between mb-2.5">
                   <span id="bk-slots-label" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em]">
                     Turnos Disponibles
@@ -523,6 +547,7 @@ export function BookingWizard({
                           key={time}
                           type="button"
                           onClick={() => setSelectedTime(time)}
+                          aria-pressed={isSelected}
                           className={`py-3 px-2 rounded-lg border text-xs font-mono font-semibold transition ${
                             isSelected
                               ? "bg-accent text-accent-fg border-accent"
@@ -576,6 +601,7 @@ export function BookingWizard({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="bk-name" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Nombre completo
                   </label>
                   <input id="bk-name"
                     type="text"
@@ -589,6 +615,7 @@ export function BookingWizard({
 
                 <div>
                   <label htmlFor="bk-phone" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                    Teléfono / WhatsApp
                   </label>
                   <input id="bk-phone"
                     type="tel"
@@ -603,6 +630,7 @@ export function BookingWizard({
 
               <div>
                 <label htmlFor="bk-email" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                  Correo electrónico (opcional)
                 </label>
                 <input id="bk-email"
                   type="email"
@@ -615,6 +643,7 @@ export function BookingWizard({
 
               <div>
                 <label htmlFor="bk-notes" className="block text-[11px] font-semibold text-muted uppercase tracking-[0.12em] mb-1.5">
+                  Notas para tu cita (opcional)
                 </label>
                 <textarea id="bk-notes"
                   rows={2}
@@ -729,7 +758,7 @@ export function BookingWizard({
       </div>
 
       {/* Columna derecha: recibo en vivo */}
-      <div className="hidden lg:block lg:col-span-4 sticky top-24 space-y-5">
+      <div className="hidden lg:block lg:col-span-4 min-w-0 sticky top-24 space-y-5">
         <div className="bg-surface border border-border rounded-2xl p-6">
           <div className="flex items-center justify-between pb-4 border-b border-border">
             <div>
@@ -818,17 +847,15 @@ export function BookingWizard({
               <span>Reserva garantizada. Sin cargos de cancelación anticipada.</span>
             </div>
 
-            {step < 5 && (
+            {step < 4 && (
               <Button
                 type="button"
                 disabled={!canProceed}
-                onClick={() => {
-                  if (step < 4) setStep(step + 1);
-                }}
+                onClick={() => setStep(step + 1)}
                 className="w-full"
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
-                {step === 4 ? "Listo para confirmar" : "Siguiente Paso"}
+                Siguiente Paso
               </Button>
             )}
           </div>
@@ -836,8 +863,8 @@ export function BookingWizard({
       </div>
 
       {/* Barra sticky inferior móvil */}
-      {step < 5 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-base/95 backdrop-blur-xl border-t border-border z-50 flex items-center justify-between gap-4">
+      {step < 4 && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-base/95 backdrop-blur-xl border-t border-border z-50 flex items-center justify-between gap-4">
           <div>
             <span className="text-[10px] text-dim block uppercase font-semibold tracking-wider">
               Total estimado
@@ -850,12 +877,10 @@ export function BookingWizard({
           <Button
             type="button"
             disabled={!canProceed}
-            onClick={() => {
-              if (step < 4) setStep(step + 1);
-            }}
+            onClick={() => setStep(step + 1)}
             rightIcon={<ChevronRight className="w-4 h-4" />}
           >
-            {step === 4 ? "Revisar y enviar" : "Continuar"}
+            Continuar
           </Button>
         </div>
       )}
