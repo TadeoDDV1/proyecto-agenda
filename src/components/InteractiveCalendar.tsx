@@ -198,7 +198,7 @@ export function InteractiveCalendar({
   return (
     <div className="space-y-6">
       {/* Controles de fecha */}
-      <div className="bg-surface p-4 sm:p-5 rounded-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface p-4 sm:p-5 rounded-xl border border-border flex flex-col md:flex-row md:flex-wrap md:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -242,8 +242,8 @@ export function InteractiveCalendar({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted font-mono hidden sm:inline">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <span className="text-xs text-muted font-mono hidden sm:inline whitespace-nowrap">
             <strong className="text-accent-warm font-semibold">{dateAppointments.length}</strong>{" "}
             {dateAppointments.length === 1 ? "cita programada" : "citas programadas"}
           </span>
@@ -261,6 +261,7 @@ export function InteractiveCalendar({
               setIsModalOpen(true);
             }}
             leftIcon={<Plus className="w-4 h-4" />}
+            className="w-full md:w-auto whitespace-nowrap"
           >
             Cita en mostrador
           </Button>
@@ -290,17 +291,18 @@ export function InteractiveCalendar({
         </div>
       )}
       {staffList.length > 1 && (
-        <p className="flex items-center justify-end gap-1.5 text-[11px] text-dim lg:hidden">
+        <p className="flex items-center justify-end gap-1.5 text-[11px] text-dim xl:hidden">
           Desliza para ver al resto del equipo
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
         </p>
       )}
       <div className="bg-surface rounded-xl border border-border overflow-x-auto">
-        <div className="min-w-[850px]">
+        <div className="min-w-[760px]">
           {/* Header: especialistas */}
           <div className="flex border-b border-border bg-surface-raised sticky top-0 z-20">
-            <div className="w-[120px] flex-shrink-0 p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border flex items-center">
-              Línea de tiempo
+            <div className="w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border flex items-center">
+              <span className="sm:hidden">Hora</span>
+              <span className="hidden sm:inline">Línea de tiempo</span>
             </div>
             <div
               className="flex-1 grid"
@@ -351,13 +353,16 @@ export function InteractiveCalendar({
               return (
                 <div key={hour} className="flex min-h-[96px]">
                   <div
-                    className={`w-[120px] flex-shrink-0 p-3.5 text-xs font-mono font-semibold border-r border-border flex items-start gap-2 select-none ${
+                    className={`w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-3.5 text-[10px] sm:text-xs font-mono font-semibold border-r border-border flex items-start gap-1.5 sm:gap-2 select-none ${
                       isCurrentHour ? "text-accent-warm bg-accent-soft" : "text-muted bg-base/60"
                     }`}
                   >
-                    <Clock className="w-3.5 h-3.5 mt-0.5" />
+                    <Clock className="hidden sm:block w-3.5 h-3.5 mt-0.5" />
                     <span className="flex flex-col gap-1 whitespace-nowrap">
-                      <span>{hour} hrs</span>
+                      <span>
+                        {hour}
+                        <span className="hidden sm:inline"> hrs</span>
+                      </span>
                       {isCurrentHour && (
                         <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.1em]">
                           <span

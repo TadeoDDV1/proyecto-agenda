@@ -99,7 +99,7 @@ export function AppointmentManager({
           <span>Filtrar</span>
         </div>
 
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-1 w-full sm:w-auto">
           {[
             { key: "ALL", label: "Todas" },
             { key: "CONFIRMED", label: "Confirmadas" },
@@ -115,7 +115,7 @@ export function AppointmentManager({
                 type="button"
                 onClick={() => setFilter(st.key)}
                 aria-pressed={isActive}
-                className={`flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition ${
+                className={`flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition ${
                   isActive
                     ? "bg-accent text-accent-fg border-accent"
                     : "bg-transparent text-muted border-border hover:text-foreground hover:border-border-strong"

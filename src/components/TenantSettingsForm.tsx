@@ -435,11 +435,16 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
           </div>
         </Card>
 
-        <div className="flex items-center justify-end">
+        {/* En móvil la barra queda fija al fondo: el formulario es largo. */}
+        <div className="sticky bottom-0 z-20 -mx-5 -mb-5 flex items-center justify-end gap-3 border-t border-border bg-base/95 px-5 py-3 backdrop-blur sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+          <p className="hidden sm:block mr-auto text-[11px] text-dim">
+            Los cambios se publican al guardar.
+          </p>
           <Button
             type="submit"
             loading={isSubmitting}
             leftIcon={<Save className="w-3.5 h-3.5" />}
+            className="w-full sm:w-auto"
           >
             {isSubmitting ? "Guardando..." : "Guardar configuración"}
           </Button>

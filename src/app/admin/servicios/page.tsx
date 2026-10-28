@@ -43,7 +43,7 @@ export default async function AdminServicesPage() {
 
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         {/* Formulario */}
-        <Card className="lg:col-span-5 p-6">
+        <Card className="lg:col-span-5 min-w-0 p-6">
           <CardHeader
             icon={<Plus className="w-3.5 h-3.5" />}
             title="Nuevo servicio"
@@ -113,12 +113,12 @@ export default async function AdminServicesPage() {
         </Card>
 
         {/* Listado */}
-        <div className="lg:col-span-7 space-y-2">
+        <div className="lg:col-span-7 min-w-0 space-y-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
               Servicios configurados
             </h3>
-            <span className="text-[11px] font-mono text-dim">
+            <span className="hidden sm:inline text-[11px] font-mono text-dim">
               Disponibles para reserva
             </span>
           </div>

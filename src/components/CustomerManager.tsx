@@ -205,26 +205,26 @@ export function CustomerManager({
       {/* Estadísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, hint, icon: Icon, tone }) => (
-          <Card key={label} className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-muted uppercase tracking-[0.1em]">
+          <Card key={label} className="p-3.5 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-muted uppercase tracking-[0.1em] leading-tight">
                 {label}
               </span>
-              <div className="w-7 h-7 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-dim">
+              <div className="w-7 h-7 flex-shrink-0 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-dim">
                 <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div className={`mt-2 text-2xl font-semibold font-display ${tone}`}>
+            <div className={`mt-2 text-xl sm:text-2xl font-semibold font-display ${tone}`}>
               {value}
             </div>
-            <span className="text-[10px] text-dim mt-0.5 block">{hint}</span>
+            <span className="text-[10px] text-dim mt-0.5 block leading-tight">{hint}</span>
           </Card>
         ))}
       </div>
 
       {/* Controles */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 sm:max-w-md">
           <Search className="w-4 h-4 text-dim absolute left-3.5 top-3" />
           <input
             type="text"
@@ -244,13 +244,13 @@ export function CustomerManager({
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
-          <div className="flex bg-surface p-1 rounded-lg border border-border text-xs font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex bg-surface p-1 rounded-lg border border-border text-xs font-semibold overflow-x-auto no-scrollbar">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`px-3 py-1.5 rounded-md transition whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md transition whitespace-nowrap ${
                   activeTab === t.key
                     ? "bg-accent text-accent-fg"
                     : "text-muted hover:text-foreground"
@@ -264,7 +264,7 @@ export function CustomerManager({
           <Button
             onClick={() => setShowAddModal(true)}
             leftIcon={<UserPlus className="w-3.5 h-3.5" />}
-            className="whitespace-nowrap"
+            className="w-full sm:w-auto whitespace-nowrap"
           >
             Nuevo cliente
           </Button>

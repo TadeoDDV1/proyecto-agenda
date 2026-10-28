@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
@@ -35,6 +35,53 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const asideRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // En móvil el panel se comporta como diálogo: bloquea el scroll del fondo,
+  // atrapa el foco y cierra con Escape.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const menuButton = menuButtonRef.current;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusables = asideRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables || focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      menuButton?.focus();
+    };
+  }, [mobileOpen]);
 
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -60,6 +107,7 @@ export function AdminSidebar({
       >
         <div className="flex items-center gap-3">
           <button
+            ref={menuButtonRef}
             type="button"
             onClick={() => setMobileOpen(true)}
             className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface transition"
@@ -97,8 +145,10 @@ export function AdminSidebar({
 
       {/* Sidebar */}
       <aside
+        ref={asideRef}
         id="sidebar-admin"
-        className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 border-r border-border bg-base ${
+        aria-label="Menú de administración"
+        className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col justify-between overscroll-contain transition-transform duration-200 lg:translate-x-0 border-r border-border bg-base ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -126,6 +176,7 @@ export function AdminSidebar({
             </Link>
 
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Cerrar menú"
