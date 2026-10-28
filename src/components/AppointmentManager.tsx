@@ -158,7 +158,7 @@ export function AppointmentManager({
             return (
               <div
                 key={app.id}
-                className={`p-4 rounded-xl border border-border bg-surface transition flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                className={`p-4 rounded-xl border border-border bg-surface transition flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-border-strong hover:bg-surface-raised/30 ${
                   isCancelled ? "opacity-60" : ""
                 }`}
               >
@@ -234,7 +234,7 @@ export function AppointmentManager({
                         rel="noreferrer"
                         title="Enviar recordatorio WhatsApp"
                         aria-label="Enviar recordatorio por WhatsApp"
-                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong text-xs flex items-center gap-1"
+                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 text-xs flex items-center gap-1"
                       >
                         <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline text-[11px]">WA</span>
@@ -249,7 +249,7 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "COMPLETED")}
                         title="Marcar como completada"
                         aria-label="Marcar como completada"
-                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
+                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
                       >
                         <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline">Completar</span>
@@ -264,7 +264,7 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "CANCELLED")}
                         title="Cancelar cita"
                         aria-label="Cancelar cita"
-                        className="p-1.5 rounded-lg border border-border text-dim transition hover:text-foreground hover:border-border-strong disabled:opacity-40"
+                        className="p-1.5 rounded-lg border border-border text-dim transition hover:text-error-text hover:border-error/30 hover:bg-error/10 disabled:opacity-40"
                       >
                         <XCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>

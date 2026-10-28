@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -76,6 +76,7 @@ export function CustomerManager({
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "frequent" | "new" | "none">("all");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,6 +85,29 @@ export function CustomerManager({
   const [customerNotes, setCustomerNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSuccess, setNotesSuccess] = useState(false);
+
+  // La ficha del cliente es un diálogo: bloquea el scroll del fondo y cierra
+  // con Escape para no dejar al usuario atrapado en el panel lateral.
+  useEffect(() => {
+    if (!selectedCustomer) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedCustomer(null);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedCustomer]);
 
   const filteredCustomers = customers.filter((customer) => {
     const q = search.toLowerCase();
@@ -391,7 +415,14 @@ export function CustomerManager({
             onClick={() => setSelectedCustomer(null)}
           />
 
-          <div className="relative w-full max-w-lg bg-surface border-l border-border p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right z-10">
+          <div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="customer-drawer-title"
+            tabIndex={-1}
+            className="relative z-10 flex w-full max-w-lg flex-col justify-between overflow-y-auto border-l border-border bg-surface p-6 focus:outline-none animate-slide-in-right"
+          >
             <div>
               <div className="flex items-center justify-between pb-5 border-b border-border">
                 <div className="flex items-center gap-3 min-w-0">
@@ -399,7 +430,10 @@ export function CustomerManager({
                     {selectedCustomer.fullName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-base text-foreground truncate">
+                    <h3
+                      id="customer-drawer-title"
+                      className="font-semibold text-base text-foreground truncate"
+                    >
                       {selectedCustomer.fullName}
                     </h3>
                     <p className="text-xs text-muted flex items-center gap-1 mt-0.5 font-mono">

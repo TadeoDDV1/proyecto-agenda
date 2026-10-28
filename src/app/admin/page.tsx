@@ -173,13 +173,13 @@ export default async function AdminDashboardPage() {
       {/* Resumen — jerarquía: dinero del mes, actividad y equipo */}
       <div className="grid gap-3 lg:grid-cols-12">
         {/* Ingresos del mes */}
-        <section className="relative overflow-hidden rounded-xl border border-border bg-surface p-6 lg:col-span-5">
+        <section className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface p-6 lg:col-span-5">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent/10 blur-3xl"
           />
 
-          <div className="relative">
+          <div className="relative flex flex-1 flex-col">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
                 Ingresos de este mes
@@ -197,7 +197,32 @@ export default async function AdminDashboardPage() {
               {monthCompleted} {monthCompleted === 1 ? "completada" : "completadas"}
             </p>
 
-            <div className="mt-5 flex items-center justify-between gap-3 border-t border-border-subtle pt-3 text-[11px]">
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <div className="rounded-lg border border-border-subtle bg-base/50 px-3 py-2.5">
+                <span className="block text-[10px] uppercase tracking-[0.1em] text-dim">
+                  Ticket promedio
+                </span>
+                <span className="mt-1 block font-mono text-sm text-foreground">
+                  {formatCurrency(
+                    monthAppointments.length > 0
+                      ? monthRevenue / monthAppointments.length
+                      : 0,
+                    tenant.currency
+                  )}
+                </span>
+              </div>
+              <div className="rounded-lg border border-border-subtle bg-base/50 px-3 py-2.5">
+                <span className="block text-[10px] uppercase tracking-[0.1em] text-dim">
+                  Completadas
+                </span>
+                <span className="mt-1 block font-mono text-sm text-foreground">
+                  {monthCompleted}
+                  <span className="text-dim"> / {monthAppointments.length}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-subtle pt-3 text-[11px]">
               <span className="text-dim">Hoy</span>
               <span className="font-mono text-muted">
                 <strong className="font-semibold text-foreground">
@@ -228,53 +253,59 @@ export default async function AdminDashboardPage() {
             aria-label={`Ingresos de los últimos 14 días: ${formatCurrency(
               chartTotal,
               tenant.currency
-            )} en total`}
-            className="mt-5 flex flex-1 items-end gap-1 sm:gap-1.5"
+            )} en total. Hoy: ${todayAppointments.length} ${
+              todayAppointments.length === 1 ? "cita" : "citas"
+            } y ${formatCurrency(todayEntry.revenue, tenant.currency)}.`}
+            className="mt-5 flex flex-1 flex-col justify-end"
           >
-            {days.map((day, i) => {
-              const isToday = i === days.length - 1;
-              const height = Math.round((day.revenue / maxDayRevenue) * 100);
+            <div className="flex items-end gap-1 sm:gap-1.5">
+              {days.map((day, i) => {
+                const isToday = i === days.length - 1;
+                const height = Math.round((day.revenue / maxDayRevenue) * 100);
 
-              return (
-                <div
-                  key={day.key}
-                  aria-hidden="true"
-                  className="flex flex-1 flex-col items-center gap-2"
-                >
-                  <div className="flex h-24 w-full items-end">
-                    <div
-                      title={`${day.date.toLocaleDateString("es-MX", {
-                        day: "numeric",
-                        month: "short",
-                      })}: ${formatCurrency(day.revenue, tenant.currency)}`}
-                      className={`w-full rounded-sm ${
-                        isToday
-                          ? "bg-accent"
-                          : day.revenue > 0
-                          ? "bg-accent/35"
-                          : "bg-surface-raised"
-                      }`}
-                      style={{
-                        height: `${day.revenue > 0 ? Math.max(8, height) : 4}%`,
-                      }}
-                    />
-                  </div>
-                  <span
-                    className={`font-mono text-[9px] ${
-                      isToday ? "text-accent-warm" : "text-dim"
-                    } ${i % 2 === 0 || isToday ? "" : "invisible"}`}
+                return (
+                  <div
+                    key={day.key}
+                    aria-hidden="true"
+                    className="flex flex-1 flex-col items-center gap-2"
                   >
-                    {day.date.getDate()}
-                  </span>
-                </div>
-              );
-            })}
+                    <div className="flex h-32 w-full items-end border-b border-border/70 sm:h-40">
+                      <div
+                        title={`${day.date.toLocaleDateString("es-MX", {
+                          day: "numeric",
+                          month: "short",
+                        })}: ${formatCurrency(day.revenue, tenant.currency)} · ${
+                          day.count
+                        } ${day.count === 1 ? "cita" : "citas"}`}
+                        className={`w-full rounded-t-[3px] transition-colors ${
+                          isToday
+                            ? "bg-accent"
+                            : day.revenue > 0
+                            ? "bg-accent/35 hover:bg-accent/55"
+                            : "bg-border/50"
+                        }`}
+                        style={{
+                          height: `${day.revenue > 0 ? Math.max(8, height) : 4}%`,
+                        }}
+                      />
+                    </div>
+                    <span
+                      className={`font-mono text-[9px] ${
+                        isToday ? "font-semibold text-accent-warm" : "text-dim"
+                      } ${i % 2 === 0 || isToday ? "" : "invisible"}`}
+                    >
+                      {day.date.getDate()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
         {/* Próxima cita + equipo */}
         <div className="grid grid-cols-2 gap-3 lg:col-span-3 lg:grid-cols-1">
-          <section className="rounded-xl border border-border bg-surface p-4">
+          <section className="flex flex-col rounded-xl border border-border bg-surface p-4">
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
               Próxima cita
             </p>
@@ -302,6 +333,13 @@ export default async function AdminDashboardPage() {
                   {nextAppointment.staff.displayName} ·{" "}
                   {nextAppointment.service.name}
                 </p>
+                <Link
+                  href="/admin/calendario"
+                  className="mt-3 inline-flex items-center gap-1 border-t border-border-subtle pt-3 text-[11px] font-semibold text-accent-warm transition hover:text-foreground"
+                >
+                  Ver calendario
+                  <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                </Link>
               </>
             ) : (
               <>
@@ -310,7 +348,7 @@ export default async function AdminDashboardPage() {
                 </p>
                 <Link
                   href={`/b/${tenant.slug}`}
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-accent-warm transition hover:text-foreground"
+                  className="mt-3 inline-flex items-center gap-1 border-t border-border-subtle pt-3 text-[11px] font-semibold text-accent-warm transition hover:text-foreground"
                 >
                   Compartir portal
                   <ArrowRight className="h-3 w-3" aria-hidden="true" />
@@ -319,7 +357,7 @@ export default async function AdminDashboardPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-border bg-surface p-4">
+          <section className="flex flex-col rounded-xl border border-border bg-surface p-4">
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
               Equipo
             </p>
@@ -332,6 +370,13 @@ export default async function AdminDashboardPage() {
             <p className="mt-1 text-[11px] text-muted">
               {tenant.services.length} servicios activos
             </p>
+            <Link
+              href="/admin/personal"
+              className="mt-3 inline-flex items-center gap-1 border-t border-border-subtle pt-3 text-[11px] font-semibold text-accent-warm transition hover:text-foreground"
+            >
+              Gestionar equipo
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </Link>
           </section>
         </div>
       </div>
@@ -345,8 +390,12 @@ export default async function AdminDashboardPage() {
               <Clock className="w-4 h-4 text-muted" />
               Agenda y citas
             </h2>
-            <span className="text-[11px] text-dim font-mono">
-              Sincronizado
+            <span className="flex items-center gap-1.5 text-[11px] text-dim font-mono">
+              <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
+              </span>
+              En vivo
             </span>
           </div>
 

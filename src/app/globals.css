@@ -299,6 +299,15 @@ select option {
   outline-offset: 2px;
 }
 
+/* Columna de horas del calendario: opaca para que quede fija arriba
+   mientras se desplaza horizontalmente entre profesionales. */
+.cal-col-time {
+  background: var(--base);
+}
+.cal-col-time-now {
+  background: color-mix(in srgb, var(--accent) 12%, var(--base));
+}
+
 /* ─── Skeleton de carga ─── */
 .skeleton {
   background: linear-gradient(

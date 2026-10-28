@@ -99,6 +99,11 @@ export function AdminSidebar({
     .join("")
     .toUpperCase();
 
+  const currentSection =
+    navigation.find((item) =>
+      item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href)
+    )?.name ?? "Panel";
+
   return (
     <>
       {/* Barra superior móvil */}
@@ -117,10 +122,13 @@ export function AdminSidebar({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span
-            className="text-sm font-medium text-foreground truncate"
-          >
-            {tenantName}
+          <span className="min-w-0 leading-tight">
+            <span className="block text-sm font-medium text-foreground truncate">
+              {tenantName}
+            </span>
+            <span className="block text-[10px] uppercase tracking-[0.14em] text-dim truncate">
+              {currentSection}
+            </span>
           </span>
         </div>
 

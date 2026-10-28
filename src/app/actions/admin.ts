@@ -130,6 +130,8 @@ export async function createStaffAction(formData: FormData) {
   const email = (formData.get("email") as string)?.trim();
   const phone = (formData.get("phone") as string)?.trim();
   const colorCode = (formData.get("colorCode") as string)?.trim() || "#3b82f6";
+  const specialties = (formData.get("specialties") as string)?.trim();
+  const bio = (formData.get("bio") as string)?.trim();
 
   if (!displayName) {
     return { success: false, error: "El nombre del colaborador es requerido." };
@@ -143,6 +145,8 @@ export async function createStaffAction(formData: FormData) {
         email: email || null,
         phone: phone || null,
         colorCode,
+        specialties: specialties || null,
+        bio: bio || null,
       },
     });
 

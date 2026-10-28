@@ -300,7 +300,7 @@ export function InteractiveCalendar({
         <div className="min-w-[760px]">
           {/* Header: especialistas */}
           <div className="flex border-b border-border bg-surface-raised sticky top-0 z-20">
-            <div className="w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border flex items-center">
+            <div className="sticky left-0 z-30 w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dim border-r border-border bg-surface-raised flex items-center">
               <span className="sm:hidden">Hora</span>
               <span className="hidden sm:inline">Línea de tiempo</span>
             </div>
@@ -353,8 +353,10 @@ export function InteractiveCalendar({
               return (
                 <div key={hour} className="flex min-h-[96px]">
                   <div
-                    className={`w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-3.5 text-[10px] sm:text-xs font-mono font-semibold border-r border-border flex items-start gap-1.5 sm:gap-2 select-none ${
-                      isCurrentHour ? "text-accent-warm bg-accent-soft" : "text-muted bg-base/60"
+                    className={`sticky left-0 z-10 w-20 sm:w-[120px] flex-shrink-0 p-2.5 sm:p-3.5 text-[10px] sm:text-xs font-mono font-semibold border-r border-border flex items-start gap-1.5 sm:gap-2 select-none ${
+                      isCurrentHour
+                        ? "text-accent-warm cal-col-time-now"
+                        : "text-muted cal-col-time"
                     }`}
                   >
                     <Clock className="hidden sm:block w-3.5 h-3.5 mt-0.5" />

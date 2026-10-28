@@ -12,6 +12,7 @@ import {
   Field,
   Input,
   PageHeader,
+  Textarea,
 } from "@/components/ui";
 
 const staffColors = [
@@ -110,6 +111,32 @@ export default async function AdminStaffPage() {
               </div>
             </div>
 
+            <Field
+              label="Especialidades"
+              hint="Separadas por coma. Se muestran en la vitrina."
+              htmlFor="staff-specialties"
+            >
+              <Input
+                type="text"
+                name="specialties"
+                placeholder="Ej. Fade, barba, color"
+                id="staff-specialties"
+              />
+            </Field>
+
+            <Field
+              label="Presentación (opcional)"
+              hint="Una línea sobre su estilo o experiencia."
+              htmlFor="staff-bio"
+            >
+              <Textarea
+                name="bio"
+                rows={2}
+                placeholder="Ej. Especialista en cortes clásicos y arreglo de barba."
+                id="staff-bio"
+              />
+            </Field>
+
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border text-xs text-dim bg-base">
               <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Se asignarán turnos Lun – Sáb de 09:00 a 19:00 automáticamente.</span>
@@ -135,7 +162,7 @@ export default async function AdminStaffPage() {
           {tenant.staff.map((st) => (
             <Card
               key={st.id}
-              className="p-4 transition flex items-center justify-between gap-4 hover:border-border-strong"
+              className="p-4 transition flex items-start justify-between gap-4 hover:border-border-strong hover:bg-surface-raised/40"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {/* Monograma */}
@@ -174,15 +201,35 @@ export default async function AdminStaffPage() {
                         {st.email}
                       </span>
                     )}
-                    <span className="font-mono text-dim">
+                    <span className="whitespace-nowrap font-mono text-dim">
                       {st.schedules.length} turnos · {st.appointments.length} citas
                     </span>
                   </div>
+
+                  {st.specialties && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {st.specialties
+                        .split(",")
+                        .map((specialty) => specialty.trim())
+                        .filter(Boolean)
+                        .map((specialty) => (
+                          <span
+                            key={specialty}
+                            className="rounded-full border border-border bg-base px-2 py-0.5 text-[10px] text-muted"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <Badge tone="success" className="flex-shrink-0">
-                Activo
+              <Badge
+                tone={st.isActive ? "success" : "default"}
+                className="flex-shrink-0"
+              >
+                {st.isActive ? "Activo" : "Pausado"}
               </Badge>
             </Card>
           ))}

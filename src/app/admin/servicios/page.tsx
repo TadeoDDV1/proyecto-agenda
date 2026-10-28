@@ -2,8 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { createServiceAction } from "@/app/actions/admin";
-import { Layers, Plus, Clock } from "lucide-react";
+import {
+  createServiceAction,
+  toggleServiceStatusAction,
+} from "@/app/actions/admin";
+import { Layers, Plus, Clock, Pause, Play } from "lucide-react";
 import {
   Badge,
   Button,
@@ -43,7 +46,7 @@ export default async function AdminServicesPage() {
 
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         {/* Formulario */}
-        <Card className="lg:col-span-5 min-w-0 p-6">
+        <Card className="lg:col-span-5 min-w-0 p-6 lg:sticky lg:top-8">
           <CardHeader
             icon={<Plus className="w-3.5 h-3.5" />}
             title="Nuevo servicio"
@@ -126,7 +129,9 @@ export default async function AdminServicesPage() {
           {tenant.services.map((srv) => (
             <Card
               key={srv.id}
-              className="p-4 transition flex items-start justify-between gap-4 hover:border-border-strong"
+              className={`p-4 transition flex items-start justify-between gap-4 hover:border-border-strong hover:bg-surface-raised/40 ${
+                srv.isActive ? "" : "opacity-70"
+              }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -149,9 +154,40 @@ export default async function AdminServicesPage() {
                 </div>
               </div>
 
-              <Badge tone={srv.isActive ? "success" : "default"} className="flex-shrink-0">
-                {srv.isActive ? "Activo" : "Inactivo"}
-              </Badge>
+              <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                <Badge tone={srv.isActive ? "success" : "default"}>
+                  {srv.isActive ? "Activo" : "Inactivo"}
+                </Badge>
+
+                <form
+                  action={async () => {
+                    "use server";
+                    await toggleServiceStatusAction(srv.id, !srv.isActive);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    title={
+                      srv.isActive
+                        ? `Pausar ${srv.name} en el portal`
+                        : `Activar ${srv.name} en el portal`
+                    }
+                    aria-label={
+                      srv.isActive
+                        ? `Pausar ${srv.name} en el portal`
+                        : `Activar ${srv.name} en el portal`
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-muted transition hover:border-border-strong hover:text-foreground"
+                  >
+                    {srv.isActive ? (
+                      <Pause className="h-3 w-3" aria-hidden="true" />
+                    ) : (
+                      <Play className="h-3 w-3" aria-hidden="true" />
+                    )}
+                    {srv.isActive ? "Pausar" : "Activar"}
+                  </button>
+                </form>
+              </div>
             </Card>
           ))}
 
