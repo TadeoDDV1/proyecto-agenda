@@ -9,15 +9,32 @@ import {
   ExternalLink,
   Link as LinkIcon,
   AlertCircle,
+  Palette,
+  Clock,
 } from "lucide-react";
-import {
-  Button,
-  Card,
-  Field,
-  Input,
-  Select,
-  Textarea,
-} from "@/components/ui";
+import { Button, Card, Field, Input, Select, Textarea } from "@/components/ui";
+import { VITRINA_THEMES, VITRINA_THEME_NAMES } from "@/lib/vitrina/theme";
+
+const THEME_COPY: Record<string, { label: string; note: string }> = {
+  TERRACOTTA: { label: "Terracota", note: "Cálido y artesanal. Barberías y salones clásicos." },
+  SAGE: { label: "Salvia", note: "Natural y sereno. Spas y cuidado personal." },
+  NOIR: { label: "Noir", note: "Sobrio y elegante. Estudios y marcas premium." },
+};
+
+const TIMEZONES: Array<{ value: string; label: string }> = [
+  { value: "America/Mexico_City", label: "Ciudad de México (centro)" },
+  { value: "America/Cancun", label: "Cancún" },
+  { value: "America/Monterrey", label: "Monterrey" },
+  { value: "America/Tijuana", label: "Tijuana" },
+  { value: "America/Bogota", label: "Bogotá" },
+  { value: "America/Lima", label: "Lima" },
+  { value: "America/Santiago", label: "Santiago" },
+  { value: "America/Argentina/Buenos_Aires", label: "Buenos Aires" },
+  { value: "America/Sao_Paulo", label: "São Paulo" },
+  { value: "America/New_York", label: "Nueva York" },
+  { value: "America/Los_Angeles", label: "Los Ángeles" },
+  { value: "Europe/Madrid", label: "Madrid" },
+];
 
 interface TenantSettingsProps {
   tenant: {
@@ -28,6 +45,17 @@ interface TenantSettingsProps {
     address: string | null;
     currency: string;
     description: string | null;
+    tagline: string | null;
+    story: string | null;
+    instagram: string | null;
+    logoUrl: string | null;
+    coverImageUrl: string | null;
+    brandTheme: string;
+    timezone: string;
+    whatsappNumber: string | null;
+    bookingWindowDays: number;
+    minLeadTimeMinutes: number;
+    cancellationWindowHours: number;
   };
 }
 
@@ -36,6 +64,11 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useState(tenant.brandTheme);
+
+  const timezoneOptions = TIMEZONES.some((zone) => zone.value === tenant.timezone)
+    ? TIMEZONES
+    : [{ value: tenant.timezone, label: tenant.timezone }, ...TIMEZONES];
 
   function handleCopy() {
     navigator.clipboard.writeText(`${window.location.origin}/b/${tenant.slug}`);
@@ -51,6 +84,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
 
     const formData = new FormData(e.currentTarget);
     formData.append("tenantId", tenant.id);
+    formData.set("brandTheme", theme);
 
     const res = await updateTenantSettingsAction(formData);
     setIsSubmitting(false);
@@ -109,86 +143,308 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
         </div>
       </Card>
 
-      {/* Formulario */}
-      <Card className="p-6 sm:p-8">
-        <div className="pb-5 border-b border-border mb-6">
-          <h3 className="text-sm font-medium text-foreground">Datos del negocio</h3>
-          <p className="text-xs mt-0.5 text-muted">
-            Personaliza cómo ven tus clientes la información de tu salón.
-          </p>
+      {success && (
+        <div className="p-3 rounded-lg border border-success/25 bg-success/10 text-success-text text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>Configuración actualizada correctamente.</span>
         </div>
+      )}
 
-        {success && (
-          <div className="mb-5 p-3 rounded-lg border border-success/25 bg-success/10 text-success-text text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Configuración actualizada correctamente.</span>
-          </div>
-        )}
+      {error && (
+        <div className="p-3 rounded-lg border border-error/25 bg-error/10 text-error-text text-xs flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        {error && (
-          <div className="mb-5 p-3 rounded-lg border border-error/25 bg-error/10 text-error-text text-xs flex items-center gap-2">
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <Field label="Nombre del salón" required htmlFor="tenant-name">
-              <Input type="text" name="name" required defaultValue={tenant.name} id="tenant-name" />
-            </Field>
-            <Field label="Teléfono de contacto" htmlFor="tenant-phone">
-              <Input
-                type="tel"
-                name="phone"
-                defaultValue={tenant.phone || ""}
-                placeholder="+52 55 1234 5678"
-              id="tenant-phone"
-              />
-            </Field>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Datos del negocio */}
+        <Card className="p-6 sm:p-8">
+          <div className="pb-5 border-b border-border mb-6">
+            <h3 className="text-sm font-medium text-foreground">Datos del negocio</h3>
+            <p className="text-xs mt-0.5 text-muted">
+              Información de contacto que se muestra en tu página pública.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Nombre del salón" required htmlFor="tenant-name">
+                <Input type="text" name="name" required defaultValue={tenant.name} id="tenant-name" />
+              </Field>
+              <Field label="Moneda" htmlFor="tenant-currency">
+                <Select name="currency" defaultValue={tenant.currency} id="tenant-currency">
+                  <option value="MXN">MXN — Peso Mexicano</option>
+                  <option value="USD">USD — Dólar</option>
+                  <option value="COP">COP — Peso Colombiano</option>
+                  <option value="EUR">EUR — Euro</option>
+                </Select>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Teléfono de contacto" htmlFor="tenant-phone">
+                <Input
+                  type="tel"
+                  name="phone"
+                  defaultValue={tenant.phone || ""}
+                  placeholder="+52 55 1234 5678"
+                  id="tenant-phone"
+                />
+              </Field>
+              <Field
+                label="WhatsApp"
+                htmlFor="tenant-whatsapp"
+                hint="Se usa para el botón de WhatsApp de la página pública."
+              >
+                <Input
+                  type="tel"
+                  name="whatsappNumber"
+                  defaultValue={tenant.whatsappNumber || ""}
+                  placeholder="+52 55 1234 5678"
+                  id="tenant-whatsapp"
+                />
+              </Field>
+            </div>
+
             <Field label="Dirección física" htmlFor="tenant-address">
               <Input
                 type="text"
                 name="address"
                 defaultValue={tenant.address || ""}
                 placeholder="Av. Insurgentes Sur 450, CDMX"
-              id="tenant-address"
+                id="tenant-address"
               />
             </Field>
-            <Field label="Moneda" htmlFor="tenant-currency">
-              <Select name="currency" defaultValue={tenant.currency} id="tenant-currency">
-                <option value="MXN">MXN — Peso Mexicano</option>
-                <option value="USD">USD — Dólar</option>
-                <option value="COP">COP — Peso Colombiano</option>
-                <option value="EUR">EUR — Euro</option>
-              </Select>
+
+            <Field
+              label="Descripción corta"
+              htmlFor="tenant-description"
+              hint="Texto de apoyo para buscadores y redes."
+            >
+              <Textarea
+                name="description"
+                rows={3}
+                defaultValue={tenant.description || ""}
+                placeholder="Barbería clásica y corte moderno. Café de cortesía en cada cita."
+                id="tenant-description"
+              />
             </Field>
           </div>
+        </Card>
 
-          <Field label="Descripción / mensaje de bienvenida" htmlFor="tenant-description">
-            <Textarea
-              name="description"
-              rows={3}
-              defaultValue={tenant.description || ""}
-              placeholder="Barbería clásica y corte moderno. Café de cortesía en cada cita."
-            id="tenant-description"
-            />
-          </Field>
-
-          <div className="pt-5 border-t border-border flex items-center justify-end">
-            <Button
-              type="submit"
-              loading={isSubmitting}
-              leftIcon={<Save className="w-3.5 h-3.5" />}
-            >
-              {isSubmitting ? "Guardando..." : "Guardar configuración"}
-            </Button>
+        {/* Identidad pública (Vitrina) */}
+        <Card className="p-6 sm:p-8">
+          <div className="pb-5 border-b border-border mb-6">
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Palette className="w-4 h-4 text-dim" />
+              Identidad pública
+            </h3>
+            <p className="text-xs mt-0.5 text-muted">
+              Lo que aparece en la portada de tu página de reservas.
+            </p>
           </div>
-        </form>
-      </Card>
+
+          <div className="space-y-5">
+            <Field
+              label="Frase de portada"
+              htmlFor="tenant-tagline"
+              hint="Una línea. La última palabra se destaca en cursiva."
+            >
+              <Input
+                type="text"
+                name="tagline"
+                defaultValue={tenant.tagline || ""}
+                placeholder="El oficio de siempre, con la precisión de hoy."
+                id="tenant-tagline"
+              />
+            </Field>
+
+            <Field
+              label="Historia del salón"
+              htmlFor="tenant-story"
+              hint="Dos o tres frases. Se muestra en la sección El espacio."
+            >
+              <Textarea
+                name="story"
+                rows={4}
+                defaultValue={tenant.story || ""}
+                placeholder="Abrimos en 2014 con dos sillas y una idea simple: que cada corte tenga tiempo."
+                id="tenant-story"
+              />
+            </Field>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Field label="Instagram" htmlFor="tenant-instagram" hint="Solo el usuario: @tusalon">
+                <Input
+                  type="text"
+                  name="instagram"
+                  defaultValue={tenant.instagram || ""}
+                  placeholder="barberiavintage"
+                  id="tenant-instagram"
+                />
+              </Field>
+              <Field label="URL del logo" htmlFor="tenant-logo" hint="Cuadrado, mínimo 200×200 px.">
+                <Input
+                  type="url"
+                  name="logoUrl"
+                  defaultValue={tenant.logoUrl || ""}
+                  placeholder="https://…/logo.jpg"
+                  id="tenant-logo"
+                />
+              </Field>
+            </div>
+
+            <Field
+              label="URL de la portada"
+              htmlFor="tenant-cover"
+              hint="Horizontal, mínimo 1200 px de ancho. Sin portada se usa una composición gráfica."
+            >
+              <Input
+                type="url"
+                name="coverImageUrl"
+                defaultValue={tenant.coverImageUrl || ""}
+                placeholder="https://…/portada.jpg"
+                id="tenant-cover"
+              />
+            </Field>
+
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted mb-2">
+                Tema de la página
+              </p>
+              <input type="hidden" name="brandTheme" value={theme} />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {VITRINA_THEME_NAMES.map((name) => {
+                  const palette = VITRINA_THEMES[name];
+                  const copy = THEME_COPY[name];
+                  const selected = theme === name;
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setTheme(name)}
+                      aria-pressed={selected}
+                      className={`text-left p-3 rounded-xl border transition ${
+                        selected
+                          ? "border-accent bg-accent-soft"
+                          : "border-border bg-base hover:border-border-strong"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5 mb-2" aria-hidden="true">
+                        <span
+                          className="w-5 h-5 rounded-full border border-black/10"
+                          style={{ background: palette.brand }}
+                        />
+                        <span
+                          className="w-5 h-5 rounded-full border border-black/10"
+                          style={{ background: palette.paper }}
+                        />
+                        <span
+                          className="w-5 h-5 rounded-full border border-black/10"
+                          style={{ background: palette.accent }}
+                        />
+                      </span>
+                      <span className="block text-xs font-medium text-foreground">
+                        {copy.label}
+                        {selected && <span className="ml-1 text-accent-hover">✓</span>}
+                      </span>
+                      <span className="block text-[11px] text-dim mt-0.5 leading-snug">
+                        {copy.note}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Reservas y operación */}
+        <Card className="p-6 sm:p-8">
+          <div className="pb-5 border-b border-border mb-6">
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4 text-dim" />
+              Reservas y operación
+            </h3>
+            <p className="text-xs mt-0.5 text-muted">
+              Reglas que aplican a la web, al admin y al futuro bot de WhatsApp.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <Field
+              label="Zona horaria"
+              htmlFor="tenant-timezone"
+              hint="Todas las citas se guardan en UTC y se muestran en esta zona."
+            >
+              <Select name="timezone" defaultValue={tenant.timezone} id="tenant-timezone">
+                {timezoneOptions.map((zone) => (
+                  <option key={zone.value} value={zone.value}>
+                    {zone.label} — {zone.value}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <Field
+                label="Ventana de reserva"
+                htmlFor="tenant-window"
+                hint="Días hacia adelante."
+              >
+                <Input
+                  type="number"
+                  name="bookingWindowDays"
+                  min={1}
+                  max={365}
+                  defaultValue={tenant.bookingWindowDays}
+                  id="tenant-window"
+                />
+              </Field>
+              <Field
+                label="Antelación mínima"
+                htmlFor="tenant-lead"
+                hint="Minutos antes de la cita."
+              >
+                <Input
+                  type="number"
+                  name="minLeadTimeMinutes"
+                  min={0}
+                  max={1440}
+                  step={15}
+                  defaultValue={tenant.minLeadTimeMinutes}
+                  id="tenant-lead"
+                />
+              </Field>
+              <Field
+                label="Cancelación"
+                htmlFor="tenant-cancel"
+                hint="Horas de cortesía."
+              >
+                <Input
+                  type="number"
+                  name="cancellationWindowHours"
+                  min={0}
+                  max={168}
+                  defaultValue={tenant.cancellationWindowHours}
+                  id="tenant-cancel"
+                />
+              </Field>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex items-center justify-end">
+          <Button
+            type="submit"
+            loading={isSubmitting}
+            leftIcon={<Save className="w-3.5 h-3.5" />}
+          >
+            {isSubmitting ? "Guardando..." : "Guardar configuración"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

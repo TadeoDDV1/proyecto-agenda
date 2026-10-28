@@ -3,19 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { AppointmentStatus } from "@prisma/client";
+import { AppointmentStatus, BrandTheme } from "@prisma/client";
+import { createAppointment } from "@/lib/booking";
+import { normalizePhone } from "@/lib/booking/phone";
+import { VITRINA_THEME_NAMES } from "@/lib/vitrina/theme";
 
-// Helper para validar tenant activo
+// Helper para validar tenant activo. Sin sesión válida no hay tenant:
+// el fallback al negocio de demostración permitía ver datos ajenos.
 async function getActiveTenantId() {
   const session = await getSession();
-  if (session?.tenantId) {
-    return session.tenantId;
-  }
-  // Fallback al tenant de prueba para agilidad
-  const demoTenant = await prisma.tenant.findFirst({
-    where: { slug: "barberia-vintage" },
-  });
-  return demoTenant?.id || null;
+  return session?.tenantId ?? null;
 }
 
 export async function updateAppointmentStatusAction(
@@ -33,6 +30,9 @@ export async function updateAppointmentStatusAction(
       },
       data: {
         status: newStatus,
+        ...(newStatus === AppointmentStatus.CANCELLED
+          ? { cancelledAt: new Date() }
+          : {}),
       },
     });
 
@@ -201,79 +201,37 @@ export async function createManualAppointmentAction(input: CreateManualAppointme
   }
 
   try {
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId, tenantId },
-    });
-    if (!service) return { success: false, error: "Servicio no válido." };
-
-    const staff = await prisma.staffProfile.findFirst({
-      where: { id: staffId, tenantId, isActive: true },
-    });
-    if (!staff) {
-      return { success: false, error: "El colaborador seleccionado no pertenece a este negocio." };
-    }
-
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    const [year, month, day] = dateStr.split("-").map(Number);
-
-    if (![hours, minutes, year, month, day].every(Number.isFinite)) {
-      return { success: false, error: "Fecha u hora no válida." };
-    }
-
-    const startTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
-
-    const endTime = new Date(startTime);
-    endTime.setMinutes(endTime.getMinutes() + service.durationMinutes);
-
-    const overlapping = await prisma.appointment.findFirst({
-      where: {
-        staffId,
-        status: { in: ["CONFIRMED", "PENDING"] },
-        startTime: { lt: endTime },
-        endTime: { gt: startTime },
+    // Misma ruta que la web: normaliza el teléfono, valida horario/descanso y
+    // crea la cita en una transacción Serializable. No reimplementar fechas acá:
+    // `new Date(year, month - 1, ...)` usa la zona del servidor (UTC en Vercel).
+    const result = await createAppointment({
+      tenantId,
+      serviceId,
+      staffId,
+      dateKey: dateStr,
+      time: timeStr,
+      customer: {
+        fullName: customerName,
+        phone: customerPhone,
+        email: customerEmail ?? null,
       },
+      notes: notes ?? null,
+      source: "ADMIN",
     });
 
-    if (overlapping) {
+    if (!result.ok) {
       return {
         success: false,
-        error: "El colaborador ya tiene una cita que se solapa con ese horario.",
+        error: result.message,
+        alternatives: result.alternatives ?? [],
       };
     }
 
-    // Buscar o registrar cliente
-    let customer = await prisma.customer.findFirst({
-      where: { tenantId, phone: customerPhone },
-    });
-
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: {
-          tenantId,
-          fullName: customerName,
-          phone: customerPhone,
-          email: customerEmail || null,
-        },
-      });
-    }
-
-    const appointment = await prisma.appointment.create({
-      data: {
-        tenantId,
-        serviceId: service.id,
-        staffId,
-        customerId: customer.id,
-        startTime,
-        endTime,
-        totalPrice: service.price,
-        customerNotes: notes || null,
-        status: "CONFIRMED",
-      },
-    });
-
     revalidatePath("/admin");
     revalidatePath("/admin/calendario");
-    return { success: true, appointmentId: appointment.id };
+    revalidatePath("/b");
+
+    return { success: true, appointmentId: result.data.id, code: result.data.confirmationCode };
   } catch (error) {
     console.error("Error al agendar cita manual:", error);
     return { success: false, error: "No se pudo registrar la cita manual." };
@@ -338,18 +296,90 @@ export async function updateCustomerNotesAction(customerId: string, notes: strin
   }
 }
 
+const BRAND_THEMES = new Set<string>(VITRINA_THEME_NAMES);
+
+function clampNumber(
+  value: FormDataEntryValue | null,
+  fallback: number,
+  min: number,
+  max: number
+): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(parsed)));
+}
+
+function isValidTimeZone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function updateTenantSettingsAction(formData: FormData) {
   const tenantId = await getActiveTenantId();
   if (!tenantId) return { success: false, error: "No autorizado." };
 
   const name = (formData.get("name") as string)?.trim();
-  const phone = (formData.get("phone") as string)?.trim() || null;
+  const phoneRaw = (formData.get("phone") as string)?.trim() || "";
   const address = (formData.get("address") as string)?.trim() || null;
   const description = (formData.get("description") as string)?.trim() || null;
   const currency = (formData.get("currency") as string)?.trim() || "MXN";
 
+  // Vitrina
+  const tagline = (formData.get("tagline") as string)?.trim() || null;
+  const story = (formData.get("story") as string)?.trim() || null;
+  const logoUrl = (formData.get("logoUrl") as string)?.trim() || null;
+  const coverImageUrl = (formData.get("coverImageUrl") as string)?.trim() || null;
+  const instagramRaw = (formData.get("instagram") as string)?.trim() || "";
+  const instagram = instagramRaw
+    ? instagramRaw
+        .replace(/^@/, "")
+        .replace(/^https?:\/\/(www\.)?instagram\.com\//, "")
+        .replace(/\/$/, "")
+    : null;
+  const brandThemeRaw = (formData.get("brandTheme") as string)?.trim() ?? "";
+
+  // Operación
+  const timezone = (formData.get("timezone") as string)?.trim() || "America/Mexico_City";
+  const bookingWindowDays = clampNumber(formData.get("bookingWindowDays"), 30, 1, 365);
+  const minLeadTimeMinutes = clampNumber(formData.get("minLeadTimeMinutes"), 60, 0, 1440);
+  const cancellationWindowHours = clampNumber(
+    formData.get("cancellationWindowHours"),
+    24,
+    0,
+    168
+  );
+
   if (!name) {
     return { success: false, error: "El nombre del salón es obligatorio." };
+  }
+
+  if (!isValidTimeZone(timezone)) {
+    return { success: false, error: "La zona horaria seleccionada no es válida." };
+  }
+
+  if (brandThemeRaw && !BRAND_THEMES.has(brandThemeRaw)) {
+    return { success: false, error: "El tema seleccionado no existe." };
+  }
+
+  const phone = phoneRaw ? normalizePhone(phoneRaw) : null;
+  if (phoneRaw && !phone) {
+    return {
+      success: false,
+      error: "El teléfono no es válido. Usa el formato +52 55 1234 5678.",
+    };
+  }
+
+  const whatsappRaw = (formData.get("whatsappNumber") as string)?.trim() || "";
+  const whatsappNumber = whatsappRaw ? normalizePhone(whatsappRaw) : null;
+  if (whatsappRaw && !whatsappNumber) {
+    return {
+      success: false,
+      error: "El número de WhatsApp no es válido. Incluye el código de país.",
+    };
   }
 
   try {
@@ -361,15 +391,26 @@ export async function updateTenantSettingsAction(formData: FormData) {
         address,
         description,
         currency,
+        tagline,
+        story,
+        logoUrl,
+        coverImageUrl,
+        instagram,
+        whatsappNumber,
+        timezone,
+        bookingWindowDays,
+        minLeadTimeMinutes,
+        cancellationWindowHours,
+        ...(brandThemeRaw ? { brandTheme: brandThemeRaw as BrandTheme } : {}),
       },
     });
 
     revalidatePath("/admin");
     revalidatePath("/admin/configuracion");
+    revalidatePath(`/b/${updated.slug}`);
     return { success: true, tenant: updated };
   } catch (error) {
     console.error("Error al actualizar configuración:", error);
     return { success: false, error: "No se pudo actualizar la configuración del salón." };
   }
 }
-
