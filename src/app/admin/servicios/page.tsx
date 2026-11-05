@@ -7,6 +7,7 @@ import {
   toggleServiceStatusAction,
 } from "@/app/actions/admin";
 import { Layers, Plus, Clock, Pause, Play } from "lucide-react";
+import { getVertical } from "@/lib/verticals";
 import {
   Badge,
   Button,
@@ -34,14 +35,15 @@ export default async function AdminServicesPage() {
   });
 
   if (!tenant) notFound();
+  const vertical = getVertical(tenant.vertical);
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
       <PageHeader
         eyebrow="Administración"
-        title="Catálogo de Servicios"
-        description="Configura servicios, duraciones y precios para tu portal de reservas."
-        action={<Badge>{tenant.services.length} servicios</Badge>}
+        title={`Catálogo de ${vertical.terms.services.toLowerCase()}`}
+        description={`Configura ${vertical.terms.services.toLowerCase()}, duraciones y precios para tu portal de reservas.`}
+        action={<Badge>{tenant.services.length} {vertical.terms.services.toLowerCase()}</Badge>}
       />
 
       <div className="grid lg:grid-cols-12 gap-6 items-start">
@@ -49,7 +51,7 @@ export default async function AdminServicesPage() {
         <Card className="lg:col-span-5 min-w-0 p-6 lg:sticky lg:top-8">
           <CardHeader
             icon={<Plus className="w-3.5 h-3.5" />}
-            title="Nuevo servicio"
+            title={`Nuevo ${vertical.terms.service.toLowerCase()}`}
             className="pb-5 mb-5"
           />
 
@@ -110,7 +112,7 @@ export default async function AdminServicesPage() {
             </Field>
 
             <Button type="submit" className="w-full">
-              Guardar servicio
+              Guardar {vertical.terms.service.toLowerCase()}
             </Button>
           </form>
         </Card>
@@ -119,7 +121,7 @@ export default async function AdminServicesPage() {
         <div className="lg:col-span-7 min-w-0 space-y-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-              Servicios configurados
+              {vertical.terms.services} configurados
             </h3>
             <span className="hidden sm:inline text-[11px] font-mono text-dim">
               Disponibles para reserva
@@ -129,7 +131,7 @@ export default async function AdminServicesPage() {
           {tenant.services.map((srv) => (
             <Card
               key={srv.id}
-              className={`p-4 transition flex items-start justify-between gap-4 hover:border-border-strong hover:bg-surface-raised/40 ${
+              className={`p-4 transition flex items-start justify-between gap-4 hover:bg-surface-raised ${
                 srv.isActive ? "" : "opacity-70"
               }`}
             >
@@ -177,7 +179,7 @@ export default async function AdminServicesPage() {
                         ? `Pausar ${srv.name} en el portal`
                         : `Activar ${srv.name} en el portal`
                     }
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-muted transition hover:border-border-strong hover:text-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-[3px] border border-border px-2.5 py-1.5 text-[11px] font-medium text-muted transition hover:border-border-strong hover:text-foreground"
                   >
                     {srv.isActive ? (
                       <Pause className="h-3 w-3" aria-hidden="true" />
@@ -194,8 +196,8 @@ export default async function AdminServicesPage() {
           {tenant.services.length === 0 && (
             <EmptyState
               icon={<Layers className="w-5 h-5" />}
-              title="Sin servicios configurados"
-              description="Crea tu primer servicio para que tus clientes puedan reservar."
+              title={`Sin ${vertical.terms.services.toLowerCase()} configurados`}
+              description={`Crea tu primer ${vertical.terms.service.toLowerCase()} para que tus ${vertical.terms.customers.toLowerCase()} puedan reservar.`}
             />
           )}
         </div>

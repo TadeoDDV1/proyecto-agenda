@@ -1,15 +1,18 @@
-# AgendaSaaS - Plataforma de Reservas para Salones y Barberías
+# Pauta - Plataforma de Reservas para Negocios con Agenda
 
 Plataforma SaaS multi-inquilino (multi-tenant) desarrollada con **Next.js (App Router)**, **TypeScript**, **Tailwind CSS** y **Prisma ORM** con base de datos **PostgreSQL**.
 
 ---
 
-## 🚀 Características del Primer Avance
+## 🚀 Características actuales
 
 - **Arquitectura Multi-tenant:** Aislamiento lógico de negocios mediante `tenantId`.
+- **Multi-giro:** registro con selector entre 14 giros (barbería, salón, uñas, spa, dental, médico, fisio, psicología, nutrición, óptica, tattoo, veterinaria y más). Cada giro define vocabulario, acento y catálogo inicial.
+- **Carga inicial por giro:** al crear el negocio se precargan categorías y servicios de ejemplo, editables.
 - **Base de Datos PostgreSQL:** Modelado completo en Prisma para:
-  - `Tenant`: Negocios independientes (con slug para portal público).
-  - `User` y `StaffProfile`: Equipo de trabajo (barberos, estilistas, coloristas) con colores identificadores y horarios semanales.
+  - `Tenant`: Negocios independientes (con slug para portal público y giro).
+  - `User` y `StaffProfile`: Equipo de trabajo con colores identificadores y horarios semanales.
+  - `Resource`: sillas, consultorios, cabinas o equipos agendables.
   - `Category` y `Service`: Catálogo de servicios con precios y duraciones exactas en minutos.
   - `Customer` y `Appointment`: Gestión de clientes y reservas con prevención de solapamientos en tiempo real.
 - **Portal de Reserva Público (`/b/[slug]`):**
@@ -77,5 +80,6 @@ El bot usa **Baileys** (WhatsApp Web no oficial) desde un worker Node separado d
 ## 📐 Plan de evolución
 
 - [Vitrina + reservas por WhatsApp](docs/plan-vitrina-whatsapp.md): plan de producto y arquitectura para el portal de marca y el bot de WhatsApp.
+- [Plan multi-giro + Riel](docs/plan-multivertical.md): convertir el producto en plataforma de citas para barbería, salón, dental, spa y clínica, con nuevo sistema visual.
 - [Exploraciones de diseño](design/README.md): mockups estáticos de las direcciones evaluadas.
 

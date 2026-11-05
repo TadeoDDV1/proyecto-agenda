@@ -31,6 +31,32 @@ enum BookingSource {
   WALK_IN
 }
 
+/// Giro del negocio. Define vocabulario, catálogo inicial y plantilla de portal.
+/// La lista canónica vive en src/lib/verticals/index.ts.
+enum Vertical {
+  BARBERSHOP
+  HAIR_SALON
+  NAILS
+  SPA
+  MASSAGE
+  DENTAL
+  MEDICAL
+  PHYSIO
+  PSYCHOLOGY
+  NUTRITION
+  OPTOMETRY
+  TATTOO
+  VETERINARY
+  OTHER
+}
+
+enum ResourceKind {
+  CHAIR
+  ROOM
+  CABIN
+  EQUIPMENT
+}
+
 /// Temas curados de Vitrina. No se permite color libre: cada tema está
 /// validado por contraste (ver src/lib/vitrina/theme.ts).
 enum BrandTheme {
@@ -101,6 +127,10 @@ model Tenant {
   brandTheme    BrandTheme @default(TERRACOTTA)
 
   // Operación
+  /// Giro del negocio: define términos, plantilla de portal y catálogo inicial.
+  vertical Vertical @default(OTHER)
+  /// Estado del onboarding por giro: PENDING | READY.
+  onboardingState String @default("PENDING")
   /// Zona horaria IANA del negocio. Todas las fechas se guardan en UTC y se
   /// interpretan en esta zona al leer/escribir.
   timezone                String @default("America/Mexico_City")
@@ -120,6 +150,7 @@ model Tenant {
   services              Service[]
   customers             Customer[]
   appointments          Appointment[]
+  resources             Resource[]
   testimonials          Testimonial[]
   businessHours         BusinessHour[]
   whatsappAccount       WhatsAppAccount?
@@ -255,6 +286,25 @@ model BusinessHour {
   @@map("business_hours")
 }
 
+/// Recurso agendable que no es una persona: silla, consultorio, cabina o equipo.
+/// Un servicio puede requerir un recurso y una cita puede ocuparlo.
+model Resource {
+  id        String       @id @default(uuid())
+  tenantId  String
+  name      String
+  kind      ResourceKind @default(ROOM)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+  @@map("resources")
+}
+
 model Customer {
   id            String   @id @default(uuid())
   tenantId      String
@@ -283,6 +333,8 @@ model Appointment {
   staffId          String
   serviceId        String
   customerId       String
+  /// Recurso opcional (consultorio, cabina, silla) que ocupa la cita.
+  resourceId       String?
   /// Instante UTC. En pantalla se formatea con `Tenant.timezone`.
   startTime        DateTime          @db.Timestamptz(3)
   endTime          DateTime          @db.Timestamptz(3)
@@ -304,11 +356,13 @@ model Appointment {
   staff    StaffProfile @relation(fields: [staffId], references: [id], onDelete: Cascade)
   service  Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   customer Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  resource Resource?    @relation(fields: [resourceId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, confirmationCode])
   @@unique([tenantId, idempotencyKey])
   @@index([tenantId])
   @@index([staffId, startTime])
+  @@index([resourceId, startTime])
   @@index([tenantId, startTime])
   @@map("appointments")
 }

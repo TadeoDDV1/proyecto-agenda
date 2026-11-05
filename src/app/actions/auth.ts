@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword, comparePassword, setSessionCookie, clearSessionCookie } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
+import { getVertical, isVerticalId } from "@/lib/verticals";
 import { redirect } from "next/navigation";
 
 export async function loginAction(formData: FormData) {
@@ -46,9 +47,16 @@ export async function registerTenantAction(formData: FormData) {
   const password = formData.get("password") as string;
   const phone = (formData.get("phone") as string)?.trim();
   const currency = (formData.get("currency") as string)?.trim() || "MXN";
+  const verticalInput = (formData.get("vertical") as string)?.trim();
+  const vertical = isVerticalId(verticalInput) ? verticalInput : null;
+  const verticalConfig = getVertical(vertical);
 
   if (!businessName || !ownerName || !email || !password) {
     return { success: false, error: "Todos los campos obligatorios deben ser completados." };
+  }
+
+  if (!vertical) {
+    return { success: false, error: "Elige el giro de tu negocio para precargar el catálogo." };
   }
 
   if (password.length < 6) {
@@ -86,6 +94,8 @@ export async function registerTenantAction(formData: FormData) {
           slug,
           phone: phone || null,
           currency,
+          vertical,
+          onboardingState: "READY",
         },
       });
 
@@ -107,7 +117,7 @@ export async function registerTenantAction(formData: FormData) {
           displayName: ownerName,
           email,
           phone,
-          colorCode: "#3b82f6",
+          colorCode: verticalConfig.accent,
         },
       });
 
@@ -124,32 +134,31 @@ export async function registerTenantAction(formData: FormData) {
         });
       }
 
-      // Categoría por defecto
-      const cat = await tx.category.create({
-        data: {
-          tenantId: tenant.id,
-          name: "Servicios Generales",
-        },
-      });
+      // Carga inicial: categorías y servicios de ejemplo según el giro.
+      const categoryIds = new Map<string, string>();
+      for (const categoryName of verticalConfig.presets.categories) {
+        const category = await tx.category.create({
+          data: { tenantId: tenant.id, name: categoryName },
+        });
+        categoryIds.set(categoryName, category.id);
+      }
 
-      // Servicio inicial de ejemplo
-      const service = await tx.service.create({
-        data: {
-          tenantId: tenant.id,
-          categoryId: cat.id,
-          name: "Servicio Inicial",
-          description: "Servicio estándar de atención personalizada.",
-          durationMinutes: 30,
-          price: 200,
-        },
-      });
+      for (const preset of verticalConfig.presets.services) {
+        const service = await tx.service.create({
+          data: {
+            tenantId: tenant.id,
+            categoryId: categoryIds.get(preset.category) ?? null,
+            name: preset.name,
+            description: preset.description,
+            durationMinutes: preset.durationMinutes,
+            price: preset.price,
+          },
+        });
 
-      await tx.staffService.create({
-        data: {
-          staffId: staff.id,
-          serviceId: service.id,
-        },
-      });
+        await tx.staffService.create({
+          data: { staffId: staff.id, serviceId: service.id },
+        });
+      }
 
       return { tenant, user };
     });

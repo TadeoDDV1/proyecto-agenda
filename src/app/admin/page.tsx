@@ -10,10 +10,10 @@ import {
   User,
   TrendingUp,
   Store,
-  Info,
   Clock,
   ExternalLink,
   ArrowRight,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export default async function AdminDashboardPage() {
@@ -122,29 +122,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
-      {/* Banner demo */}
-      {!session && (
-        <div className="px-4 py-3 rounded-lg border border-border text-muted text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <Info className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>
-              Modo demostración — negocio{" "}
-              <strong className="text-foreground">{tenant.name}</strong>.{" "}
-              <Link href="/login" className="underline underline-offset-2 hover:text-foreground transition">
-                Inicia sesión
-              </Link>{" "}
-              para gestionar tu negocio.
-            </span>
-          </div>
-          <Link
-            href="/register"
-            className="self-start sm:self-auto flex-shrink-0 text-[11px] font-medium px-3 py-1.5 rounded border border-border-strong text-muted hover:text-foreground transition"
-          >
-            Crear cuenta
-          </Link>
-        </div>
-      )}
-
       {/* Header */}
       <PageHeader
         eyebrow={todayFormatted}
@@ -173,21 +150,16 @@ export default async function AdminDashboardPage() {
       {/* Resumen — jerarquía: dinero del mes, actividad y equipo */}
       <div className="grid gap-3 lg:grid-cols-12">
         {/* Ingresos del mes */}
-        <section className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface p-6 lg:col-span-5">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent/10 blur-3xl"
-          />
-
+        <section className="panel relative flex flex-col overflow-hidden p-6 lg:col-span-5">
           <div className="relative flex flex-1 flex-col">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
+              <p className="eyebrow-plain">
                 Ingresos de este mes
               </p>
-              <TrendingUp className="h-3.5 w-3.5 text-dim" aria-hidden="true" />
+              <TrendingUp className="h-3.5 w-3.5 text-accent-warm" aria-hidden="true" />
             </div>
 
-            <p className="mt-4 font-display text-4xl font-light tracking-tight text-foreground">
+            <p className="metric mt-4 text-4xl">
               {formatCurrency(monthRevenue, tenant.currency)}
             </p>
 
@@ -198,7 +170,7 @@ export default async function AdminDashboardPage() {
             </p>
 
             <div className="mt-5 grid grid-cols-2 gap-2">
-              <div className="rounded-lg border border-border-subtle bg-base/50 px-3 py-2.5">
+              <div className="panel-inset px-3 py-2.5">
                 <span className="block text-[10px] uppercase tracking-[0.1em] text-dim">
                   Ticket promedio
                 </span>
@@ -211,7 +183,7 @@ export default async function AdminDashboardPage() {
                   )}
                 </span>
               </div>
-              <div className="rounded-lg border border-border-subtle bg-base/50 px-3 py-2.5">
+              <div className="panel-inset px-3 py-2.5">
                 <span className="block text-[10px] uppercase tracking-[0.1em] text-dim">
                   Completadas
                 </span>
@@ -238,9 +210,9 @@ export default async function AdminDashboardPage() {
         </section>
 
         {/* Actividad de los últimos 14 días */}
-        <section className="flex flex-col rounded-xl border border-border bg-surface p-5 lg:col-span-4">
+        <section className="panel flex flex-col p-5 lg:col-span-4">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
+            <h2 className="eyebrow-plain">
               Últimos 14 días
             </h2>
             <span className="font-mono text-[11px] text-muted">
@@ -303,16 +275,16 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* Próxima cita + equipo */}
-        <div className="grid grid-cols-2 gap-3 lg:col-span-3 lg:grid-cols-1">
-          <section className="flex flex-col rounded-xl border border-border bg-surface p-4">
-            <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
+        {/* Próxima cita + reglas de operación */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
+          <section className="panel flex flex-col p-4">
+            <p className="eyebrow-plain">
               Próxima cita
             </p>
 
             {nextAppointment ? (
               <>
-                <p className="mt-2 font-display text-xl font-light text-foreground">
+                <p className="metric mt-2 text-2xl">
                   {nextAppointment.startTime.toLocaleTimeString("es-MX", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -357,24 +329,40 @@ export default async function AdminDashboardPage() {
             )}
           </section>
 
-          <section className="flex flex-col rounded-xl border border-border bg-surface p-4">
-            <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
-              Equipo
+          <section className="panel flex flex-col p-4">
+            <p className="eyebrow-plain flex items-center gap-1.5">
+              <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
+              Reglas
             </p>
-            <p className="mt-2 font-display text-xl font-light text-foreground">
-              {tenant.staff.length}
-              <span className="ml-1.5 font-sans text-[11px] text-muted">
-                especialistas
-              </span>
-            </p>
-            <p className="mt-1 text-[11px] text-muted">
-              {tenant.services.length} servicios activos
-            </p>
+            <dl className="mt-3 space-y-2 text-[11px]">
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-dim">Zona horaria</dt>
+                <dd
+                  className="truncate font-mono text-muted"
+                  title={tenant.timezone}
+                >
+                  {tenant.timezone.split("/").pop()?.replaceAll("_", " ") ??
+                    tenant.timezone}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-dim">Ventana</dt>
+                <dd className="font-mono text-muted">
+                  {tenant.bookingWindowDays} días
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="text-dim">Antelación</dt>
+                <dd className="font-mono text-muted">
+                  {tenant.minLeadTimeMinutes} min
+                </dd>
+              </div>
+            </dl>
             <Link
-              href="/admin/personal"
+              href="/admin/configuracion"
               className="mt-3 inline-flex items-center gap-1 border-t border-border-subtle pt-3 text-[11px] font-semibold text-accent-warm transition hover:text-foreground"
             >
-              Gestionar equipo
+              Ajustar operación
               <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </Link>
           </section>
@@ -409,10 +397,10 @@ export default async function AdminDashboardPage() {
         {/* Sidebar informativo */}
         <div className="lg:col-span-4 min-w-0 space-y-4">
           {/* Equipo */}
-          <div className="p-5 rounded-xl bg-surface border border-border">
+          <div className="panel p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-medium text-foreground flex items-center gap-2 uppercase tracking-widest">
-                <User className="w-3.5 h-3.5 text-muted" />
+              <h3 className="eyebrow-plain flex items-center gap-2">
+                <User className="w-3.5 h-3.5 text-accent-warm" />
                 Equipo
               </h3>
               <Link
@@ -458,10 +446,10 @@ export default async function AdminDashboardPage() {
           </div>
 
           {/* Datos del negocio */}
-          <div className="p-5 rounded-xl bg-surface border border-border">
+          <div className="panel p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-medium text-foreground flex items-center gap-2 uppercase tracking-widest">
-                <Store className="w-3.5 h-3.5 text-muted" />
+              <h3 className="eyebrow-plain flex items-center gap-2">
+                <Store className="w-3.5 h-3.5 text-accent-warm" />
                 Local
               </h3>
               <Link
@@ -474,7 +462,7 @@ export default async function AdminDashboardPage() {
 
             <dl className="space-y-3 text-xs">
               <div>
-                <dt className="text-[10px] uppercase tracking-widest text-dim mb-0.5">
+                <dt className="text-[10px] uppercase tracking-[0.12em] text-dim mb-1">
                   Enlace público
                 </dt>
                 <dd className="font-mono text-accent-warm">
@@ -482,7 +470,7 @@ export default async function AdminDashboardPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-widest text-dim mb-0.5">
+                <dt className="text-[10px] uppercase tracking-[0.12em] text-dim mb-1">
                   Dirección
                 </dt>
                 <dd className="text-muted">
@@ -490,7 +478,7 @@ export default async function AdminDashboardPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-widest text-dim mb-0.5">
+                <dt className="text-[10px] uppercase tracking-[0.12em] text-dim mb-1">
                   Teléfono
                 </dt>
                 <dd className="text-muted">
@@ -498,7 +486,7 @@ export default async function AdminDashboardPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-widest text-dim mb-0.5">
+                <dt className="text-[10px] uppercase tracking-[0.12em] text-dim mb-1">
                   Moneda
                 </dt>
                 <dd className="text-muted">{tenant.currency}</dd>

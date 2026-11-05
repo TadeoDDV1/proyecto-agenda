@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, AppointmentStatus, BrandTheme } from "@prisma/client";
+import { PrismaClient, UserRole, AppointmentStatus, BrandTheme, Vertical, ResourceKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { normalizePhone } from "../src/lib/booking/phone";
 import {
@@ -16,6 +16,7 @@ async function main() {
 
   // 1. Limpiar datos existentes en caso de re-ejecución
   await prisma.appointment.deleteMany();
+  await prisma.resource.deleteMany();
   await prisma.testimonial.deleteMany();
   await prisma.businessHour.deleteMany();
   await prisma.staffService.deleteMany();
@@ -47,6 +48,8 @@ async function main() {
         "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1400&auto=format&fit=crop&q=70",
       instagram: "barberiavintage",
       brandTheme: BrandTheme.TERRACOTTA,
+      vertical: Vertical.BARBERSHOP,
+      onboardingState: "READY",
       timezone: TIMEZONE,
       bookingWindowDays: 45,
       minLeadTimeMinutes: 60,
@@ -55,6 +58,15 @@ async function main() {
   });
 
   console.log(`✅ Tenant creado: ${tenant.name} (${tenant.slug})`);
+
+  // Recursos agendables (sillas) del local de ejemplo
+  await prisma.resource.createMany({
+    data: [
+      { tenantId: tenant.id, name: "Silla 1", kind: ResourceKind.CHAIR },
+      { tenantId: tenant.id, name: "Silla 2", kind: ResourceKind.CHAIR },
+      { tenantId: tenant.id, name: "Silla 3", kind: ResourceKind.CHAIR },
+    ],
+  });
 
   // 3. Crear Usuario Administrador/Dueño (contraseña: password123)
   const passwordHash = await bcrypt.hash("password123", 10);
@@ -75,7 +87,7 @@ async function main() {
       displayName: "Mateo Silva",
       email: "mateo@barberiavintage.com",
       phone: "+525511112222",
-      colorCode: "#3b82f6",
+      colorCode: "#C2410C",
       bio: "Cortes clásicos y degradados a máquina. Diez años detrás de la silla.",
       specialties: "Fade, cortes clásicos",
       avatarUrl:
@@ -89,7 +101,7 @@ async function main() {
       displayName: "Valentina Ríos",
       email: "valentina@barberiavintage.com",
       phone: "+525533334444",
-      colorCode: "#ec4899",
+      colorCode: "#7C3AED",
       bio: "Color, textura y combos largos. Le gusta explicar el porqué de cada producto.",
       specialties: "Color, tratamientos",
       avatarUrl:
@@ -103,7 +115,7 @@ async function main() {
       displayName: "Lucas Gómez",
       email: "lucas@barberiavintage.com",
       phone: "+525555556666",
-      colorCode: "#10b981",
+      colorCode: "#0F766E",
       bio: "Barba y navaja. El ritual de toalla caliente es su especialidad.",
       specialties: "Barba, afeitado",
       avatarUrl:

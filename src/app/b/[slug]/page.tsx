@@ -245,7 +245,7 @@ export default async function VitrinaPage({ params }: PageProps) {
 
           <div className={styles.barRight}>
             <span className={styles.powered}>
-              con <b>AgendaSaaS</b>
+              con <b>Pauta</b>
             </span>
             <BookingTrigger className={styles.bookPill} serviceId={services[0]?.id}>
               Reservar
@@ -584,7 +584,7 @@ export default async function VitrinaPage({ params }: PageProps) {
             © {new Date().getFullYear()} {tenant.name}
           </span>
           <span>
-            Reservas con <Link href="/">AgendaSaaS</Link>
+            Reservas con <Link href="/">Pauta</Link>
           </span>
         </div>
       </footer>

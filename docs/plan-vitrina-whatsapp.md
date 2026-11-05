@@ -448,7 +448,7 @@ La página se envuelve en un contenedor con `color-scheme: light`, fondo papel y
 
 | Sección | Datos | Regla |
 |---|---|---|
-| Barra de marca | `name`, `logoUrl`, `tagline` | “Con AgendaSaaS” discreto |
+| Barra de marca | `name`, `logoUrl`, `tagline` | “Con Pauta” discreto |
 | Hero | `coverImageUrl`, `story`, rating, años, staff count | Si no hay cover, composición tipográfica |
 | Cinta de categorías | `Category` | Scroll horizontal en móvil |
 | Carta | `Service` (precio, duración, imagen) | 6 visibles + “Ver todos” |

@@ -1,12 +1,13 @@
 # Exploraciones de diseño
 
-Documentos HTML autocontenidos para decidir el rediseño de AgendaSaaS antes de tocar la app. No forman parte del build de Next.js: son estáticos y se abren en el navegador.
+Documentos HTML autocontenidos para decidir el rediseño de Pauta antes de tocar la app. No forman parte del build de Next.js: son estáticos y se abren en el navegador.
 
 ## Cómo abrirlo
 
 ```bash
 xdg-open design/exploraciones.html   # cinco direcciones estructurales (principal)
 xdg-open design/direcciones.html     # estudio previo de temas de color
+xdg-open design/riel.html            # nueva dirección multi-giro (papel + ultramar)
 ```
 
 O con un servidor local, para que las fuentes externas se sirvan por HTTP:
@@ -37,6 +38,10 @@ Cuatro variantes sobre la **misma** plantilla de panel —solo cambian los token
 - **B · Atelier** — editorial claro con papel, tinta y oliva.
 - **C · Studio** — producto denso y keyboard-first, claro/oscuro.
 - **D · Maison** — dark boutique cálido con espresso, hueso y latón.
+
+## riel.html — dirección multi-giro
+
+Prototipo de la propuesta **Riel**: papel claro, tinta, tipografía grotesca y ultramar. Muestra portada, panel y portal clínico, con un selector de acento por giro (barbería, salón, dental, spa). Sirve para validar la dirección antes de migrar la app. Acompaña a [`docs/plan-multivertical.md`](../docs/plan-multivertical.md).
 
 ## Notas
 

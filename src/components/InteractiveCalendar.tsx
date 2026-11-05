@@ -198,13 +198,13 @@ export function InteractiveCalendar({
   return (
     <div className="space-y-6">
       {/* Controles de fecha */}
-      <div className="bg-surface p-4 sm:p-5 rounded-xl border border-border flex flex-col md:flex-row md:flex-wrap md:items-center justify-between gap-4">
+      <div className="panel p-4 sm:p-5 flex flex-col md:flex-row md:flex-wrap md:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => handleShiftDay(-1)}
             aria-label="Día anterior"
-            className="p-2.5 rounded-lg bg-base border border-border hover:border-border-strong text-muted hover:text-foreground transition"
+            className="p-2.5 rounded-[3px] bg-base border border-border hover:border-border-strong text-muted hover:text-foreground transition"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -212,9 +212,9 @@ export function InteractiveCalendar({
           <button
             type="button"
             onClick={handleSetToday}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition border ${
+            className={`px-4 py-2 rounded-[3px] text-xs font-semibold transition border ${
               isSelectedDateToday
-                ? "bg-accent text-accent-fg border-accent"
+                ? "bg-accent-soft text-accent-warm border-accent/40"
                 : "bg-base hover:border-border-strong text-muted border-border"
             }`}
           >
@@ -225,12 +225,12 @@ export function InteractiveCalendar({
             type="button"
             onClick={() => handleShiftDay(1)}
             aria-label="Día siguiente"
-            className="p-2.5 rounded-lg bg-base border border-border hover:border-border-strong text-muted hover:text-foreground transition"
+            className="p-2.5 rounded-[3px] bg-base border border-border hover:border-border-strong text-muted hover:text-foreground transition"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-base border border-border">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-[3px] bg-base border border-border">
             <CalendarIcon className="w-4 h-4 text-accent-hover" aria-hidden="true" />
             <input
               type="date"
@@ -272,7 +272,7 @@ export function InteractiveCalendar({
       {dateAppointments.length === 0 && (
         <div
           role="status"
-          className="rounded-xl border border-dashed border-border bg-surface px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+          className="panel rounded-[4px] border-dashed px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
         >
           <p className="text-xs text-muted flex items-center gap-2">
             <CalendarIcon className="w-4 h-4 text-accent-warm flex-shrink-0" aria-hidden="true" />
@@ -296,7 +296,7 @@ export function InteractiveCalendar({
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
         </p>
       )}
-      <div className="bg-surface rounded-xl border border-border overflow-x-auto">
+      <div className="panel overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Header: especialistas */}
           <div className="flex border-b border-border bg-surface-raised sticky top-0 z-20">
@@ -411,7 +411,7 @@ export function InteractiveCalendar({
                         >
                           {slotApps.length === 0 && (
                             <div className="opacity-0 group-hover/cell:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <span className="text-[10px] font-semibold text-muted bg-surface-raised px-2 py-1 rounded-lg border border-border flex items-center gap-1">
+                              <span className="text-[10px] font-semibold text-muted bg-surface-raised px-2 py-1 rounded-[3px] border border-border flex items-center gap-1">
                                 <Plus className="w-3 h-3 text-accent-hover" />
                                 {hour}
                               </span>
@@ -437,7 +437,7 @@ export function InteractiveCalendar({
                                     setSelectedAppointment(app);
                                   }
                                 }}
-                                className={`p-3 rounded-xl border text-xs transition-all relative overflow-hidden cursor-pointer hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 ${
+                                className={`p-3 rounded-[3px] border text-xs transition-all relative overflow-hidden cursor-pointer hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 ${
                                   isCancelled
                                     ? "bg-error/10 border-error/25 opacity-60"
                                     : isCompleted
@@ -546,7 +546,7 @@ export function InteractiveCalendar({
                   type="button"
                   onClick={() => setSelectedAppointment(null)}
                   aria-label="Cerrar detalle"
-                  className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-raised transition"
+                  className="p-1.5 rounded-[3px] text-muted hover:text-foreground hover:bg-surface-raised transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -573,7 +573,7 @@ export function InteractiveCalendar({
                   Datos del cliente
                 </span>
 
-                <div className="p-4 rounded-xl bg-base border border-border space-y-3">
+                <div className="p-4 rounded-[3px] bg-base border border-border space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-foreground">
                       {selectedAppointment.customer.fullName}
@@ -617,7 +617,7 @@ export function InteractiveCalendar({
                   Asignación de turno
                 </span>
 
-                <div className="p-4 rounded-xl bg-base border border-border space-y-3">
+                <div className="p-4 rounded-[3px] bg-base border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <span
@@ -631,7 +631,7 @@ export function InteractiveCalendar({
                     <span className="text-[10px] text-dim font-mono">Especialista</span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-accent-warm font-mono font-semibold bg-accent-soft p-2.5 rounded-lg border border-accent/20">
+                  <div className="flex items-center gap-2 text-xs text-accent-warm font-mono font-semibold bg-accent-soft p-2.5 rounded-[3px] border border-accent/20">
                     <CalendarIcon className="w-3.5 h-3.5" />
                     <span>
                       {new Date(selectedAppointment.startTime).toLocaleDateString("es-MX", {
@@ -655,7 +655,7 @@ export function InteractiveCalendar({
                   href={getWhatsAppReminderLink(selectedAppointment)}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-success/15 hover:bg-success/25 text-success-text border border-success/30 font-semibold text-xs uppercase tracking-wider transition"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-[3px] bg-success/15 hover:bg-success/25 text-success-text border border-success/30 font-semibold text-xs uppercase tracking-wider transition"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Enviar recordatorio por WhatsApp</span>
@@ -717,18 +717,18 @@ export function InteractiveCalendar({
       {/* Modal cita en mostrador */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-surface rounded-2xl max-w-lg w-full p-6 sm:p-8 border border-border relative animate-scale-in max-h-[90vh] overflow-y-auto">
+          <div className="panel max-w-lg w-full p-6 sm:p-8 relative animate-scale-in max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
               aria-label="Cerrar modal"
-              className="absolute top-5 right-5 p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface-raised transition"
+              className="absolute top-5 right-5 p-2 rounded-[3px] text-muted hover:text-foreground hover:bg-surface-raised transition"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
+              <div className="w-10 h-10 rounded-[3px] bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
                 <Scissors className="w-5 h-5" />
               </div>
               <div>
@@ -740,7 +740,7 @@ export function InteractiveCalendar({
             </div>
 
             {manualError && (
-              <div className="mb-4 p-3.5 rounded-xl bg-error/10 border border-error/25 text-error-text text-xs flex items-center gap-2">
+              <div className="mb-4 p-3.5 rounded-[3px] bg-error/10 border border-error/25 text-error-text text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{manualError}</span>
               </div>
@@ -754,7 +754,7 @@ export function InteractiveCalendar({
                 <select id="manual-service"
                   value={manualServiceId}
                   onChange={(e) => setManualServiceId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                  className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                 >
                   {servicesList.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -771,7 +771,7 @@ export function InteractiveCalendar({
                 <select id="manual-staff"
                   value={manualStaffId}
                   onChange={(e) => setManualStaffId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                  className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                 >
                   {staffList.map((st) => (
                     <option key={st.id} value={st.id}>
@@ -790,7 +790,7 @@ export function InteractiveCalendar({
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 cursor-pointer"
                   />
                 </div>
 
@@ -801,7 +801,7 @@ export function InteractiveCalendar({
                   <select id="manual-time"
                     value={manualTime}
                     onChange={(e) => setManualTime(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                   >
                     {[
                       "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -827,7 +827,7 @@ export function InteractiveCalendar({
                     placeholder="Ej. Rodrigo Lara"
                     value={manualCustName}
                     onChange={(e) => setManualCustName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                   />
                 </div>
 
@@ -841,7 +841,7 @@ export function InteractiveCalendar({
                     placeholder="Ej. 55 9876 5432"
                     value={manualCustPhone}
                     onChange={(e) => setManualCustPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                   />
                 </div>
               </div>
@@ -855,7 +855,7 @@ export function InteractiveCalendar({
                   placeholder="Cliente en sala de espera, pago en efectivo..."
                   value={manualNotes}
                   onChange={(e) => setManualNotes(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                  className="w-full px-4 py-2.5 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                 />
               </div>
 

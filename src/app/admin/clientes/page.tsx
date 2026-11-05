@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { CustomerManager } from "@/components/CustomerManager";
 import { PageHeader } from "@/components/ui";
+import { getVertical } from "@/lib/verticals";
 
 export default async function AdminClientesPage() {
   const session = await requireSession();
@@ -12,6 +13,7 @@ export default async function AdminClientesPage() {
   });
 
   if (!tenant) notFound();
+  const vertical = getVertical(tenant.vertical);
 
   const rawCustomers = await prisma.customer.findMany({
     where: { tenantId: tenant.id },
@@ -57,8 +59,8 @@ export default async function AdminClientesPage() {
   return (
     <main className="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
       <PageHeader
-        eyebrow="Relación con clientes"
-        title="Directorio & CRM"
+        eyebrow={vertical.terms.customers}
+        title={`Directorio de ${vertical.terms.customers.toLowerCase()}`}
         description={`Historial de visitas, fidelidad y contacto directo por WhatsApp para ${tenant.name}.`}
       />
 

@@ -206,7 +206,7 @@ export function BookingWizard({
       {/* Columna izquierda: asistente */}
       <div className="lg:col-span-8 min-w-0 space-y-6">
         {/* Stepper */}
-        <div className="bg-surface border border-border rounded-xl p-4 sm:p-5">
+        <div className="bg-surface border border-border rounded-[3px] p-4 sm:p-5">
           <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
             {STEPS.map((s) => {
               const isActive = step === s.num;
@@ -219,7 +219,7 @@ export function BookingWizard({
                   disabled={s.num > step}
                   aria-current={isActive ? "step" : undefined}
                   onClick={() => s.num < step && setStep(s.num)}
-                  className={`flex flex-1 sm:flex-none items-center justify-center sm:justify-start gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                  className={`flex flex-1 sm:flex-none items-center justify-center sm:justify-start gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-[3px] text-xs font-semibold transition whitespace-nowrap ${
                     isActive
                       ? "bg-accent-soft border border-accent/40 text-accent-warm"
                       : isPast
@@ -228,7 +228,7 @@ export function BookingWizard({
                   }`}
                 >
                   <div
-                    className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition ${
+                    className={`w-6 h-6 rounded-[2px] flex items-center justify-center text-xs font-bold transition ${
                       isActive
                         ? "bg-accent text-accent-fg"
                         : isPast
@@ -246,11 +246,11 @@ export function BookingWizard({
         </div>
 
         {/* Contenedor principal del paso */}
-        <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+        <div className="bg-surface border border-border rounded-[4px] p-6 sm:p-8 relative overflow-hidden">
           {errorMessage && (
             <div
               role="alert"
-              className="mb-6 p-4 rounded-xl bg-error/10 border border-error/25 text-error-text flex items-center gap-3 text-xs"
+              className="mb-6 p-4 rounded-[3px] bg-error/10 border border-error/25 text-error-text flex items-center gap-3 text-xs"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{errorMessage}</span>
@@ -278,7 +278,7 @@ export function BookingWizard({
                     type="button"
                     onClick={() => setSelectedCategory("ALL")}
                     aria-pressed={selectedCategory === "ALL"}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                    className={`px-3.5 py-1.5 rounded-[3px] text-xs font-semibold transition whitespace-nowrap ${
                       selectedCategory === "ALL"
                         ? "bg-accent text-accent-fg"
                         : "bg-base border border-border text-muted hover:text-foreground"
@@ -292,7 +292,7 @@ export function BookingWizard({
                       type="button"
                       onClick={() => setSelectedCategory(cat)}
                       aria-pressed={selectedCategory === cat}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                      className={`px-3.5 py-1.5 rounded-[3px] text-xs font-semibold transition whitespace-nowrap ${
                         selectedCategory === cat
                           ? "bg-accent text-accent-fg"
                           : "bg-base border border-border text-muted hover:text-foreground"
@@ -313,7 +313,7 @@ export function BookingWizard({
                       type="button"
                       onClick={() => setSelectedServiceId(srv.id)}
                       aria-pressed={isSelected}
-                      className={`text-left p-5 rounded-xl border transition-all flex flex-col justify-between group relative overflow-hidden ${
+                      className={`text-left p-5 rounded-[3px] border transition-all flex flex-col justify-between group relative overflow-hidden ${
                         isSelected
                           ? "bg-accent-soft border-accent/60"
                           : "bg-base border-border hover:border-border-strong"
@@ -390,7 +390,7 @@ export function BookingWizard({
                       type="button"
                       onClick={() => setSelectedStaffId(staff.id)}
                       aria-pressed={isSelected}
-                      className={`text-center p-6 rounded-xl border transition-all flex flex-col items-center relative group ${
+                      className={`text-center p-6 rounded-[3px] border transition-all flex flex-col items-center relative group ${
                         isSelected
                           ? "bg-accent-soft border-accent/60"
                           : "bg-base border-border hover:border-border-strong"
@@ -491,7 +491,7 @@ export function BookingWizard({
                         type="button"
                         onClick={() => setSelectedDate(d.dateStr)}
                         aria-pressed={isSelected}
-                        className={`flex flex-col items-center justify-center min-w-[76px] py-3.5 px-3 rounded-xl border transition-all text-center flex-shrink-0 ${
+                        className={`flex flex-col items-center justify-center min-w-[76px] py-3.5 px-3 rounded-[3px] border transition-all text-center flex-shrink-0 ${
                           isSelected
                             ? "bg-accent text-accent-fg border-accent"
                             : "bg-base text-muted border-border hover:border-border-strong"
@@ -530,11 +530,11 @@ export function BookingWizard({
                 </div>
 
                 {loadingSlots ? (
-                  <div className="bg-base rounded-xl border border-border">
+                  <div className="bg-base rounded-[3px] border border-border">
                     <LoadingState label="Consultando espacios libres en la agenda…" />
                   </div>
                 ) : slotsMessage && availableSlots.length === 0 ? (
-                  <div className="p-5 rounded-xl bg-warning/10 border border-warning/25 text-warning-text text-xs flex items-center gap-3">
+                  <div className="p-5 rounded-[3px] bg-warning/10 border border-warning/25 text-warning-text text-xs flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <span>{slotsMessage}</span>
                   </div>
@@ -548,7 +548,7 @@ export function BookingWizard({
                           type="button"
                           onClick={() => setSelectedTime(time)}
                           aria-pressed={isSelected}
-                          className={`py-3 px-2 rounded-lg border text-xs font-mono font-semibold transition ${
+                          className={`py-3 px-2 rounded-[3px] border text-xs font-mono font-semibold transition ${
                             isSelected
                               ? "bg-accent text-accent-fg border-accent"
                               : "bg-base text-muted border-border hover:border-accent/40 hover:text-foreground"
@@ -609,7 +609,7 @@ export function BookingWizard({
                     placeholder="Ej. Juan Pérez"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
+                    className="w-full px-4 py-3 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                   />
                 </div>
 
@@ -623,7 +623,7 @@ export function BookingWizard({
                     placeholder="Ej. 55 1234 5678"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
+                    className="w-full px-4 py-3 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                   />
                 </div>
               </div>
@@ -637,7 +637,7 @@ export function BookingWizard({
                   placeholder="juan@ejemplo.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
+                  className="w-full px-4 py-3 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
                 />
               </div>
 
@@ -650,7 +650,7 @@ export function BookingWizard({
                   placeholder="Preferencias de corte, productos alérgicos, etc."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition resize-none"
+                  className="w-full px-4 py-3 rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition resize-none"
                 />
               </div>
 
@@ -677,7 +677,7 @@ export function BookingWizard({
           {/* PASO 5: TICKET */}
           {step === 5 && confirmedBooking && (
             <div className="py-6 text-center space-y-6">
-              <div className="w-20 h-20 rounded-2xl bg-success/15 border border-success/30 text-success-text flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 rounded-[4px] bg-success/15 border border-success/30 text-success-text flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
 
@@ -690,7 +690,7 @@ export function BookingWizard({
                 </p>
               </div>
 
-              <div className="max-w-md mx-auto p-6 rounded-xl bg-base border border-border text-left text-xs space-y-3">
+              <div className="max-w-md mx-auto p-6 rounded-[3px] bg-base border border-border text-left text-xs space-y-3">
                 <div className="flex justify-between items-center pb-3 border-b border-border-subtle">
                   <span className="text-dim font-semibold uppercase tracking-wider">
                     Negocio
@@ -747,7 +747,7 @@ export function BookingWizard({
                 </Button>
                 <a
                   href="/admin"
-                  className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-surface-raised border border-border text-foreground text-sm font-medium hover:border-border-strong transition"
+                  className="inline-flex items-center justify-center h-10 px-4 rounded-[3px] bg-surface-raised border border-border text-foreground text-sm font-medium hover:border-border-strong transition"
                 >
                   Ver en Panel de Administración
                 </a>
@@ -759,7 +759,7 @@ export function BookingWizard({
 
       {/* Columna derecha: recibo en vivo */}
       <div className="hidden lg:block lg:col-span-4 min-w-0 sticky top-24 space-y-5">
-        <div className="bg-surface border border-border rounded-2xl p-6">
+        <div className="bg-surface border border-border rounded-[4px] p-6">
           <div className="flex items-center justify-between pb-4 border-b border-border">
             <div>
               <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-accent-warm block">
@@ -769,7 +769,7 @@ export function BookingWizard({
                 Tu Reservación
               </h4>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[3px] bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
@@ -819,7 +819,7 @@ export function BookingWizard({
                 Horario Programado
               </span>
               {selectedTime ? (
-                <div className="flex items-center gap-2 text-accent-warm font-mono text-xs font-semibold bg-accent-soft px-3 py-1.5 rounded-lg border border-accent/20">
+                <div className="flex items-center gap-2 text-accent-warm font-mono text-xs font-semibold bg-accent-soft px-3 py-1.5 rounded-[3px] border border-accent/20">
                   <Clock className="w-3.5 h-3.5" />
                   <span>
                     {selectedDate} a las {selectedTime} hrs
@@ -842,7 +842,7 @@ export function BookingWizard({
               </span>
             </div>
 
-            <div className="p-3 bg-base rounded-lg border border-border-subtle text-[11px] text-muted flex items-start gap-2">
+            <div className="p-3 bg-base rounded-[3px] border border-border-subtle text-[11px] text-muted flex items-start gap-2">
               <ShieldCheck className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
               <span>Reserva garantizada. Sin cargos de cancelación anticipada.</span>
             </div>

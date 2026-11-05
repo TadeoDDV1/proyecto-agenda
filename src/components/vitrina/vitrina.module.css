@@ -9,7 +9,7 @@
   background: var(--vit-paper);
   color: var(--vit-ink);
   color-scheme: light;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-instrument), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.55;
   min-height: 100vh;
@@ -88,7 +88,7 @@
   border-radius: 50%;
   background: var(--vit-brand);
   color: var(--vit-on-brand);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 15px;
   font-style: italic;
   font-weight: 600;
@@ -105,7 +105,7 @@
 }
 .logoName {
   display: block;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -239,7 +239,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: clamp(2.35rem, 5.1vw, 4.1rem);
   font-weight: 400;
   line-height: 0.98;
@@ -311,7 +311,7 @@
   display: block;
   margin-bottom: 2px;
   color: var(--vit-on-brand);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.1;
@@ -376,7 +376,7 @@
   border-radius: 50%;
   background: var(--vit-paper);
   color: var(--vit-brand-deep);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 12px;
   font-style: italic;
   line-height: 1.25;
@@ -406,7 +406,7 @@
 .ratingQuote {
   display: block;
   margin-top: 4px;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 13px;
   font-style: italic;
   line-height: 1.35;
@@ -479,7 +479,7 @@
 
 .sectionTitle {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: clamp(1.7rem, 3.2vw, 2.5rem);
   font-weight: 400;
   letter-spacing: -0.03em;
@@ -584,7 +584,7 @@
 
 .cardTitle {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -613,7 +613,7 @@
 }
 
 .price {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 19px;
   font-weight: 600;
 }
@@ -670,7 +670,7 @@
   border: 2px solid var(--vit-line);
   background: linear-gradient(140deg, #e8d3c0, #b98b6d);
   color: #3a2317;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 18px;
   font-weight: 600;
   overflow: hidden;
@@ -733,7 +733,7 @@
 
 .blockquote {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: clamp(1.25rem, 2.5vw, 1.9rem);
   font-weight: 300;
   font-style: italic;
@@ -774,7 +774,7 @@
   border-left: 1px solid color-mix(in srgb, var(--vit-on-brand) 16%, transparent);
 }
 .quoteMeta b {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 500;
   line-height: 1;
@@ -1007,7 +1007,7 @@
 
 .sheetTitle {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 25px;
   font-weight: 500;
   letter-spacing: -0.025em;
@@ -1151,7 +1151,7 @@
 }
 .optionPrice {
   flex: none;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 16px;
   font-weight: 600;
 }
@@ -1186,7 +1186,7 @@
   border-radius: 50%;
   background: var(--vit-line-soft);
   color: var(--vit-brand);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 14px;
   font-weight: 600;
   overflow: hidden;
@@ -1250,7 +1250,7 @@
   text-transform: uppercase;
 }
 .dayNum {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.1;
@@ -1272,7 +1272,7 @@
   border-radius: 10px;
   background: var(--vit-surface);
   color: var(--vit-ink);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-instrument), sans-serif;
   font-size: 13.5px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1362,7 +1362,7 @@
   margin-top: 8px;
   padding-top: 10px;
   border-top: 1px solid var(--vit-line);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 17px;
 }
 
@@ -1393,7 +1393,7 @@
 }
 .successTitle {
   margin: 0;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-bricolage), Georgia, serif;
   font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.02em;

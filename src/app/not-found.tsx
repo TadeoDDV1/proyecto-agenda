@@ -6,12 +6,12 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-base flex items-center justify-center p-6">
       <div className="w-full max-w-md text-center space-y-5">
-        <div className="w-12 h-12 rounded-2xl bg-surface-raised border border-border text-accent-warm flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-[4px] bg-surface-raised border border-border text-accent-warm flex items-center justify-center mx-auto">
           <Compass className="w-5 h-5" aria-hidden="true" />
         </div>
 
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim mb-2">
+          <p className="eyebrow-plain mb-2">
             Error 404
           </p>
           <h1 className="font-display text-3xl font-light tracking-tight text-foreground">

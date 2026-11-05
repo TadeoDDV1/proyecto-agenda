@@ -12,7 +12,7 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-base text-foreground">
       <a
         href="#contenido"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-accent focus:text-accent-fg focus:text-sm focus:font-medium"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-[3px] focus:bg-accent focus:text-accent-fg focus:text-sm focus:font-medium"
       >
         Saltar al contenido
       </a>
@@ -20,6 +20,7 @@ export default async function AdminLayout({
       <AdminSidebar
         tenantName={tenant.name}
         tenantSlug={tenant.slug}
+        vertical={tenant.vertical}
         userEmail={session.email}
         userName={session.fullName}
         userRole={session.role}

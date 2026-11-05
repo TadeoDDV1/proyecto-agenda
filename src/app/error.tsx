@@ -19,12 +19,12 @@ export default function GlobalError({
   return (
     <div className="min-h-screen bg-base flex items-center justify-center p-6">
       <div className="w-full max-w-md text-center space-y-5">
-        <div className="w-12 h-12 rounded-2xl bg-error/10 border border-error/25 text-error-text flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-[4px] bg-error/10 border border-error/25 text-error-text flex items-center justify-center mx-auto">
           <AlertTriangle className="w-5 h-5" aria-hidden="true" />
         </div>
 
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim mb-2">
+          <p className="eyebrow-plain mb-2">
             Error inesperado
           </p>
           <h1 className="font-display text-2xl font-light tracking-tight text-foreground">

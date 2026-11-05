@@ -109,7 +109,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
         </div>
 
         {!props.workerOnline && props.status !== null && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-warning/25 bg-warning/10 px-3 py-2.5 text-xs text-warning-text">
+          <div className="mb-5 flex items-start gap-2.5 rounded-[3px] border border-warning/25 bg-warning/10 px-3 py-2.5 text-xs text-warning-text">
             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p>
               El worker del bot no está corriendo. Abrí una terminal y ejecutá{" "}
@@ -124,7 +124,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
         {/* Conectado */}
         {connected && (
           <div className="space-y-5">
-            <div className="flex items-center gap-3 rounded-xl border border-success/25 bg-success/5 px-4 py-3.5">
+            <div className="flex items-center gap-3 rounded-[3px] border border-success/25 bg-success/5 px-4 py-3.5">
               <CheckCircle2 className="w-5 h-5 text-success-text flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm text-foreground font-medium truncate">
@@ -139,7 +139,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
-              <div className="rounded-lg border border-border px-3.5 py-3">
+              <div className="rounded-[3px] border border-border px-3.5 py-3">
                 <p className="text-[10px] uppercase tracking-wider text-dim">
                   Respuestas del bot
                 </p>
@@ -158,7 +158,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
                 </p>
               </div>
 
-              <div className="rounded-lg border border-border px-3.5 py-3">
+              <div className="rounded-[3px] border border-border px-3.5 py-3">
                 <p className="text-[10px] uppercase tracking-wider text-dim">
                   Conversaciones
                 </p>
@@ -219,14 +219,14 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
         {props.status === "PENDING" && props.qrDataUrl && !props.disconnectPending && (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-              <div className="rounded-2xl border border-border-strong bg-[#EDE7DC] p-3 flex-shrink-0">
+              <div className="rounded-[4px] border border-border-strong bg-[#F4F1EA] p-3 flex-shrink-0">
                 <Image
                   src={props.qrDataUrl}
                   alt="Código QR para vincular WhatsApp"
                   width={208}
                   height={208}
                   unoptimized
-                  className="w-44 h-44 sm:w-52 sm:h-52 rounded-lg"
+                  className="w-44 h-44 sm:w-52 sm:h-52 rounded-[3px]"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
 
         {/* PENDING sin QR */}
         {props.status === "PENDING" && !props.qrDataUrl && !props.disconnectPending && (
-          <div className="rounded-xl border border-dashed border-border px-5 py-10 text-center">
+          <div className="rounded-[3px] border border-dashed border-border px-5 py-10 text-center">
             <QrCode className="w-7 h-7 mx-auto text-dim" />
             <p className="text-sm text-foreground mt-3">
               {props.workerOnline
@@ -288,7 +288,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
 
         {/* Desconectando */}
         {props.disconnectPending && (
-          <div className="rounded-xl border border-border px-5 py-10 text-center">
+          <div className="rounded-[3px] border border-border px-5 py-10 text-center">
             <Loader2 className="w-6 h-6 mx-auto text-muted animate-spin" />
             <p className="text-sm text-foreground mt-3">Desvinculando el dispositivo…</p>
             <p className="text-xs text-muted mt-1">
@@ -302,7 +302,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
         {/* Error */}
         {props.status === "ERROR" && (
           <div className="space-y-4">
-            <div className="flex items-start gap-2.5 rounded-lg border border-error/25 bg-error/10 px-3.5 py-3 text-xs text-error-text">
+            <div className="flex items-start gap-2.5 rounded-[3px] border border-error/25 bg-error/10 px-3.5 py-3 text-xs text-error-text">
               <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <p>{props.lastError ?? "La conexión se interrumpió. Se reintenta sola."}</p>
             </div>
@@ -322,7 +322,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
         {/* Sin conectar / desconectado */}
         {(props.status === null || props.status === "DISABLED") && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-dashed border-border px-5 py-10 text-center">
+            <div className="rounded-[3px] border border-dashed border-border px-5 py-10 text-center">
               <Smartphone className="w-7 h-7 mx-auto text-dim" />
               <p className="text-sm text-foreground mt-3">
                 {props.status === "DISABLED"
@@ -335,7 +335,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
               </p>
             </div>
 
-            <div className="rounded-lg border border-border bg-surface-raised/40 px-3.5 py-3 text-[11px] text-muted flex items-start gap-2">
+            <div className="rounded-[3px] border border-border bg-surface-raised/40 px-3.5 py-3 text-[11px] text-muted flex items-start gap-2">
               <Bot className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-accent-warm" />
               <p>
                 Conectamos por Baileys (WhatsApp Web no oficial). Es estable para

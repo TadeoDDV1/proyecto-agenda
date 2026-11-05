@@ -12,8 +12,9 @@ import {
   Palette,
   Clock,
 } from "lucide-react";
-import { Button, Card, Field, Input, Select, Textarea } from "@/components/ui";
+import { Button, Card, Field, Input, Select, Textarea, buttonClasses } from "@/components/ui";
 import { VITRINA_THEMES, VITRINA_THEME_NAMES } from "@/lib/vitrina/theme";
+import { getVertical } from "@/lib/verticals";
 
 const THEME_COPY: Record<string, { label: string; note: string }> = {
   TERRACOTTA: { label: "Terracota", note: "Cálido y artesanal. Barberías y salones clásicos." },
@@ -52,6 +53,7 @@ interface TenantSettingsProps {
     coverImageUrl: string | null;
     brandTheme: string;
     timezone: string;
+    vertical: string;
     whatsappNumber: string | null;
     bookingWindowDays: number;
     minLeadTimeMinutes: number;
@@ -65,6 +67,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState(tenant.brandTheme);
+  const vertical = getVertical(tenant.vertical);
 
   const timezoneOptions = TIMEZONES.some((zone) => zone.value === tenant.timezone)
     ? TIMEZONES
@@ -104,7 +107,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim mb-1">
-              Portal público activo
+              Portal público activo · {vertical.label}
             </p>
             <h3 className="text-base font-light text-foreground font-display mb-0.5">
               Enlace de reservas
@@ -129,7 +132,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
               href={`/b/${tenant.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg bg-accent text-accent-fg text-xs font-medium hover:bg-accent-dim transition"
+              className={buttonClasses("primary", "sm")}
             >
               <span>Abrir portal</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -137,21 +140,21 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
           </div>
         </div>
 
-        <div className="mt-4 p-2.5 rounded-lg border border-border bg-base flex items-center gap-2 font-mono text-xs break-all select-all text-accent-warm">
+        <div className="mt-4 p-2.5 rounded-[3px] border border-border bg-base flex items-center gap-2 font-mono text-xs break-all select-all text-accent-warm">
           <LinkIcon className="w-3.5 h-3.5 flex-shrink-0 text-dim" />
           <span>/b/{tenant.slug}</span>
         </div>
       </Card>
 
       {success && (
-        <div className="p-3 rounded-lg border border-success/25 bg-success/10 text-success-text text-xs flex items-center gap-2">
+        <div className="p-3 rounded-[3px] border border-success/25 bg-success/10 text-success-text text-xs flex items-center gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Configuración actualizada correctamente.</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg border border-error/25 bg-error/10 text-error-text text-xs flex items-center gap-2">
+        <div className="p-3 rounded-[3px] border border-error/25 bg-error/10 text-error-text text-xs flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -325,7 +328,7 @@ export function TenantSettingsForm({ tenant }: TenantSettingsProps) {
                       type="button"
                       onClick={() => setTheme(name)}
                       aria-pressed={selected}
-                      className={`text-left p-3 rounded-xl border transition ${
+                      className={`text-left p-3 rounded-[3px] border transition ${
                         selected
                           ? "border-accent bg-accent-soft"
                           : "border-border bg-base hover:border-border-strong"

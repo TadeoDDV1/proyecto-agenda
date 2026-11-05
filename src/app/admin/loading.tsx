@@ -16,7 +16,7 @@ export default function AdminLoading() {
       {/* Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="skeleton h-28 rounded-xl" />
+          <div key={i} className="skeleton h-28 rounded-[4px]" />
         ))}
       </div>
 
@@ -24,14 +24,14 @@ export default function AdminLoading() {
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-8 space-y-3">
           <div className="skeleton h-4 w-40" />
-          <div className="skeleton h-12 rounded-xl" />
+          <div className="skeleton h-12 rounded-[4px]" />
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-xl" />
+            <div key={i} className="skeleton h-24 rounded-[4px]" />
           ))}
         </div>
         <div className="hidden lg:block lg:col-span-4 space-y-4">
-          <div className="skeleton h-56 rounded-xl" />
-          <div className="skeleton h-48 rounded-xl" />
+          <div className="skeleton h-56 rounded-[4px]" />
+          <div className="skeleton h-48 rounded-[4px]" />
         </div>
       </div>
     </main>

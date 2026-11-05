@@ -93,10 +93,10 @@ export function AppointmentManager({
   return (
     <div className="space-y-4">
       {/* Filtros */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-surface">
-        <div className="flex items-center gap-2 text-[11px] font-medium px-1 text-dim">
+      <div className="panel flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3">
+        <div className="flex items-center gap-2 px-1 text-dim">
           <Filter className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Filtrar</span>
+          <span className="eyebrow-plain">Filtrar</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1 w-full sm:w-auto">
@@ -115,17 +115,17 @@ export function AppointmentManager({
                 type="button"
                 onClick={() => setFilter(st.key)}
                 aria-pressed={isActive}
-                className={`flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition ${
+                className={`flex flex-shrink-0 items-center gap-1.5 rounded-[3px] border px-2.5 py-1.5 text-[11px] font-medium transition ${
                   isActive
-                    ? "bg-accent text-accent-fg border-accent"
-                    : "bg-transparent text-muted border-border hover:text-foreground hover:border-border-strong"
+                    ? "border-accent/40 bg-accent-soft text-accent-warm"
+                    : "border-transparent bg-transparent text-muted hover:border-border hover:text-foreground"
                 }`}
               >
                 <span>{st.label}</span>
                 <span
-                  className={`text-[10px] font-mono px-1 rounded ${
+                  className={`rounded px-1 font-mono text-[10px] ${
                     isActive
-                      ? "bg-white/20 text-accent-fg"
+                      ? "bg-accent/20 text-accent-warm"
                       : "bg-surface-raised text-dim"
                   }`}
                 >
@@ -139,7 +139,7 @@ export function AppointmentManager({
 
       {/* Lista de citas */}
       {filteredAppointments.length === 0 ? (
-        <div className="p-12 text-center rounded-xl border border-border bg-surface">
+        <div className="panel p-12 text-center">
           <Calendar className="w-8 h-8 mx-auto mb-3 text-dim" aria-hidden="true" />
           <h4 className="text-sm font-medium mb-1 text-muted">
             Sin citas en este filtro
@@ -158,7 +158,7 @@ export function AppointmentManager({
             return (
               <div
                 key={app.id}
-                className={`p-4 rounded-xl border border-border bg-surface transition flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-border-strong hover:bg-surface-raised/30 ${
+                className={`panel panel-hover flex flex-col justify-between gap-4 p-4 transition md:flex-row md:items-center ${
                   isCancelled ? "opacity-60" : ""
                 }`}
               >
@@ -211,7 +211,7 @@ export function AppointmentManager({
                     </div>
 
                     {app.customerNotes && (
-                      <p className="text-xs mt-2 px-3 py-2 rounded-lg border border-border bg-base text-muted">
+                      <p className="text-xs mt-2 px-3 py-2 rounded-[3px] border border-border bg-base text-muted">
                         <span className="text-foreground">Nota: </span>
                         {app.customerNotes}
                       </p>
@@ -234,7 +234,7 @@ export function AppointmentManager({
                         rel="noreferrer"
                         title="Enviar recordatorio WhatsApp"
                         aria-label="Enviar recordatorio por WhatsApp"
-                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 text-xs flex items-center gap-1"
+                        className="p-1.5 rounded-[3px] border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 text-xs flex items-center gap-1"
                       >
                         <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline text-[11px]">WA</span>
@@ -249,7 +249,7 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "COMPLETED")}
                         title="Marcar como completada"
                         aria-label="Marcar como completada"
-                        className="p-1.5 rounded-lg border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
+                        className="p-1.5 rounded-[3px] border border-border text-muted transition hover:text-success-text hover:border-success/30 hover:bg-success/10 flex items-center gap-1 text-[11px] font-medium disabled:opacity-40"
                       >
                         <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span className="hidden sm:inline">Completar</span>
@@ -264,7 +264,7 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "CANCELLED")}
                         title="Cancelar cita"
                         aria-label="Cancelar cita"
-                        className="p-1.5 rounded-lg border border-border text-dim transition hover:text-error-text hover:border-error/30 hover:bg-error/10 disabled:opacity-40"
+                        className="p-1.5 rounded-[3px] border border-border text-dim transition hover:text-error-text hover:border-error/30 hover:bg-error/10 disabled:opacity-40"
                       >
                         <XCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
@@ -278,7 +278,7 @@ export function AppointmentManager({
                         onClick={() => handleStatusChange(app.id, "CONFIRMED")}
                         title="Reactivar cita"
                         aria-label="Reactivar cita"
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-muted transition hover:text-foreground hover:border-border-strong text-[11px] font-medium flex items-center gap-1.5 disabled:opacity-40"
+                        className="px-2.5 py-1.5 rounded-[3px] border border-border text-muted transition hover:text-foreground hover:border-border-strong text-[11px] font-medium flex items-center gap-1.5 disabled:opacity-40"
                       >
                         <RotateCcw className="w-3 h-3" aria-hidden="true" />
                         <span>Reactivar</span>

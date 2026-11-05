@@ -69,7 +69,7 @@ export default async function AdminWhatsAppPage() {
         errorCorrectionLevel: "M",
         margin: 1,
         width: 416,
-        color: { dark: "#14141C", light: "#EDE7DC" },
+        color: { dark: "#121210", light: "#F4F1EA" },
       })
     : null;
 
@@ -168,7 +168,7 @@ export default async function AdminWhatsAppPage() {
               </div>
             </div>
 
-            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-warning/20 bg-warning/5 px-3.5 py-3 text-[11px] text-muted">
+            <div className="mt-5 flex items-start gap-2.5 rounded-[3px] border border-warning/20 bg-warning/5 px-3.5 py-3 text-[11px] text-muted">
               <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-warning-text" />
               <p>
                 Baileys usa WhatsApp Web no oficial: un uso intensivo puede
@@ -185,7 +185,7 @@ export default async function AdminWhatsAppPage() {
               const Icon = stat.icon;
               return (
                 <Card key={stat.label} className="p-4 flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center flex-shrink-0 text-dim">
+                  <div className="w-9 h-9 rounded-[3px] bg-surface-raised border border-border flex items-center justify-center flex-shrink-0 text-accent-warm">
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
