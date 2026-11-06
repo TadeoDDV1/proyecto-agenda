@@ -1,21 +1,20 @@
 import bcrypt from "bcryptjs";
-import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import {
+  SESSION_COOKIE_NAME,
+  createSessionToken,
+  verifySessionToken,
+  type SessionPayload,
+} from "@/lib/session";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default_agenda_saas_super_secret_jwt_key_2026"
-);
-
-const SESSION_COOKIE_NAME = "agenda_session";
-
-export interface SessionPayload {
-  userId: string;
-  tenantId: string;
-  role: string;
-  email: string;
-  fullName: string;
-}
+export {
+  SESSION_COOKIE_NAME,
+  createSessionToken,
+  verifySessionToken,
+  type SessionPayload,
+};
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -23,23 +22,6 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function comparePassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
-}
-
-export async function createSessionToken(payload: SessionPayload): Promise<string> {
-  return new SignJWT({ ...payload })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(JWT_SECRET);
-}
-
-export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as unknown as SessionPayload;
-  } catch {
-    return null;
-  }
 }
 
 export async function setSessionCookie(payload: SessionPayload) {
@@ -64,6 +46,31 @@ export async function getSession(): Promise<SessionPayload | null> {
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   return verifySessionToken(token);
+}
+
+/**
+ * Sesión obligatoria para páginas del admin. Si no hay token, redirige al
+ * login conservando el destino.
+ */
+export async function requireSession(): Promise<SessionPayload> {
+  const session = await getSession();
+  if (!session) redirect("/login?next=/admin");
+  return session;
+}
+
+/**
+ * Sesión + tenant real. Ya no existe el fallback al tenant de demostración:
+ * un usuario sin negocio asociado no debe ver datos ajenos.
+ */
+export async function requireTenant() {
+  const session = await requireSession();
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+  });
+
+  if (!tenant) redirect("/login?error=tenant");
+
+  return { session, tenant };
 }
 
 export async function getCurrentUser() {

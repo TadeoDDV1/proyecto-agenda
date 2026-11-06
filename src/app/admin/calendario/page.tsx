@@ -1,49 +1,30 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { InteractiveCalendar } from "@/components/InteractiveCalendar";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { PageHeader } from "@/components/ui";
 import { toDateKey } from "@/lib/utils";
 
 export default async function AdminCalendarPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: { startTime: "asc" },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      staff: true,
+      services: true,
+      appointments: {
+        include: {
+          service: true,
+          staff: true,
+          customer: true,
         },
+        orderBy: { startTime: "asc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        staff: true,
-        services: true,
-        appointments: {
-          include: {
-            service: true,
-            staff: true,
-            customer: true,
-          },
-          orderBy: { startTime: "asc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
 
   const initialDateStr = toDateKey();
 
@@ -85,18 +66,11 @@ export default async function AdminCalendarPage() {
 
   return (
     <main className="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-      <div className="pb-5 border-b border-border">
-        <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim mb-1.5">
-          Administración
-        </p>
-        <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-foreground font-display flex items-center gap-2.5">
-          <CalendarIcon className="w-6 h-6 text-accent-hover" />
-          Calendario de Trabajo
-        </h2>
-        <p className="text-xs text-muted mt-1.5">
-          Visualiza los espacios por profesional en tiempo real y registra citas directas en mostrador.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Administración"
+        title="Calendario de trabajo"
+        description="Visualiza los espacios por profesional en tiempo real y registra citas directas en mostrador."
+      />
 
       <InteractiveCalendar
         initialDateStr={initialDateStr}

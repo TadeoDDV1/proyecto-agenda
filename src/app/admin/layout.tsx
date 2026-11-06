@@ -1,5 +1,4 @@
-﻿import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireTenant } from "@/lib/auth";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -10,56 +9,25 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  const store = await cookies();
-  const impersonando = Boolean(store.get("agenda_super")?.value);
-
-  // Toda la sección /admin exige sesión: sin esto, cualquiera vería el primer negocio.
-  if (!session) {
-    redirect("/login?next=/admin");
-  }
-
-  // El superadministrador de plataforma no opera dentro de un negocio:
-  // su panel es /superadmin.
-  if (session.role === "SUPERADMIN") {
-    redirect("/superadmin");
-  }
-
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-    });
-  }
-
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      where: { slug: "barberia-vintage" },
-    });
-  }
-
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst();
-  }
+  const { session, tenant } = await requireTenant();
 
   return (
     <div className="min-h-screen bg-base text-foreground">
       <a
         href="#contenido"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-accent focus:text-accent-fg focus:text-sm focus:font-medium"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-[3px] focus:bg-accent focus:text-accent-fg focus:text-sm focus:font-medium"
       >
         Saltar al contenido
       </a>
 
-      {tenant && (
-        <AdminSidebar
-          tenantName={tenant.name}
-          tenantSlug={tenant.slug}
-          userEmail={session?.email}
-          userName={session?.fullName}
-          userRole={session?.role}
-        />
-      )}
+      <AdminSidebar
+        tenantName={tenant.name}
+        tenantSlug={tenant.slug}
+        vertical={tenant.vertical}
+        userEmail={session.email}
+        userName={session.fullName}
+        userRole={session.role}
+      />
 
       {/* Área de contenido desplazada para dejar espacio al Sidebar en desktop */}
       <div

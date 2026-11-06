@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riel — una agenda para cualquier oficio</title>
+<meta name="description" content="Exploración visual para Pauta: Riel, un sistema de horarios para barberías, salones, clínicas y consultorios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F1EA;
+    --paper-2:#EAE5DA;
+    --paper-3:#E2DCCE;
+    --ink:#121210;
+    --ink-2:#4A4740;
+    --ink-3:#7A756A;
+    --line:#CFC8BA;
+    --line-strong:#A9A294;
+    --signal:#1F3BFF;
+    --signal-soft:#E4E7FF;
+    --ok:#1F7A4D;
+    --ok-soft:#DCEFE4;
+    --warn:#A15C00;
+    --warn-soft:#F7EAD7;
+    --danger:#B42318;
+    --danger-soft:#F6DEDB;
+    --v:#0F766E;
+    --v-soft:#D9EDEA;
+    --radius:3px;
+    --font-display:"Bricolage Grotesque",system-ui,sans-serif;
+    --font-ui:"Instrument Sans",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-ui);
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--signal);color:#fff}
+  a{color:inherit}
+  button{font:inherit;color:inherit}
+  .wrap{max-width:1260px;margin:0 auto;padding:0 22px}
+
+  /* ── Cabecera del documento ───────────────────────────── */
+  .doc{padding:56px 0 26px;border-bottom:1px solid var(--line)}
+  .doc-kicker{display:flex;align-items:center;gap:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+  .doc-kicker::before{content:"";width:34px;height:1px;background:var(--signal)}
+  .doc h1{
+    font-family:var(--font-display);
+    font-size:clamp(2.6rem,6vw,5.4rem);
+    font-weight:600;
+    line-height:.94;
+    letter-spacing:-.055em;
+    margin:22px 0 18px;
+    max-width:15ch;
+  }
+  .doc h1 em{font-style:normal;color:var(--signal)}
+  .doc p{max-width:62ch;margin:0;color:var(--ink-2);font-size:16px}
+  .doc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .doc-meta span{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line-strong);padding:5px 8px;border-radius:var(--radius)}
+  .doc-meta span.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* ── Barra de control ─────────────────────────────────── */
+  .controls{
+    position:sticky;top:0;z-index:40;
+    background:rgba(244,241,234,.94);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .controls .wrap{display:flex;align-items:center;gap:8px;min-height:58px;flex-wrap:wrap}
+  .controls .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-right:6px}
+  .vbtn{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--line-strong);background:transparent;
+    padding:7px 11px;border-radius:var(--radius);cursor:pointer;
+    font-size:12px;font-weight:600;letter-spacing:.01em;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .vbtn .dot{width:8px;height:8px;background:var(--vd);display:block}
+  .vbtn:hover{border-color:var(--ink)}
+  .vbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .controls .spacer{flex:1}
+  .controls .note{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase}
+
+  /* ── Artboards ────────────────────────────────────────── */
+  .board{padding:56px 0 22px}
+  .board + .board{padding-top:36px}
+  .board-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px;flex-wrap:wrap}
+  .board-head h2{font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2.4rem);font-weight:600;letter-spacing:-.04em;margin:0;line-height:1}
+  .board-head p{margin:0;max-width:52ch;color:var(--ink-2);font-size:13px}
+  .board-head .num{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--ink-3);display:block;margin-bottom:10px}
+
+  .canvas{
+    border:1px solid var(--line-strong);
+    background:var(--paper);
+    border-radius:4px;
+    overflow:hidden;
+    container-type:inline-size;
+  }
+
+  /* ── Piezas compartidas ───────────────────────────────── */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    height:42px;padding:0 16px;border-radius:var(--radius);
+    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    font-size:13px;font-weight:600;letter-spacing:.01em;cursor:pointer;
+    text-decoration:none;white-space:nowrap;
+  }
+  .btn:hover{background:#000}
+  .btn.signal{background:var(--signal);border-color:var(--signal);color:#fff}
+  .btn.signal:hover{background:#1730d8}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+  .btn.ghost:hover{border-color:var(--ink);background:var(--paper-2)}
+  .btn.sm{height:34px;padding:0 12px;font-size:12px}
+
+  .mono{font-family:var(--font-mono)}
+  .kicker{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+  .stamp{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid currentColor;border-radius:2px;
+    padding:3px 6px;font-family:var(--font-mono);
+    font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  }
+  .stamp.ok{color:var(--ok);background:var(--ok-soft)}
+  .stamp.warn{color:var(--warn);background:var(--warn-soft)}
+  .stamp.danger{color:var(--danger);background:var(--danger-soft)}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--v);border-radius:2px;
+    background:var(--v-soft);color:var(--ink);
+    padding:3px 7px;font-family:var(--font-mono);
+    font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  }
+  .chip::before{content:"";width:5px;height:5px;background:var(--v)}
+
+  /* ── 01 Portada ───────────────────────────────────────── */
+  .land-nav{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:16px 24px;border-bottom:1px solid var(--line);
+  }
+  .land-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .land-brand .mark{
+    width:30px;height:30px;border:1px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:12px;font-weight:600;
+    background:var(--signal);color:#fff;border-color:var(--signal);
+  }
+  .land-brand strong{font-family:var(--font-display);font-size:18px;letter-spacing:-.03em;font-weight:600}
+  .land-nav nav{display:flex;gap:20px;font-size:12px;font-weight:500;color:var(--ink-2)}
+  .land-nav nav a{text-decoration:none}
+  .land-nav nav a:hover{color:var(--ink)}
+  .land-actions{display:flex;gap:8px;align-items:center}
+
+  .land-hero{
+    position:relative;
+    display:grid;grid-template-columns:1.02fr .98fr;gap:0;
+    border-bottom:1px solid var(--line);
+  }
+  .land-copy{padding:60px 32px 52px 40px}
+  .land-copy .kicker{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .land-copy .kicker::before{content:"";width:26px;height:1px;background:var(--signal)}
+  .land-copy h1{
+    font-family:var(--font-display);
+    font-size:clamp(2.8rem,5.4vw,5rem);
+    font-weight:600;line-height:.92;letter-spacing:-.06em;
+    margin:0 0 22px;max-width:12ch;
+  }
+  .land-copy h1 em{font-style:normal;color:var(--signal)}
+  .land-copy p{max-width:46ch;color:var(--ink-2);margin:0 0 26px;font-size:15px}
+  .land-copy .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .land-copy .micro{margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em}
+  .land-copy .micro span{display:flex;align-items:center;gap:6px}
+  .land-copy .micro span::before{content:"";width:4px;height:4px;background:var(--ink-3)}
+
+  .land-board{
+    border-left:1px solid var(--line);
+    background:var(--paper-2);
+    padding:22px;display:flex;flex-direction:column;
+    min-width:0;
+  }
+  .land-board .board-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .land-board .board-top strong{font-size:12px;font-weight:600}
+  .land-grid{
+    border:1px solid var(--line-strong);background:var(--paper);flex:1;
+    display:grid;grid-template-columns:54px repeat(3,minmax(0,1fr));
+    grid-template-rows:42px repeat(4,minmax(52px,1fr));
+    min-height:390px;
+  }
+  .land-grid > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 8px;font-size:10px}
+  .land-grid > div:nth-child(4n){border-right:0}
+  .land-grid .head{
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+    background:var(--paper-2);font-size:10px;font-weight:700;
+  }
+  .land-grid .head small{font-family:var(--font-mono);font-size:8px;font-weight:500;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+  .land-grid .time{font-family:var(--font-mono);font-size:9px;color:var(--ink-3);background:var(--paper-2);display:flex;align-items:flex-start}
+  .land-grid .slot{position:relative;overflow:hidden}
+  .land-grid .appt{
+    position:absolute;inset:5px;border-left:3px solid var(--ac);
+    background:var(--acs);padding:5px 7px;display:flex;flex-direction:column;gap:1px;
+  }
+  .land-grid .appt b{font-size:9px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .land-grid .appt span{font-family:var(--font-mono);font-size:8px;color:var(--ink-2)}
+  .land-board .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-family:var(--font-mono);font-size:9px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em}
+  .land-board .legend span{display:flex;align-items:center;gap:5px}
+  .land-board .legend i{width:7px;height:7px;display:block}
+
+  .land-strip{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+  }
+  .land-strip article{padding:20px 24px;border-right:1px solid var(--line)}
+  .land-strip article:last-child{border-right:0}
+  .land-strip .kicker{margin-bottom:8px}
+  .land-strip strong{font-family:var(--font-display);font-size:23px;font-weight:600;letter-spacing:-.04em;display:block;line-height:1.1}
+  .land-strip p{margin:5px 0 0;font-size:12px;color:var(--ink-2)}
+
+  .land-section{padding:34px 32px;border-bottom:1px solid var(--line)}
+  .land-section .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .land-section h2{font-family:var(--font-display);font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-.045em;margin:0;font-weight:600;line-height:1.05}
+  .land-section .head p{margin:0;max-width:40ch;font-size:12px;color:var(--ink-2)}
+  .land-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line-strong)}
+  .land-cards article{padding:18px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:8px;min-height:170px}
+  .land-cards article:last-child{border-right:0}
+  .land-cards .glyph{
+    width:30px;height:30px;border:1px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:12px;font-weight:600;
+    background:var(--paper-2);
+  }
+  .land-cards h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .land-cards p{margin:0;font-size:11px;color:var(--ink-2);line-height:1.45}
+  .land-cards .tag{margin-top:auto;font-family:var(--font-mono);font-size:9px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+
+  /* ── 02 Panel ─────────────────────────────────────────── */
+  .app{display:grid;grid-template-columns:214px 1fr;min-height:680px;background:var(--paper)}
+  .app-rail{border-right:1px solid var(--line-strong);background:var(--paper-2);display:flex;flex-direction:column;min-width:0}
+  .app-brand{display:flex;align-items:center;gap:9px;padding:15px 14px;border-bottom:1px solid var(--line)}
+  .app-brand .mark{width:26px;height:26px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;font-weight:600}
+  .app-brand div{min-width:0}
+  .app-brand strong{display:block;font-family:var(--font-display);font-size:15px;letter-spacing:-.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-brand small{display:block;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+  .app-nav{padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+  .app-nav .lbl{font-family:var(--font-mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding:5px 8px 7px}
+  .app-nav a{
+    display:flex;align-items:center;gap:9px;padding:8px 9px;text-decoration:none;
+    font-size:12px;font-weight:500;border:1px solid transparent;border-radius:2px;color:var(--ink-2);
+  }
+  .app-nav a .ic{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;border:1px solid var(--line-strong);color:var(--ink-3)}
+  .app-nav a:hover{background:var(--paper-3);color:var(--ink)}
+  .app-nav a.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .app-nav a.on .ic{border-color:var(--paper);color:var(--paper)}
+  .app-nav a .badge{margin-left:auto;font-family:var(--font-mono);font-size:8px;background:var(--signal);color:#fff;padding:1px 4px}
+  .app-foot{margin-top:auto;border-top:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:9px}
+  .app-foot .avatar{width:26px;height:26px;border:1px solid var(--line-strong);background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;font-weight:600}
+  .app-foot div{min-width:0}
+  .app-foot strong{display:block;font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-foot small{font-family:var(--font-mono);font-size:8px;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .app-main{min-width:0;display:flex;flex-direction:column}
+  .app-top{
+    display:flex;align-items:center;gap:12px;padding:12px 18px;
+    border-bottom:1px solid var(--line-strong);background:var(--paper);
+  }
+  .app-top .date{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+  .app-top .search{
+    flex:1;max-width:360px;margin-left:auto;
+    display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line-strong);background:var(--paper-2);
+    padding:7px 10px;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);
+  }
+  .app-top .search kbd{margin-left:auto;border:1px solid var(--line-strong);padding:1px 4px;font-size:9px;background:var(--paper)}
+  .app-body{padding:20px 18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+  .app-title{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .app-title h2{font-family:var(--font-display);font-size:30px;font-weight:600;letter-spacing:-.05em;margin:0;line-height:1}
+  .app-title .sub{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+  .app-title .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line-strong)}
+  .kpis div{padding:13px 14px;border-right:1px solid var(--line)}
+  .kpis div:last-child{border-right:0}
+  .kpis .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .kpis .v{font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-.05em;line-height:1.05;margin-top:5px}
+  .kpis .d{font-size:10px;color:var(--ink-2);margin-top:2px}
+  .kpis .d b{color:var(--ok);font-weight:600}
+
+  .app-grid{display:grid;grid-template-columns:1fr 252px;gap:14px;min-width:0}
+  .week{border:1px solid var(--line-strong);min-width:0;overflow:hidden}
+  .week-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-strong);background:var(--paper-2)}
+  .week-head strong{font-size:12px;font-weight:700}
+  .week-head .mono{font-size:9px;color:var(--ink-3);letter-spacing:.08em}
+  .week-grid{display:grid;grid-template-columns:48px repeat(4,1fr);grid-template-rows:32px repeat(6,54px);min-width:520px}
+  .week-grid > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:10px;padding:5px 6px;position:relative}
+  .week-grid > div:nth-child(5n){border-right:0}
+  .week-grid .hd{background:var(--paper-2);display:flex;flex-direction:column;justify-content:center;font-size:10px;font-weight:700;line-height:1.1}
+  .week-grid .hd small{font-family:var(--font-mono);font-size:8px;color:var(--ink-3);font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+  .week-grid .hr{font-family:var(--font-mono);font-size:8px;color:var(--ink-3);background:var(--paper-2);display:flex;align-items:flex-start}
+  .week-grid .ev{position:absolute;left:3px;right:3px;top:3px;bottom:3px;padding:4px 5px;border-left:3px solid var(--ac);background:var(--acs);overflow:hidden;display:flex;flex-direction:column;gap:1px}
+  .week-grid .ev b{font-size:9px;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .week-grid .ev span{font-family:var(--font-mono);font-size:7.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .week-grid .ev.blocked{background:repeating-linear-gradient(135deg,var(--paper-2),var(--paper-2) 5px,var(--paper-3) 5px,var(--paper-3) 10px);border-left-color:var(--line-strong)}
+  .week-grid .nowline{position:absolute;left:0;right:0;top:0;border-top:2px solid var(--signal);z-index:2}
+
+  .inspector{border:1px solid var(--line-strong);background:var(--paper);display:flex;flex-direction:column;min-width:0}
+  .inspector .ih{padding:11px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .inspector .ih strong{font-size:11px;font-weight:700}
+  .inspector .ib{padding:14px 12px;display:flex;flex-direction:column;gap:12px}
+  .inspector .who{display:flex;align-items:center;gap:9px}
+  .inspector .who .av{width:34px;height:34px;background:var(--v-soft);border:1px solid var(--v);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--ink)}
+  .inspector .who strong{display:block;font-size:12px;line-height:1.2}
+  .inspector .who small{display:block;font-family:var(--font-mono);font-size:9px;color:var(--ink-3)}
+  .inspector .row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:9px;font-size:10px}
+  .inspector .row span{color:var(--ink-3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em}
+  .inspector .row b{font-weight:600;text-align:right}
+  .inspector .note{background:var(--paper-2);border:1px solid var(--line);padding:8px;font-size:10px;color:var(--ink-2)}
+  .inspector .acts{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+  .inspector .acts .btn{width:100%}
+
+  /* ── 03 Portal ────────────────────────────────────────── */
+  .portal-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 26px;border-bottom:1px solid var(--line)}
+  .portal-bar .brand{display:flex;align-items:center;gap:9px}
+  .portal-bar .brand .mark{width:28px;height:28px;background:var(--v);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;font-weight:600}
+  .portal-bar .brand strong{font-family:var(--font-display);font-size:17px;letter-spacing:-.03em}
+  .portal-bar nav{display:flex;gap:18px;font-size:11px;color:var(--ink-2)}
+  .portal-hero{display:grid;grid-template-columns:1.15fr .85fr;border-bottom:1px solid var(--line-strong)}
+  .portal-copy{padding:46px 30px 40px 36px}
+  .portal-copy .chip{margin-bottom:16px}
+  .portal-copy h1{font-family:var(--font-display);font-size:clamp(2.2rem,4.6vw,4rem);font-weight:600;letter-spacing:-.055em;line-height:.98;margin:0 0 16px;max-width:15ch}
+  .portal-copy h1 em{font-style:normal;color:var(--v)}
+  .portal-copy p{max-width:44ch;color:var(--ink-2);font-size:14px;margin:0 0 22px}
+  .portal-copy .actions{display:flex;gap:9px;flex-wrap:wrap}
+  .portal-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+  .portal-meta div{font-size:10px}
+  .portal-meta span{display:block;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+  .portal-meta b{font-weight:600}
+  .portal-side{border-left:1px solid var(--line-strong);background:var(--v);color:#fff;padding:26px;display:flex;flex-direction:column;justify-content:space-between;gap:20px}
+  .portal-side .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+  .portal-side .big{font-family:var(--font-display);font-size:58px;font-weight:600;line-height:.9;letter-spacing:-.06em}
+  .portal-side .cap{font-size:11px;opacity:.8;max-width:24ch}
+  .portal-side .hours{border-top:1px solid rgba(255,255,255,.35);padding-top:12px;display:flex;flex-direction:column;gap:5px;font-family:var(--font-mono);font-size:9px}
+  .portal-side .hours span{display:flex;justify-content:space-between;gap:10px}
+
+  .portal-body{display:grid;grid-template-columns:1.2fr .8fr}
+  .portal-list{padding:30px 32px;border-right:1px solid var(--line)}
+  .portal-list .head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+  .portal-list h2{font-family:var(--font-display);font-size:26px;letter-spacing:-.04em;margin:0;font-weight:600}
+  .portal-list .head .mono{font-size:9px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+  .treatment{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+  .treatment:last-child{border-bottom:1px solid var(--line)}
+  .treatment .name{font-weight:600;font-size:12px}
+  .treatment .desc{font-size:10px;color:var(--ink-3);margin-top:2px}
+  .treatment .time{font-family:var(--font-mono);font-size:10px;color:var(--ink-2)}
+  .treatment .price{font-family:var(--font-mono);font-size:11px;font-weight:600;min-width:52px;text-align:right}
+  .portal-aside{padding:30px 26px;display:flex;flex-direction:column;gap:20px}
+  .doctor{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .doctor:last-child{border-bottom:1px solid var(--line)}
+  .doctor .av{width:34px;height:34px;border:1px solid var(--line-strong);background:var(--paper-2);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:600}
+  .doctor strong{display:block;font-size:11px;line-height:1.2}
+  .doctor small{font-family:var(--font-mono);font-size:8px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  .firstvisit{background:var(--paper-2);border:1px solid var(--line);padding:13px}
+  .firstvisit .kicker{margin-bottom:6px}
+  .firstvisit p{font-size:10px;color:var(--ink-2);margin:0}
+  .portal-reserve{
+    display:flex;align-items:center;gap:10px;padding:10px 14px;
+    border-top:1px solid var(--line-strong);background:var(--paper);
+  }
+  .portal-reserve .field{flex:1;border:1px solid var(--line-strong);background:var(--paper-2);padding:8px 10px;min-width:0}
+  .portal-reserve .field span{display:block;font-family:var(--font-mono);font-size:8px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+  .portal-reserve .field b{display:block;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ── Principios ───────────────────────────────────────── */
+  .principles{padding:54px 0 70px}
+  .principles h2{font-family:var(--font-display);font-size:clamp(2rem,4vw,3.2rem);font-weight:600;letter-spacing:-.05em;line-height:.95;margin:0 0 14px;max-width:14ch}
+  .principles .lead{max-width:62ch;color:var(--ink-2);margin:0 0 30px}
+  .principles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong)}
+  .principles-grid article{padding:20px 20px 24px 0;border-right:1px solid var(--line)}
+  .principles-grid article:last-child{border-right:0}
+  .principles-grid article + article{padding-left:20px}
+  .principles-grid .n{font-family:var(--font-mono);font-size:10px;color:var(--signal);letter-spacing:.1em;display:block;margin-bottom:10px}
+  .principles-grid h3{font-family:var(--font-display);font-size:20px;letter-spacing:-.03em;margin:0 0 7px;font-weight:600}
+  .principles-grid p{margin:0;font-size:12px;color:var(--ink-2)}
+  .foot{border-top:1px solid var(--line);padding:18px 0;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+  /* ── Responsive ───────────────────────────────────────── */
+  @container (max-width:1000px){
+    .land-hero{grid-template-columns:1fr}
+    .land-board{border-left:0;border-top:1px solid var(--line)}
+    .land-grid{min-height:320px}
+    .app{grid-template-columns:72px 1fr}
+    .app-brand div,.app-nav .lbl,.app-nav a span,.app-foot div{display:none}
+    .app-brand{justify-content:center;padding:14px 8px}
+    .app-nav a{justify-content:center;padding:9px 0}
+    .app-nav a .badge{display:none}
+    .app-foot{justify-content:center}
+    .app-grid{grid-template-columns:1fr}
+    .inspector{display:none}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .kpis div:nth-child(2){border-right:0}
+    .kpis div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+    .portal-hero{grid-template-columns:1fr}
+    .portal-side{border-left:0;border-top:1px solid var(--line-strong)}
+    .portal-body{grid-template-columns:1fr}
+    .portal-list{border-right:0;border-bottom:1px solid var(--line)}
+  }
+  @container (max-width:720px){
+    .land-nav{padding:12px 16px}
+    .land-nav nav{display:none}
+    .land-actions .btn.ghost{display:none}
+    .land-copy{padding:38px 18px 32px}
+    .land-copy h1{font-size:clamp(2.4rem,10vw,3.6rem)}
+    .land-board{padding:14px}
+    .land-grid{grid-template-columns:42px repeat(3,minmax(0,1fr));min-height:280px}
+    .land-strip{grid-template-columns:1fr}
+    .land-strip article{border-right:0;border-bottom:1px solid var(--line)}
+    .land-strip article:last-child{border-bottom:0}
+    .land-section{padding:26px 18px}
+    .land-cards{grid-template-columns:1fr}
+    .land-cards article{border-right:0;border-bottom:1px solid var(--line)}
+    .land-cards article:last-child{border-bottom:0}
+    .app-top{padding:10px 12px}
+    .app-top .search{display:none}
+    .app-body{padding:14px 12px}
+    .app-title h2{font-size:24px}
+    .week{overflow-x:auto}
+    .portal-bar{padding:11px 16px}
+    .portal-bar nav{display:none}
+    .portal-copy{padding:32px 18px}
+    .portal-side{padding:18px}
+    .portal-list,.portal-aside{padding:22px 18px}
+    .portal-reserve{flex-wrap:wrap}
+    .portal-reserve .field{flex:1 1 45%}
+    .principles-grid{grid-template-columns:1fr}
+    .principles-grid article{border-right:0;border-bottom:1px solid var(--line);padding:16px 0}
+    .principles-grid article:last-child{border-bottom:0}
+    .principles-grid article + article{padding-left:0}
+  }
+</style>
+</head>
+<body data-v="dental">
+
+  <header class="doc">
+    <div class="wrap">
+      <p class="doc-kicker">Exploración visual · 03 nov 2026</p>
+      <h1>Riel: la agenda como <em>tablero de horarios.</em></h1>
+      <p>
+        Una dirección para Pauta que no se lea como “SaaS de lujo para barberías”.
+        Papel, tinta y ultramar; tipografía grotesca; horas en monoespaciada; líneas en vez de sombras.
+        El acento cambia por giro, la estructura no.
+      </p>
+      <div class="doc-meta">
+        <span class="on">Bricolage Grotesque</span>
+        <span>Instrument Sans</span>
+        <span>IBM Plex Mono</span>
+        <span>Sin sombras</span>
+        <span>Radios 3 px</span>
+        <span>8 giros</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="wrap">
+      <span class="label">Acento del giro</span>
+      <button class="vbtn" data-v="barber" style="--vd:#C2410C" aria-pressed="false"><i class="dot"></i>Barbería</button>
+      <button class="vbtn" data-v="salon" style="--vd:#7C3AED" aria-pressed="false"><i class="dot"></i>Salón</button>
+      <button class="vbtn" data-v="dental" style="--vd:#0F766E" aria-pressed="true"><i class="dot"></i>Dental</button>
+      <button class="vbtn" data-v="spa" style="--vd:#4D7C5F" aria-pressed="false"><i class="dot"></i>Spa</button>
+      <span class="spacer"></span>
+      <span class="note">Prototipo estático · no es la app</span>
+    </div>
+  </div>
+
+  <!-- ══ 01 · Portada ══════════════════════════════════════ -->
+  <section class="board" id="portada">
+    <div class="wrap">
+      <div class="board-head">
+        <div>
+          <span class="num">01 / PORTADA</span>
+          <h2>Una agenda. Cualquier oficio.</h2>
+        </div>
+        <p>El hero es un tablero real con tres giros conviviendo. No hay fotos de barbería: la promesa es el tiempo, no el local.</p>
+      </div>
+
+      <div class="canvas">
+        <div class="land-nav">
+          <a href="#" class="land-brand"><span class="mark">P</span><strong>Pauta</strong></a>
+          <nav>
+            <a href="#">Producto</a>
+            <a href="#">Giros</a>
+            <a href="#">Precios</a>
+            <a href="#">Demo</a>
+          </nav>
+          <div class="land-actions">
+            <a href="#" class="btn ghost sm">Entrar</a>
+            <a href="#" class="btn sm">Crear agenda</a>
+          </div>
+        </div>
+
+        <div class="land-hero">
+          <div class="land-copy">
+            <p class="kicker">Citas · Equipo · WhatsApp</p>
+            <h1>Cualquier oficio. <em>Una sola agenda.</em></h1>
+            <p>
+              Barberías, salones, clínicas y consultorios. Elige tu giro, carga tu catálogo
+              y empieza a recibir citas sin llamadas cruzadas.
+            </p>
+            <div class="actions">
+              <a href="#" class="btn signal">Abrir mi agenda</a>
+              <a href="#" class="btn ghost">Ver los 8 giros</a>
+            </div>
+            <div class="micro">
+              <span>Sin tarjeta</span>
+              <span>Catálogo precargado</span>
+              <span>Bot de WhatsApp</span>
+            </div>
+          </div>
+
+          <div class="land-board">
+            <div class="board-top">
+              <strong>Hoy · 3 giros, 1 agenda</strong>
+              <span class="mono" style="font-size:9px;color:var(--ink-3)">09:00 — 13:00</span>
+            </div>
+            <div class="land-grid">
+              <div class="head" style="background:var(--paper-2)"></div>
+              <div class="head"><span>Mateo</span><small>Barbería</small></div>
+              <div class="head"><span>Dra. Ríos</span><small>Dental</small></div>
+              <div class="head"><span>Lumen</span><small>Salón</small></div>
+
+              <div class="time">09:00</div>
+              <div class="slot"><div class="appt" style="--ac:#C2410C;--acs:#F6E3D8"><b>Corte &amp; barba</b><span>35 min</span></div></div>
+              <div class="slot"></div>
+              <div class="slot"></div>
+
+              <div class="time">10:00</div>
+              <div class="slot"></div>
+              <div class="slot"><div class="appt" style="--ac:#0F766E;--acs:#D9EDEA"><b>Limpieza</b><span>45 min</span></div></div>
+              <div class="slot"><div class="appt" style="--ac:#7C3AED;--acs:#E9E1FB"><b>Color</b><span>90 min</span></div></div>
+
+              <div class="time">11:00</div>
+              <div class="slot"><div class="appt" style="--ac:#C2410C;--acs:#F6E3D8"><b>Fade</b><span>40 min</span></div></div>
+              <div class="slot"></div>
+              <div class="slot"></div>
+
+              <div class="time">12:00</div>
+              <div class="slot"></div>
+              <div class="slot"><div class="appt" style="--ac:#0F766E;--acs:#D9EDEA"><b>Ortodoncia</b><span>30 min</span></div></div>
+              <div class="slot"><div class="appt" style="--ac:#7C3AED;--acs:#E9E1FB"><b>Peinado</b><span>45 min</span></div></div>
+            </div>
+            <div class="legend">
+              <span><i style="background:#C2410C"></i>Barbería</span>
+              <span><i style="background:#0F766E"></i>Dental</span>
+              <span><i style="background:#7C3AED"></i>Salón</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="land-strip">
+          <article>
+            <p class="kicker">Carga inicial</p>
+            <strong>Tu catálogo, listo</strong>
+            <p>Servicios, duración y precio de ejemplo según tu giro. Editables desde el minuto uno.</p>
+          </article>
+          <article>
+            <p class="kicker">Una sola agenda</p>
+            <strong>Web, WhatsApp y mostrador</strong>
+            <p>La misma disponibilidad y las mismas reglas. Sin agendas paralelas.</p>
+          </article>
+          <article>
+            <p class="kicker">Cambia de giro</p>
+            <strong>El sistema se adapta</strong>
+            <p>“Paciente”, “tratamiento” y “doctor” donde toca; “cliente” y “servicio” donde toca.</p>
+          </article>
+        </div>
+
+        <div class="land-section">
+          <div class="head">
+            <h2>Hecho para oficios con agenda.</h2>
+            <p>No un configurador infinito: plantillas curadas para los giros que de verdad reservan todos los días.</p>
+          </div>
+          <div class="land-cards">
+            <article>
+              <span class="glyph">01</span>
+              <h3>Barbería y salón</h3>
+              <p>Sillones, estilistas, color y servicios encadenados. Recordatorios y reseñas.</p>
+              <span class="tag">Studio</span>
+            </article>
+            <article>
+              <span class="glyph">02</span>
+              <h3>Dental y clínica</h3>
+              <p>Tratamientos, doctores, primera visita, seguro y recall de pacientes.</p>
+              <span class="tag">Clinic</span>
+            </article>
+            <article>
+              <span class="glyph">03</span>
+              <h3>Spa y bienestar</h3>
+              <p>Rituales, cabinas, paquetes y tiempos de preparación entre sesiones.</p>
+              <span class="tag">Studio</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 02 · Panel ═══════════════════════════════════════ -->
+  <section class="board" id="panel">
+    <div class="wrap">
+      <div class="board-head">
+        <div>
+          <span class="num">02 / PANEL</span>
+          <h2>El calendario manda.</h2>
+        </div>
+        <p>Menos dashboard decorativo y más tablero de operación: horas, recursos, estados y una ficha lateral. La barra superior es una command bar.</p>
+      </div>
+
+      <div class="canvas">
+        <div class="app">
+          <aside class="app-rail">
+            <div class="app-brand">
+              <span class="mark">DN</span>
+              <div><strong>Dental Norte</strong><small>Clínica dental</small></div>
+            </div>
+            <nav class="app-nav">
+              <span class="lbl">Operación</span>
+              <a href="#" class="on"><span class="ic">▦</span><span>Agenda</span><span class="badge">4</span></a>
+              <a href="#"><span class="ic">≡</span><span>Pacientes</span></a>
+              <a href="#"><span class="ic">◇</span><span>Tratamientos</span></a>
+              <a href="#"><span class="ic">◷</span><span>Equipo</span></a>
+              <span class="lbl">Canal</span>
+              <a href="#"><span class="ic">◌</span><span>WhatsApp</span></a>
+              <a href="#"><span class="ic">⌁</span><span>Ajustes</span></a>
+            </nav>
+            <div class="app-foot">
+              <span class="avatar">DR</span>
+              <div><strong>Dra. Ríos</strong><small>admin@dentalnorte.mx</small></div>
+            </div>
+          </aside>
+
+          <div class="app-main">
+            <div class="app-top">
+              <span class="date">Jueves 5 nov · Semana 45</span>
+              <div class="search">Buscar paciente, teléfono o folio <kbd>⌘ K</kbd></div>
+              <button class="btn sm">+ Nueva cita</button>
+            </div>
+
+            <div class="app-body">
+              <div class="app-title">
+                <div>
+                  <h2>Agenda de hoy</h2>
+                  <p class="sub">4 citas · 2 doctores · 1 consultorio libre</p>
+                </div>
+                <div class="actions">
+                  <button class="btn ghost sm">Hoy</button>
+                  <button class="btn ghost sm">Semana</button>
+                  <span class="stamp ok">Sincronizado</span>
+                </div>
+              </div>
+
+              <div class="kpis">
+                <div><p class="k">Citas de hoy</p><p class="v">04</p><p class="d"><b>+1</b> vs. ayer</p></div>
+                <div><p class="k">Ocupación</p><p class="v">72%</p><p class="d">5.8 h de 8 h</p></div>
+                <div><p class="k">No-show</p><p class="v">0</p><p class="d">Últimos 30 días</p></div>
+                <div><p class="k">Recall</p><p class="v">12</p><p class="d">Pacientes por reagendar</p></div>
+              </div>
+
+              <div class="app-grid">
+                <div class="week">
+                  <div class="week-head">
+                    <strong>Lun 2 — Sáb 7</strong>
+                    <span class="mono">SEMANA 45 / 2026</span>
+                  </div>
+                  <div class="week-grid">
+                    <div class="hd" style="background:var(--paper-2)"></div>
+                    <div class="hd">Lun 2 <small>4 citas</small></div>
+                    <div class="hd">Mar 3 <small>6 citas</small></div>
+                    <div class="hd">Mié 4 <small>5 citas</small></div>
+                    <div class="hd">Jue 5 <small>4 citas</small></div>
+
+                    <div class="hr">08:00</div>
+                    <div></div><div></div><div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Limpieza</b><span>Ana Torres · 45 min</span></div></div>
+
+                    <div class="hr">09:00</div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Ortodoncia</b><span>Luis Paz · 30 min</span></div></div>
+                    <div></div><div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Blanqueamiento</b><span>Marta Ruiz · 60 min</span></div></div>
+
+                    <div class="hr">10:00</div>
+                    <div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Primera visita</b><span>Diego Sáenz · 40 min</span></div></div>
+                    <div><div class="ev blocked" style="--ac:var(--line-strong);--acs:var(--paper-3)"><b>Preparación</b><span>Consultorio 2</span></div></div>
+                    <div></div>
+
+                    <div class="hr">11:00</div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Endodoncia</b><span>Rosa Lima · 90 min</span></div></div>
+                    <div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Control</b><span>Iván Mora · 20 min</span></div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Limpieza</b><span>Sara Vega · 45 min</span></div></div>
+
+                    <div class="hr">12:00</div>
+                    <div></div>
+                    <div><div class="ev" style="--ac:#0F766E;--acs:#D9EDEA"><b>Ortodoncia</b><span>Luis Paz · 30 min</span></div></div>
+                    <div></div><div></div>
+
+                    <div class="hr">13:00</div>
+                    <div><div class="ev blocked" style="--ac:var(--line-strong);--acs:var(--paper-3)"><b>Comida</b><span>Equipo</span></div></div>
+                    <div><div class="ev blocked" style="--ac:var(--line-strong);--acs:var(--paper-3)"><b>Comida</b><span>Equipo</span></div></div>
+                    <div><div class="ev blocked" style="--ac:var(--line-strong);--acs:var(--paper-3)"><b>Comida</b><span>Equipo</span></div></div>
+                    <div><div class="ev blocked" style="--ac:var(--line-strong);--acs:var(--paper-3)"><b>Comida</b><span>Equipo</span></div></div>
+                  </div>
+                </div>
+
+                <aside class="inspector">
+                  <div class="ih"><strong>Ficha de la cita</strong><span class="stamp ok">Confirmada</span></div>
+                  <div class="ib">
+                    <div class="who">
+                      <span class="av">AT</span>
+                      <div><strong>Ana Torres</strong><small>+52 55 1842 9031</small></div>
+                    </div>
+                    <div class="row"><span>Tratamiento</span><b>Limpieza dental</b></div>
+                    <div class="row"><span>Doctora</span><b>Dra. Ríos</b></div>
+                    <div class="row"><span>Horario</span><b>08:00 — 08:45</b></div>
+                    <div class="row"><span>Consultorio</span><b>1</b></div>
+                    <div class="note">Primera visita. Llega 10 min antes. Sin alergias declaradas.</div>
+                    <div class="acts">
+                      <button class="btn sm">Marcar llegada</button>
+                      <button class="btn ghost sm">Reagendar</button>
+                      <button class="btn ghost sm">Cancelar cita</button>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 03 · Portal ═══════════════════════════════════════ -->
+  <section class="board" id="portal">
+    <div class="wrap">
+      <div class="board-head">
+        <div>
+          <span class="num">03 / PORTAL</span>
+          <h2>Una hoja de negocio, no una plantilla de barbería.</h2>
+        </div>
+        <p>El portal clínico prioriza tratamientos, doctores y primera visita. El de barbería cambia el contenido y el acento, no la estructura base.</p>
+      </div>
+
+      <div class="canvas">
+        <div class="portal-bar">
+          <div class="brand"><span class="mark">DN</span><strong>Clínica Dental Norte</strong></div>
+          <nav><a href="#">Tratamientos</a><a href="#">Doctores</a><a href="#">Primera visita</a><a href="#">Ubicación</a></nav>
+          <a href="#" class="btn sm">Pedir consulta</a>
+        </div>
+
+        <div class="portal-hero">
+          <div class="portal-copy">
+            <span class="chip">Clínica dental · CDMX</span>
+            <h1>Odontología clara, <em>sin vueltas.</em></h1>
+            <p>Diagnóstico, limpieza y ortodoncia con tiempos reales. Sabes cuánto dura, cuánto cuesta y quién te atiende antes de reservar.</p>
+            <div class="actions">
+              <a href="#" class="btn signal">Pedir consulta</a>
+              <a href="#" class="btn ghost">Ver tratamientos</a>
+            </div>
+            <div class="portal-meta">
+              <div><span>Dirección</span><b>Av. Insurgentes Sur 1205</b></div>
+              <div><span>Horario</span><b>Lun–Vie 08:00–19:00</b></div>
+              <div><span>Teléfono</span><b>+52 55 5412 8899</b></div>
+            </div>
+          </div>
+          <aside class="portal-side">
+            <div>
+              <p class="k">Próximo hueco</p>
+              <p class="big">Hoy<br>16:30</p>
+              <p class="cap">Primera visita de 40 min con la Dra. Ríos.</p>
+            </div>
+            <div class="hours">
+              <span><b>Lun–Jue</b><b>08:00 — 19:00</b></span>
+              <span><b>Vie</b><b>08:00 — 16:00</b></span>
+              <span><b>Sáb</b><b>09:00 — 13:00</b></span>
+            </div>
+          </aside>
+        </div>
+
+        <div class="portal-body">
+          <div class="portal-list">
+            <div class="head">
+              <h2>Tratamientos</h2>
+              <span class="mono">Precios en MXN</span>
+            </div>
+            <div class="treatment">
+              <div><p class="name">Limpieza dental</p><p class="desc">Ultrasonido, pulido y revisión general.</p></div>
+              <span class="time">45 min</span><span class="price">$850</span>
+            </div>
+            <div class="treatment">
+              <div><p class="name">Primera visita / diagnóstico</p><p class="desc">Revisión, radiografía panorámica y plan.</p></div>
+              <span class="time">40 min</span><span class="price">$500</span>
+            </div>
+            <div class="treatment">
+              <div><p class="name">Blanqueamiento</p><p class="desc">Sesión en consultorio con control de sensibilidad.</p></div>
+              <span class="time">60 min</span><span class="price">$2,400</span>
+            </div>
+            <div class="treatment">
+              <div><p class="name">Ortodoncia · control</p><p class="desc">Ajuste de brackets y revisión de avance.</p></div>
+              <span class="time">30 min</span><span class="price">$700</span>
+            </div>
+            <div class="treatment">
+              <div><p class="name">Endodoncia</p><p class="desc">Tratamiento de conducto, una sesión.</p></div>
+              <span class="time">90 min</span><span class="price">$3,800</span>
+            </div>
+          </div>
+          <aside class="portal-aside">
+            <div>
+              <p class="kicker" style="margin-bottom:8px">Quién te atiende</p>
+              <div class="doctor"><span class="av">VR</span><div><strong>Dra. Valeria Ríos</strong><small>Odontología general</small></div></div>
+              <div class="doctor"><span class="av">JM</span><div><strong>Dr. Jorge Mena</strong><small>Ortodoncia</small></div></div>
+              <div class="doctor"><span class="av">AL</span><div><strong>Dra. Ana Lozano</strong><small>Endodoncia</small></div></div>
+            </div>
+            <div class="firstvisit">
+              <p class="kicker">Primera visita</p>
+              <p>Llega 10 minutos antes con identificación. Si tienes estudios previos, tráelos. No necesitas ayuno.</p>
+            </div>
+            <div class="firstvisit" style="background:var(--paper)">
+              <p class="kicker">Seguro</p>
+              <p>Trabajamos con GNP, AXA y MetLife. Pregunta por tu cobertura al reservar.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="portal-reserve">
+          <div class="field"><span>Tratamiento</span><b>Limpieza dental</b></div>
+          <div class="field"><span>Fecha</span><b>Jue 5 nov</b></div>
+          <div class="field"><span>Hora</span><b>16:30</b></div>
+          <a href="#" class="btn signal">Reservar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Principios ═══════════════════════════════════════ -->
+  <section class="principles">
+    <div class="wrap">
+      <p class="doc-kicker">Por qué esto no es otro tema oscuro</p>
+      <h2>La identidad está en la estructura.</h2>
+      <p class="lead">
+        Riel no se apoya en un degradado ni en una serif de moda. Se apoya en cómo se organiza la información:
+        horas, columnas, estados, números y jerarquía tipográfica. Eso funciona igual para un barbero que para una dentista.
+      </p>
+      <div class="principles-grid">
+        <article>
+          <span class="n">01</span>
+          <h3>El tiempo es el protagonista</h3>
+          <p>Horas en monoespaciada, rail fijo y bloques que se leen como un horario impreso. No hay decoración que compita.</p>
+        </article>
+        <article>
+          <span class="n">02</span>
+          <h3>Un sistema, varios oficios</h3>
+          <p>El acento y el vocabulario cambian por giro. La rejilla, los estados y la lógica de reserva son los mismos.</p>
+        </article>
+        <article>
+          <span class="n">03</span>
+          <h3>Datos, no promesas</h3>
+          <p>Precio, duración, disponibilidad y quién atiende siempre visibles. La interfaz se comporta como una herramienta.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="wrap" style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;width:100%">
+      <span>Riel · exploración visual para Pauta</span>
+      <span>Papel #F4F1EA · Tinta #121210 · Señal #1F3BFF</span>
+    </div>
+  </footer>
+
+<script>
+  const palette = {
+    barber:{v:"#C2410C", soft:"#F6E3D8"},
+    salon:{v:"#7C3AED", soft:"#E9E1FB"},
+    dental:{v:"#0F766E", soft:"#D9EDEA"},
+    spa:{v:"#4D7C5F", soft:"#E1EBE2"}
+  };
+  const buttons = [...document.querySelectorAll(".vbtn")];
+  const appEventColor = () => {
+    document.querySelectorAll(".week-grid .ev:not(.blocked)").forEach(el => {
+      el.style.setProperty("--ac", getComputedStyle(document.body).getPropertyValue("--v").trim());
+      el.style.setProperty("--acs", getComputedStyle(document.body).getPropertyValue("--v-soft").trim());
+    });
+  };
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.v;
+      const p = palette[key];
+      document.body.style.setProperty("--v", p.v);
+      document.body.style.setProperty("--v-soft", p.soft);
+      buttons.forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      appEventColor();
+    });
+  });
+  appEventColor();
+</script>
+</body>
+</html>

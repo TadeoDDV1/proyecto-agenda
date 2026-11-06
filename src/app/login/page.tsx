@@ -34,7 +34,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.success) {
-      router.push("/admin");
+      // Solo destinos internos del admin: evita open redirect.
+      const nextParam = new URLSearchParams(window.location.search).get("next");
+      const destination =
+        nextParam && nextParam.startsWith("/admin") ? nextParam : "/admin";
+      router.push(destination);
       router.refresh();
     } else {
       setError(res.error || "No fue posible iniciar sesión.");
@@ -49,7 +53,7 @@ export default function LoginPage() {
     >
       <Card className="p-6 sm:p-8">
         {/* Cuenta demo */}
-        <div className="mb-6 flex flex-col gap-3 rounded-lg border border-border bg-base p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 rounded-[3px] border border-border bg-base p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
               Cuenta de demostración
@@ -72,7 +76,7 @@ export default function LoginPage() {
         {error && (
           <div
             role="alert"
-            className="mb-5 flex items-center gap-2.5 rounded-lg border border-error/25 bg-error/10 p-3 text-xs text-error-text"
+            className="mb-5 flex items-center gap-2.5 rounded-[3px] border border-error/25 bg-error/10 p-3 text-xs text-error-text"
           >
             <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>

@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { createStaffAction } from "@/app/actions/admin";
 import { Plus, User, Phone, Mail, ShieldCheck } from "lucide-react";
+import { getVertical } from "@/lib/verticals";
 import {
   Badge,
   Button,
@@ -11,67 +13,54 @@ import {
   Field,
   Input,
   PageHeader,
+  Textarea,
 } from "@/components/ui";
 
 const staffColors = [
-  "#3b82f6",
-  "#ec4899",
-  "#10b981",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
+  "#1F3BFF",
+  "#0F766E",
+  "#7C3AED",
+  "#C2410C",
+  "#BE123C",
+  "#B45309",
+  "#4D7C5F",
+  "#1D4ED8",
 ];
 
 export default async function AdminStaffPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        staff: {
-          include: {
-            schedules: true,
-            appointments: true,
-          },
-          orderBy: { createdAt: "asc" },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      staff: {
+        include: {
+          schedules: true,
+          appointments: true,
         },
+        orderBy: { createdAt: "asc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        staff: {
-          include: {
-            schedules: true,
-            appointments: true,
-          },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
+  const vertical = getVertical(tenant.vertical);
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
       <PageHeader
         eyebrow="Administración"
-        title="Equipo & Colaboradores"
-        description="Gestiona barberos, estilistas y especialistas con sus colores y turnos."
-        action={<Badge>{tenant.staff.length} especialistas</Badge>}
+        title={vertical.terms.professionals}
+        description={`Gestiona ${vertical.terms.professionals.toLowerCase()}, roles, colores y turnos.`}
+        action={<Badge>{tenant.staff.length} en el equipo</Badge>}
       />
 
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         {/* Formulario */}
-        <Card className="lg:col-span-5 p-6">
+        <Card className="lg:col-span-5 min-w-0 p-6">
           <CardHeader
             icon={<Plus className="w-3.5 h-3.5" />}
-            title="Nuevo especialista"
+            title={`Nuevo ${vertical.terms.professional.toLowerCase()}`}
             className="pb-5 mb-5"
           />
 
@@ -126,24 +115,50 @@ export default async function AdminStaffPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border text-xs text-dim bg-base">
+            <Field
+              label="Especialidades"
+              hint="Separadas por coma. Se muestran en la vitrina."
+              htmlFor="staff-specialties"
+            >
+              <Input
+                type="text"
+                name="specialties"
+                placeholder="Ej. Fade, barba, color"
+                id="staff-specialties"
+              />
+            </Field>
+
+            <Field
+              label="Presentación (opcional)"
+              hint="Una línea sobre su estilo o experiencia."
+              htmlFor="staff-bio"
+            >
+              <Textarea
+                name="bio"
+                rows={2}
+                placeholder="Ej. Especialista en cortes clásicos y arreglo de barba."
+                id="staff-bio"
+              />
+            </Field>
+
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-[3px] border border-border text-xs text-dim bg-base">
               <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Se asignarán turnos Lun – Sáb de 09:00 a 19:00 automáticamente.</span>
             </div>
 
             <Button type="submit" className="w-full">
-              Agregar especialista
+              Agregar {vertical.terms.professional.toLowerCase()}
             </Button>
           </form>
         </Card>
 
         {/* Listado */}
-        <div className="lg:col-span-7 space-y-2">
+        <div className="lg:col-span-7 min-w-0 space-y-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-              Equipo actual
+              {vertical.terms.professionals}
             </h3>
-            <span className="text-[11px] font-mono text-dim">
+            <span className="hidden sm:inline text-[11px] font-mono text-dim">
               Disponibles en calendario
             </span>
           </div>
@@ -151,7 +166,7 @@ export default async function AdminStaffPage() {
           {tenant.staff.map((st) => (
             <Card
               key={st.id}
-              className="p-4 transition flex items-center justify-between gap-4 hover:border-border-strong"
+              className="p-4 transition flex items-start justify-between gap-4 hover:bg-surface-raised"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {/* Monograma */}
@@ -190,15 +205,35 @@ export default async function AdminStaffPage() {
                         {st.email}
                       </span>
                     )}
-                    <span className="font-mono text-dim">
+                    <span className="whitespace-nowrap font-mono text-dim">
                       {st.schedules.length} turnos · {st.appointments.length} citas
                     </span>
                   </div>
+
+                  {st.specialties && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {st.specialties
+                        .split(",")
+                        .map((specialty) => specialty.trim())
+                        .filter(Boolean)
+                        .map((specialty) => (
+                          <span
+                            key={specialty}
+                            className="rounded-full border border-border bg-base px-2 py-0.5 text-[10px] text-muted"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <Badge tone="success" className="flex-shrink-0">
-                Activo
+              <Badge
+                tone={st.isActive ? "success" : "default"}
+                className="flex-shrink-0"
+              >
+                {st.isActive ? "Activo" : "Pausado"}
               </Badge>
             </Card>
           ))}
@@ -206,8 +241,8 @@ export default async function AdminStaffPage() {
           {tenant.staff.length === 0 && (
             <EmptyState
               icon={<User className="w-5 h-5" />}
-              title="Sin especialistas"
-              description="Agrega a tu primer colaborador para empezar a agendar."
+              title={`Sin ${vertical.terms.professionals.toLowerCase()}`}
+              description={`Agrega a tu primer ${vertical.terms.professional.toLowerCase()} para empezar a agendar.`}
             />
           )}
         </div>

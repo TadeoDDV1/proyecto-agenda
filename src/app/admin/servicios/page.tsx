@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { createServiceAction } from "@/app/actions/admin";
-import { Layers, Plus, Clock } from "lucide-react";
+import {
+  createServiceAction,
+  toggleServiceStatusAction,
+} from "@/app/actions/admin";
+import { Layers, Plus, Clock, Pause, Play } from "lucide-react";
+import { getVertical } from "@/lib/verticals";
 import {
   Badge,
   Button,
@@ -16,51 +21,37 @@ import {
 } from "@/components/ui";
 
 export default async function AdminServicesPage() {
-  const session = await getSession();
+  const session = await requireSession();
 
-  let tenant = null;
-  if (session?.tenantId) {
-    tenant = await prisma.tenant.findUnique({
-      where: { id: session.tenantId },
-      include: {
-        categories: true,
-        services: {
-          include: { category: true },
-          orderBy: { createdAt: "desc" },
-        },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.tenantId },
+    include: {
+      categories: true,
+      services: {
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
       },
-    });
-  }
+    },
+  });
 
-  if (!tenant) {
-    tenant = await prisma.tenant.findFirst({
-      include: {
-        categories: true,
-        services: {
-          include: { category: true },
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
-  }
-
-  if (!tenant) return null;
+  if (!tenant) notFound();
+  const vertical = getVertical(tenant.vertical);
 
   return (
     <main className="p-5 sm:p-8 space-y-8 flex-1 max-w-7xl w-full mx-auto">
       <PageHeader
         eyebrow="Administración"
-        title="Catálogo de Servicios"
-        description="Configura servicios, duraciones y precios para tu portal de reservas."
-        action={<Badge>{tenant.services.length} servicios</Badge>}
+        title={`Catálogo de ${vertical.terms.services.toLowerCase()}`}
+        description={`Configura ${vertical.terms.services.toLowerCase()}, duraciones y precios para tu portal de reservas.`}
+        action={<Badge>{tenant.services.length} {vertical.terms.services.toLowerCase()}</Badge>}
       />
 
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         {/* Formulario */}
-        <Card className="lg:col-span-5 p-6">
+        <Card className="lg:col-span-5 min-w-0 p-6 lg:sticky lg:top-8">
           <CardHeader
             icon={<Plus className="w-3.5 h-3.5" />}
-            title="Nuevo servicio"
+            title={`Nuevo ${vertical.terms.service.toLowerCase()}`}
             className="pb-5 mb-5"
           />
 
@@ -121,18 +112,18 @@ export default async function AdminServicesPage() {
             </Field>
 
             <Button type="submit" className="w-full">
-              Guardar servicio
+              Guardar {vertical.terms.service.toLowerCase()}
             </Button>
           </form>
         </Card>
 
         {/* Listado */}
-        <div className="lg:col-span-7 space-y-2">
+        <div className="lg:col-span-7 min-w-0 space-y-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-              Servicios configurados
+              {vertical.terms.services} configurados
             </h3>
-            <span className="text-[11px] font-mono text-dim">
+            <span className="hidden sm:inline text-[11px] font-mono text-dim">
               Disponibles para reserva
             </span>
           </div>
@@ -140,7 +131,9 @@ export default async function AdminServicesPage() {
           {tenant.services.map((srv) => (
             <Card
               key={srv.id}
-              className="p-4 transition flex items-start justify-between gap-4 hover:border-border-strong"
+              className={`p-4 transition flex items-start justify-between gap-4 hover:bg-surface-raised ${
+                srv.isActive ? "" : "opacity-70"
+              }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -163,17 +156,48 @@ export default async function AdminServicesPage() {
                 </div>
               </div>
 
-              <Badge tone={srv.isActive ? "success" : "default"} className="flex-shrink-0">
-                {srv.isActive ? "Activo" : "Inactivo"}
-              </Badge>
+              <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                <Badge tone={srv.isActive ? "success" : "default"}>
+                  {srv.isActive ? "Activo" : "Inactivo"}
+                </Badge>
+
+                <form
+                  action={async () => {
+                    "use server";
+                    await toggleServiceStatusAction(srv.id, !srv.isActive);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    title={
+                      srv.isActive
+                        ? `Pausar ${srv.name} en el portal`
+                        : `Activar ${srv.name} en el portal`
+                    }
+                    aria-label={
+                      srv.isActive
+                        ? `Pausar ${srv.name} en el portal`
+                        : `Activar ${srv.name} en el portal`
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-[3px] border border-border px-2.5 py-1.5 text-[11px] font-medium text-muted transition hover:border-border-strong hover:text-foreground"
+                  >
+                    {srv.isActive ? (
+                      <Pause className="h-3 w-3" aria-hidden="true" />
+                    ) : (
+                      <Play className="h-3 w-3" aria-hidden="true" />
+                    )}
+                    {srv.isActive ? "Pausar" : "Activar"}
+                  </button>
+                </form>
+              </div>
             </Card>
           ))}
 
           {tenant.services.length === 0 && (
             <EmptyState
               icon={<Layers className="w-5 h-5" />}
-              title="Sin servicios configurados"
-              description="Crea tu primer servicio para que tus clientes puedan reservar."
+              title={`Sin ${vertical.terms.services.toLowerCase()} configurados`}
+              description={`Crea tu primer ${vertical.terms.service.toLowerCase()} para que tus ${vertical.terms.customers.toLowerCase()} puedan reservar.`}
             />
           )}
         </div>

@@ -8,7 +8,7 @@ import {
 } from "react";
 
 export const fieldClassName =
-  "w-full rounded-lg bg-base border border-border text-sm text-foreground placeholder:text-dim " +
+  "w-full rounded-[3px] bg-base border border-border text-sm text-foreground placeholder:text-dim " +
   "transition focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 " +
   "disabled:opacity-50 disabled:cursor-not-allowed";
 

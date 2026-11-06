@@ -7,6 +7,7 @@ import { AlertCircle, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/AuthShell";
 import { Button, Card, Field, Input, Select } from "@/components/ui";
+import { getVertical, verticalOptions } from "@/lib/verticals";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState("MXN");
+  const [vertical, setVertical] = useState("");
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,6 +45,7 @@ export default function RegisterPage() {
     formData.append("password", password);
     formData.append("phone", phone);
     formData.append("currency", currency);
+    formData.append("vertical", vertical);
 
     const res = await registerTenantAction(formData);
     setLoading(false);
@@ -55,18 +58,20 @@ export default function RegisterPage() {
     }
   }
 
+  const verticalConfig = vertical ? getVertical(vertical) : null;
+
   return (
     <AuthShell
       eyebrow="Crear cuenta"
       title="Abrir mi agenda"
-      description="Configura tu negocio en minutos. Sin tarjeta requerida."
+      description="Elige tu giro y arranca con catálogo, equipo y horario listos."
       maxWidth="max-w-lg"
     >
       <Card className="p-6 sm:p-8">
         {error && (
           <div
             role="alert"
-            className="mb-6 flex items-center gap-2.5 rounded-lg border border-error/25 bg-error/10 p-3 text-xs text-error-text"
+            className="mb-6 flex items-center gap-2.5 rounded-[3px] border border-error/25 bg-error/10 p-3 text-xs text-error-text"
           >
             <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
@@ -78,6 +83,37 @@ export default function RegisterPage() {
             <legend className="mb-4 w-full border-b border-border-subtle pb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-dim">
               01 · Tu negocio
             </legend>
+
+            <Field
+              label="Giro del negocio"
+              required
+              htmlFor="vertical"
+              hint={
+                verticalConfig
+                  ? `Precargaremos ${verticalConfig.presets.services.length} ${verticalConfig.terms.services.toLowerCase()} de ejemplo. Podrás editarlos después.`
+                  : "Define el vocabulario, el catálogo inicial y la plantilla de tu portal."
+              }
+            >
+              <Select
+                id="vertical"
+                required
+                value={vertical}
+                onChange={(e) => setVertical(e.target.value)}
+              >
+                <option value="" disabled>
+                  Selecciona el giro…
+                </option>
+                {verticalOptions().map((group) => (
+                  <optgroup key={group.group} label={group.group}>
+                    {group.items.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </Select>
+            </Field>
 
             <Field label="Nombre del negocio" required htmlFor="businessName">
               <Input

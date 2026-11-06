@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -76,6 +76,7 @@ export function CustomerManager({
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "frequent" | "new" | "none">("all");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,6 +85,29 @@ export function CustomerManager({
   const [customerNotes, setCustomerNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSuccess, setNotesSuccess] = useState(false);
+
+  // La ficha del cliente es un diálogo: bloquea el scroll del fondo y cierra
+  // con Escape para no dejar al usuario atrapado en el panel lateral.
+  useEffect(() => {
+    if (!selectedCustomer) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedCustomer(null);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedCustomer]);
 
   const filteredCustomers = customers.filter((customer) => {
     const q = search.toLowerCase();
@@ -205,33 +229,33 @@ export function CustomerManager({
       {/* Estadísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, hint, icon: Icon, tone }) => (
-          <Card key={label} className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-muted uppercase tracking-[0.1em]">
+          <Card key={label} className="p-3.5 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-muted uppercase tracking-[0.1em] leading-tight">
                 {label}
               </span>
-              <div className="w-7 h-7 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-dim">
+              <div className="w-7 h-7 flex-shrink-0 rounded-[3px] bg-surface-raised border border-border flex items-center justify-center text-dim">
                 <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div className={`mt-2 text-2xl font-semibold font-display ${tone}`}>
+            <div className={`mt-2 text-xl sm:text-2xl font-semibold font-display ${tone}`}>
               {value}
             </div>
-            <span className="text-[10px] text-dim mt-0.5 block">{hint}</span>
+            <span className="text-[10px] text-dim mt-0.5 block leading-tight">{hint}</span>
           </Card>
         ))}
       </div>
 
       {/* Controles */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 sm:max-w-md">
           <Search className="w-4 h-4 text-dim absolute left-3.5 top-3" />
           <input
             type="text"
             placeholder="Buscar por nombre, teléfono o email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 rounded-lg bg-surface border border-border text-xs text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
+            className="w-full pl-10 pr-9 py-2.5 rounded-[3px] bg-surface border border-border text-xs text-foreground placeholder:text-dim focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 transition"
           />
           {search && (
             <button
@@ -244,13 +268,13 @@ export function CustomerManager({
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
-          <div className="flex bg-surface p-1 rounded-lg border border-border text-xs font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex bg-surface p-1 rounded-[3px] border border-border text-xs font-semibold overflow-x-auto no-scrollbar">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`px-3 py-1.5 rounded-md transition whitespace-nowrap ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-[3px] transition whitespace-nowrap ${
                   activeTab === t.key
                     ? "bg-accent text-accent-fg"
                     : "text-muted hover:text-foreground"
@@ -264,7 +288,7 @@ export function CustomerManager({
           <Button
             onClick={() => setShowAddModal(true)}
             leftIcon={<UserPlus className="w-3.5 h-3.5" />}
-            className="whitespace-nowrap"
+            className="w-full sm:w-auto whitespace-nowrap"
           >
             Nuevo cliente
           </Button>
@@ -298,7 +322,7 @@ export function CustomerManager({
                   className="w-full text-left p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface-raised/60 transition group"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-11 h-11 rounded-xl bg-surface-raised border border-border text-accent-warm font-semibold flex items-center justify-center text-sm shrink-0 group-hover:border-accent/40 transition font-display">
+                    <div className="w-11 h-11 rounded-[3px] bg-surface-raised border border-border text-accent-warm font-semibold flex items-center justify-center text-sm shrink-0 group-hover:border-accent/40 transition font-display">
                       {customer.fullName.charAt(0).toUpperCase()}
                     </div>
 
@@ -365,7 +389,7 @@ export function CustomerManager({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-lg bg-success/10 hover:bg-success/20 text-success-text border border-success/25 transition"
+                      className="p-2.5 rounded-[3px] bg-success/10 hover:bg-success/20 text-success-text border border-success/25 transition"
                       title="Enviar WhatsApp"
                       aria-label="Enviar WhatsApp"
                     >
@@ -391,15 +415,25 @@ export function CustomerManager({
             onClick={() => setSelectedCustomer(null)}
           />
 
-          <div className="relative w-full max-w-lg bg-surface border-l border-border p-6 flex flex-col justify-between overflow-y-auto animate-slide-in-right z-10">
+          <div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="customer-drawer-title"
+            tabIndex={-1}
+            className="relative z-10 flex w-full max-w-lg flex-col justify-between overflow-y-auto border-l border-border bg-surface p-6 focus:outline-none animate-slide-in-right"
+          >
             <div>
               <div className="flex items-center justify-between pb-5 border-b border-border">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded-xl bg-accent-soft border border-accent/25 text-accent-warm font-semibold flex items-center justify-center text-lg flex-shrink-0 font-display">
+                  <div className="w-12 h-12 rounded-[3px] bg-accent-soft border border-accent/25 text-accent-warm font-semibold flex items-center justify-center text-lg flex-shrink-0 font-display">
                     {selectedCustomer.fullName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-base text-foreground truncate">
+                    <h3
+                      id="customer-drawer-title"
+                      className="font-semibold text-base text-foreground truncate"
+                    >
                       {selectedCustomer.fullName}
                     </h3>
                     <p className="text-xs text-muted flex items-center gap-1 mt-0.5 font-mono">
@@ -412,7 +446,7 @@ export function CustomerManager({
                 <button
                   onClick={() => setSelectedCustomer(null)}
                   aria-label="Cerrar detalle de cliente"
-                  className="p-2 text-muted hover:text-foreground rounded-lg hover:bg-surface-raised transition"
+                  className="p-2 text-muted hover:text-foreground rounded-[3px] hover:bg-surface-raised transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -427,7 +461,7 @@ export function CustomerManager({
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-success/10 border border-success/25 text-success-text hover:bg-success/20 text-xs font-semibold transition"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-[3px] bg-success/10 border border-success/25 text-success-text hover:bg-success/20 text-xs font-semibold transition"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>WhatsApp</span>
@@ -435,7 +469,7 @@ export function CustomerManager({
 
                 <a
                   href={`tel:${selectedCustomer.phone}`}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-surface-raised border border-border text-foreground hover:border-border-strong text-xs font-semibold transition"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-[3px] bg-surface-raised border border-border text-foreground hover:border-border-strong text-xs font-semibold transition"
                 >
                   <Phone className="w-4 h-4 text-muted" />
                   <span>Llamar</span>
@@ -443,7 +477,7 @@ export function CustomerManager({
               </div>
 
               {/* Métricas */}
-              <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-xl bg-base border border-border text-center mb-6">
+              <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-[3px] bg-base border border-border text-center mb-6">
                 <div>
                   <span className="text-[10px] text-dim font-semibold uppercase block">
                     Citas
@@ -516,7 +550,7 @@ export function CustomerManager({
                 </h4>
 
                 {selectedCustomer.appointments.length === 0 ? (
-                  <p className="text-xs text-dim italic p-4 rounded-xl bg-base border border-border text-center">
+                  <p className="text-xs text-dim italic p-4 rounded-[3px] bg-base border border-border text-center">
                     Este cliente aún no registra citas.
                   </p>
                 ) : (
@@ -527,7 +561,7 @@ export function CustomerManager({
                       return (
                         <div
                           key={apt.id}
-                          className="p-3 rounded-xl bg-base border border-border flex items-center justify-between text-xs gap-3"
+                          className="p-3 rounded-[3px] bg-base border border-border flex items-center justify-between text-xs gap-3"
                         >
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -579,10 +613,10 @@ export function CustomerManager({
       {/* Modal: nuevo cliente */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-6 animate-scale-in">
+          <div className="panel w-full max-w-md p-6 animate-scale-in">
             <div className="flex items-center justify-between pb-4 border-b border-border mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
+                <div className="w-9 h-9 rounded-[3px] bg-accent-soft border border-accent/20 text-accent-warm flex items-center justify-center">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
@@ -598,14 +632,14 @@ export function CustomerManager({
               <button
                 onClick={() => setShowAddModal(false)}
                 aria-label="Cerrar modal"
-                className="p-1.5 text-muted hover:text-foreground rounded-lg hover:bg-surface-raised transition"
+                className="p-1.5 text-muted hover:text-foreground rounded-[3px] hover:bg-surface-raised transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {modalError && (
-              <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/25 text-error-text text-xs">
+              <div className="mb-4 p-3 rounded-[3px] bg-error/10 border border-error/25 text-error-text text-xs">
                 {modalError}
               </div>
             )}

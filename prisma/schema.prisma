@@ -24,47 +24,151 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+/// Origen de la cita. Permite medir conversión por canal.
+enum BookingSource {
+  WEB
+  WHATSAPP
+  ADMIN
+  WALK_IN
+}
+
+/// Giro del negocio. Define vocabulario, catálogo inicial y plantilla de portal.
+/// La lista canónica vive en src/lib/verticals/index.ts.
+enum Vertical {
+  BARBERSHOP
+  HAIR_SALON
+  NAILS
+  SPA
+  MASSAGE
+  DENTAL
+  MEDICAL
+  PHYSIO
+  PSYCHOLOGY
+  NUTRITION
+  OPTOMETRY
+  TATTOO
+  VETERINARY
+  OTHER
+}
+
+enum ResourceKind {
+  CHAIR
+  ROOM
+  CABIN
+  EQUIPMENT
+}
+
+/// Temas curados de Vitrina. No se permite color libre: cada tema está
+/// validado por contraste (ver src/lib/vitrina/theme.ts).
+enum BrandTheme {
+  TERRACOTTA
+  SAGE
+  NOIR
+}
+
+enum WhatsAppAccountStatus {
+  PENDING
+  CONNECTED
+  ERROR
+  DISABLED
+}
+
+enum ConversationMode {
+  BOT
+  HUMAN
+  PAUSED
+}
+
+enum ConversationState {
+  IDLE
+  MENU
+  BOOK_SERVICE
+  BOOK_STAFF
+  BOOK_DATE
+  BOOK_SLOT
+  BOOK_NAME
+  BOOK_CONFIRM
+  MANAGE_LIST
+  MANAGE_DETAIL
+  CANCEL_CONFIRM
+  RESCHEDULE_DATE
+  RESCHEDULE_SLOT
+  HANDOFF
+}
+
+enum WhatsAppDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsAppMessageStatus {
+  RECEIVED
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
 model Tenant {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   phone       String?
   address     String?
-  currency    String   @default("USD")
+  currency    String  @default("USD")
   logoUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  // --- administración de plataforma (superadmin) ---
-  plan            String  @default("BASIC") // BASIC | PRO | ENTERPRISE
-  isActive        Boolean @default(true)
-  isPlatform      Boolean @default(false) // tenant interno que aloja a los superadmins
-  maxStaff        Int     @default(10)
-  maxServices     Int     @default(50)
-  suspendedReason String?
-  notes           String?
-  features        Json? // { whatsappBot, publicBooking, bitacoras, reportes, multiSucursal }
+  // Vitrina — identidad pública
+  tagline       String?
+  story         String?
+  instagram     String?
+  coverImageUrl String?
+  brandTheme    BrandTheme @default(TERRACOTTA)
 
-  users        User[]
-  staff        StaffProfile[]
-  categories   Category[]
-  services     Service[]
-  customers    Customer[]
-  appointments Appointment[]
+  // Operación
+  /// Giro del negocio: define términos, plantilla de portal y catálogo inicial.
+  vertical Vertical @default(OTHER)
+  /// Estado del onboarding por giro: PENDING | READY.
+  onboardingState String @default("PENDING")
+  /// Zona horaria IANA del negocio. Todas las fechas se guardan en UTC y se
+  /// interpretan en esta zona al leer/escribir.
+  timezone                String @default("America/Mexico_City")
+  bookingWindowDays       Int    @default(30)
+  minLeadTimeMinutes      Int    @default(60)
+  cancellationWindowHours Int    @default(24)
+
+  // WhatsApp (visible en Vitrina; el bot se conecta en una fase posterior)
+  whatsappNumber String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  staff                 StaffProfile[]
+  categories            Category[]
+  services              Service[]
+  customers             Customer[]
+  appointments          Appointment[]
+  resources             Resource[]
+  testimonials          Testimonial[]
+  businessHours         BusinessHour[]
+  whatsappAccount       WhatsAppAccount?
+  whatsappConversations WhatsAppConversation[]
 
   @@map("tenants")
 }
 
 model User {
-  id           String        @id @default(uuid())
+  id           String   @id @default(uuid())
   tenantId     String
-  email        String        @unique
+  email        String   @unique
   passwordHash String
   fullName     String
-  role         UserRole      @default(STAFF)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  role         UserRole @default(STAFF)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   staffProfile StaffProfile?
@@ -82,6 +186,10 @@ model StaffProfile {
   email       String?
   avatarUrl   String?
   colorCode   String   @default("#3b82f6")
+  /// Texto corto para la ficha del equipo en Vitrina.
+  bio         String?
+  /// Especialidades separadas por coma ("Color y rubios, cortes").
+  specialties String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -97,11 +205,11 @@ model StaffProfile {
 }
 
 model Category {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   tenantId  String
   name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   services Service[]
@@ -117,6 +225,7 @@ model Service {
   categoryId      String?
   name            String
   description     String?
+  imageUrl        String?
   durationMinutes Int      @default(30)
   price           Decimal  @db.Decimal(10, 2)
   isActive        Boolean  @default(true)
@@ -127,6 +236,7 @@ model Service {
   category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   staff        StaffService[]
   appointments Appointment[]
+  testimonials Testimonial[]
 
   @@index([tenantId])
   @@index([categoryId])
@@ -145,15 +255,15 @@ model StaffService {
 }
 
 model Schedule {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   staffId      String
-  dayOfWeek    Int      // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-  startTime    String   @default("09:00") // Formato "HH:mm"
-  endTime      String   @default("18:00") // Formato "HH:mm"
-  hasBreak     Boolean  @default(false)
-  breakStart   String?  // Formato "HH:mm" ej "13:00"
-  breakEnd     String?  // Formato "HH:mm" ej "14:00"
-  isWorkingDay Boolean  @default(true)
+  dayOfWeek    Int // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  startTime    String  @default("09:00") // Formato "HH:mm" en la TZ del tenant
+  endTime      String  @default("18:00") // Formato "HH:mm" en la TZ del tenant
+  hasBreak     Boolean @default(false)
+  breakStart   String? // Formato "HH:mm" ej "13:00"
+  breakEnd     String? // Formato "HH:mm" ej "14:00"
+  isWorkingDay Boolean @default(true)
 
   staff StaffProfile @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
@@ -161,46 +271,199 @@ model Schedule {
   @@map("schedules")
 }
 
-model Customer {
-  id        String   @id @default(uuid())
+/// Horario general del negocio (público). Se muestra en Vitrina y define la
+/// ventana base; los `Schedule` por profesional siguen mandando en la reserva.
+model BusinessHour {
+  id        String  @id @default(uuid())
   tenantId  String
-  fullName  String
-  phone     String
-  email     String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  dayOfWeek Int // 0 = domingo
+  openTime  String  @default("09:00")
+  closeTime String  @default("19:00")
+  isClosed  Boolean @default(false)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, dayOfWeek])
+  @@map("business_hours")
+}
+
+/// Recurso agendable que no es una persona: silla, consultorio, cabina o equipo.
+/// Un servicio puede requerir un recurso y una cita puede ocuparlo.
+model Resource {
+  id        String       @id @default(uuid())
+  tenantId  String
+  name      String
+  kind      ResourceKind @default(ROOM)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   appointments Appointment[]
 
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+  @@map("resources")
+}
+
+model Customer {
+  id            String   @id @default(uuid())
+  tenantId      String
+  fullName      String
+  /// E.164 (`+525512345678`). Único por tenant para poder reconocer al cliente
+  /// que vuelve, venga de la web o de WhatsApp.
+  phone         String
+  email         String?
+  notes         String?
+  whatsappOptIn Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments          Appointment[]
+  whatsappConversations WhatsAppConversation[]
+
+  @@unique([tenantId, phone])
   @@index([tenantId])
-  @@index([tenantId, phone])
   @@map("customers")
 }
 
 model Appointment {
-  id            String            @id @default(uuid())
-  tenantId      String
-  staffId       String
-  serviceId     String
-  customerId    String
-  startTime     DateTime
-  endTime       DateTime
-  status        AppointmentStatus @default(CONFIRMED)
-  totalPrice    Decimal           @db.Decimal(10, 2)
-  customerNotes String?
-  internalNotes String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  tenantId         String
+  staffId          String
+  serviceId        String
+  customerId       String
+  /// Recurso opcional (consultorio, cabina, silla) que ocupa la cita.
+  resourceId       String?
+  /// Instante UTC. En pantalla se formatea con `Tenant.timezone`.
+  startTime        DateTime          @db.Timestamptz(3)
+  endTime          DateTime          @db.Timestamptz(3)
+  status           AppointmentStatus @default(CONFIRMED)
+  totalPrice       Decimal           @db.Decimal(10, 2)
+  customerNotes    String?
+  internalNotes    String?
+  source           BookingSource     @default(WEB)
+  /// Código corto que el cliente puede dictar en el salón ("BV-7K3M").
+  confirmationCode String?
+  /// Evita duplicados si el navegador o el webhook reintentan la creación.
+  idempotencyKey   String?
+  cancelledAt      DateTime?
+  cancelReason     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   tenant   Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   staff    StaffProfile @relation(fields: [staffId], references: [id], onDelete: Cascade)
   service  Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   customer Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  resource Resource?    @relation(fields: [resourceId], references: [id], onDelete: SetNull)
 
+  @@unique([tenantId, confirmationCode])
+  @@unique([tenantId, idempotencyKey])
   @@index([tenantId])
   @@index([staffId, startTime])
+  @@index([resourceId, startTime])
   @@index([tenantId, startTime])
   @@map("appointments")
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  tenantId    String
+  authorName  String
+  quote       String
+  rating      Int      @default(5)
+  serviceId   String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, isPublished])
+  @@map("testimonials")
+}
+
+/// Vinculación de WhatsApp por tenant.
+///
+/// Con Baileys la sesión vive en disco (`.wa-auth/<tenantId>`), no en la base:
+/// acá se guarda solo el estado visible para el admin (QR, número, errores).
+model WhatsAppAccount {
+  id                    String                @id @default(uuid())
+  tenantId              String                @unique
+  status                WhatsAppAccountStatus @default(PENDING)
+  botEnabled            Boolean               @default(true)
+  /// Número propio ya vinculado (E.164). Lo completa el worker al conectar.
+  displayPhoneNumber    String?
+  /// JID propio (`521...@s.whatsapp.net`) para ignorar mensajes propios.
+  selfJid               String?
+  /// QR vigente en texto plano. El admin lo convierte a imagen y lo refresca.
+  qr                    String?               @db.Text
+  qrUpdatedAt           DateTime?             @db.Timestamptz(3)
+  lastError             String?
+  lastConnectedAt       DateTime?             @db.Timestamptz(3)
+  /// Latido del worker. Si está viejo, el panel avisa que el bot no está
+  /// corriendo (con Baileys el worker es un proceso aparte de Next).
+  workerSeenAt          DateTime?             @db.Timestamptz(3)
+  /// El admin pidió desvincular el dispositivo. El worker hace logout y borra
+  /// la sesión; no se ejecuta desde la request para no bloquear el panel.
+  disconnectRequestedAt DateTime?             @db.Timestamptz(3)
+  createdAt             DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime              @updatedAt @db.Timestamptz(3)
+
+  tenant        Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations WhatsAppConversation[]
+
+  @@map("whatsapp_accounts")
+}
+
+model WhatsAppConversation {
+  id            String            @id @default(uuid())
+  tenantId      String
+  /// Identificador de WhatsApp normalizado a E.164 (`+525512345678`).
+  waId          String
+  customerId    String?
+  mode          ConversationMode  @default(BOT)
+  state         ConversationState @default(IDLE)
+  stateVersion  Int               @default(1)
+  context       Json              @default("{}")
+  lastInboundAt DateTime?         @db.Timestamptz(3)
+  lastMessageAt DateTime?         @db.Timestamptz(3)
+  expiresAt     DateTime?         @db.Timestamptz(3)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
+
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer          Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  messages          WhatsAppMessage[]
+  whatsAppAccount   WhatsAppAccount?  @relation(fields: [whatsAppAccountId], references: [id])
+  whatsAppAccountId String?
+
+  @@unique([tenantId, waId])
+  @@index([tenantId, lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppMessage {
+  id                String                @id @default(uuid())
+  tenantId          String
+  conversationId    String
+  /// id del proveedor (Baileys `key.id`). Único para dedupe de reintentos.
+  providerMessageId String?
+  direction         WhatsAppDirection
+  /// text | image | audio | document | interactive | system
+  type              String
+  body              String?               @db.Text
+  payload           Json?
+  status            WhatsAppMessageStatus @default(RECEIVED)
+  error             String?
+  createdAt         DateTime              @default(now()) @db.Timestamptz(3)
+
+  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, providerMessageId])
+  @@index([conversationId, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("whatsapp_messages")
 }

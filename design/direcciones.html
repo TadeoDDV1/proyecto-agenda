@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgendaSaaS · Cuatro direcciones de diseño</title>
+  <meta name="description" content="Comparativa visual de cuatro direcciones de diseño para AgendaSaaS: Nocturne 2.0, Atelier, Studio y Maison." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+/* ============================================================
+   1. Página contenedora (no forma parte de los temas)
+   ============================================================ */
+:root {
+  --page-bg: #0b0b0c;
+  --page-surface: #121214;
+  --page-line: #242427;
+  --page-line-soft: #1b1b1e;
+  --page-text: #f1f1f3;
+  --page-muted: #a3a3ab;
+  --page-dim: #8a8a93;
+  --page-highlight: #e9e5da;
+  --page-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --page-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --page-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--page-bg);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(70% 35% at 50% 0%, rgba(255, 255, 255, 0.055), transparent 70%),
+    var(--page-bg);
+  color: var(--page-text);
+  font-family: var(--page-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+svg { display: block; }
+
+.wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 32px);
+}
+
+.skip {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--page-highlight);
+  color: #111;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip:focus { transform: translateY(0); }
+
+a:focus-visible {
+  outline: 2px solid var(--page-highlight);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--page-dim);
+}
+
+/* ---------- Hero ---------- */
+.page-hero {
+  padding-block: clamp(44px, 7vw, 88px) clamp(28px, 4vw, 44px);
+  border-bottom: 1px solid var(--page-line);
+}
+
+.page-hero h1 {
+  max-width: 19ch;
+  margin: 14px 0 18px;
+  font-family: var(--page-serif);
+  font-size: clamp(2.3rem, 5.4vw, 4.3rem);
+  font-weight: 350;
+  line-height: 1.01;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.page-hero h1 em { font-style: italic; color: var(--page-muted); }
+
+.page-hero__lead {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--page-muted);
+  font-size: clamp(0.95rem, 1.3vw, 1.06rem);
+}
+
+.page-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--page-line);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Índice ---------- */
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--page-line);
+  background: color-mix(in srgb, var(--page-bg) 86%, transparent);
+  backdrop-filter: blur(14px);
+}
+.toc__inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-block: 8px;
+  scrollbar-width: none;
+}
+.toc__inner::-webkit-scrollbar { display: none; }
+
+.toc a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.toc a:hover { background: var(--page-surface); color: var(--page-text); }
+.toc a span {
+  color: var(--page-dim);
+  font-family: var(--page-mono);
+  font-size: 10px;
+  font-weight: 500;
+}
+.toc a.is-strong { color: var(--page-text); }
+
+/* ---------- Sección de cada dirección ---------- */
+.direction {
+  padding-block: clamp(52px, 7vw, 84px);
+  border-bottom: 1px solid var(--page-line);
+  scroll-margin-top: 66px;
+}
+
+.direction__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+  gap: clamp(24px, 4vw, 48px);
+  align-items: end;
+  margin-bottom: 26px;
+}
+
+.direction__num {
+  display: block;
+  font-family: var(--page-serif);
+  font-style: italic;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: 0.9;
+  color: var(--page-dim);
+}
+
+.direction__title {
+  margin: 8px 0 10px;
+  font-family: var(--page-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 350;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.direction__pitch {
+  max-width: 56ch;
+  margin: 0 0 16px;
+  color: var(--page-muted);
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--page-line);
+  border-radius: 6px;
+  color: var(--page-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Muestra tipográfica (hereda el tema) ---------- */
+.specimen {
+  padding: clamp(18px, 2.4vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  box-shadow: var(--shadow);
+}
+
+.specimen__eyebrow {
+  margin: 0;
+  color: var(--accent-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.specimen__headline {
+  margin: 10px 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2.5vw, 2.15rem);
+  font-weight: var(--display-weight, 350);
+  line-height: 1.05;
+  letter-spacing: var(--display-tracking, -0.02em);
+  color: var(--text);
+  text-wrap: balance;
+}
+.specimen__headline em { font-style: italic; color: var(--muted); }
+
+.specimen__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.specimen__foot {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-family: var(--page-mono);
+  font-size: 10px;
+}
+
+/* ---------- Marco del mockup ---------- */
+.artboard {
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius-lg) + 6px);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs);
+  line-height: 1.45;
+  box-shadow: var(--shadow);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 520px;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: var(--pad);
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.brand__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--accent-text);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-style: italic;
+}
+
+.brand__eyebrow {
+  display: block;
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.brand__name {
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.88em;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.74em;
+  font-weight: 500;
+}
+.portal .icon { width: 12px; height: 12px; color: var(--dim); }
+
+.nav { display: flex; flex-direction: column; gap: 2px; }
+
+.nav__label {
+  margin: 0 0 6px 8px;
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nav__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: calc(var(--row-h) - 8px);
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.8em;
+  font-weight: 500;
+}
+.nav__item .icon { width: 14px; height: 14px; color: var(--dim); }
+.nav__item.is-active {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.nav__item.is-active .icon { color: var(--accent-text); }
+.nav__tail {
+  width: 4px;
+  height: 14px;
+  margin-left: auto;
+  border-radius: 99px;
+  background: var(--accent);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent-text);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.user__name {
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.76em;
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user__role {
+  display: block;
+  overflow: hidden;
+  color: var(--dim);
+  font-size: 0.66em;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user__logout { margin-left: auto; color: var(--dim); }
+.user__logout .icon { width: 14px; height: 14px; }
+
+/* ---------- Barra móvil y superior ---------- */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.mobilebar { display: none; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(var(--pad) * 0.7) var(--pad);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.topbar__meta { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.topbar__date {
+  color: var(--muted);
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+
+.topbar__actions { display: flex; align-items: center; gap: 8px; flex: none; }
+
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--btn-h);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--dim);
+  font-size: 0.75em;
+}
+.search .icon { width: 13px; height: 13px; }
+.search kbd {
+  padding: 1px 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--dim);
+  font-family: "Segoe UI Symbol", "Apple Symbols", var(--page-mono);
+  font-size: 9px;
+}
+
+/* ---------- Botones y chips ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--btn-h);
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.btn .icon { width: 13px; height: 13px; }
+.btn--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.btn--lg { height: calc(var(--btn-h) + 8px); padding: 0 16px; font-size: 0.85em; }
+.btn--block { width: 100%; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.66em;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.chip--success {
+  border-color: color-mix(in srgb, var(--success) 28%, transparent);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.chip--warn {
+  border-color: color-mix(in srgb, var(--warn) 28%, transparent);
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* ---------- Contenido ---------- */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+  padding: var(--pad);
+}
+
+.content__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.content__title {
+  margin: 2px 0 4px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.9vw, 1.55rem);
+  font-weight: var(--display-weight, 400);
+  letter-spacing: var(--display-tracking, -0.02em);
+  line-height: 1.08;
+}
+
+.content__sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74em;
+}
+
+.segmented {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.segmented span {
+  padding: 4px 10px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  color: var(--dim);
+  font-size: 0.7em;
+  font-weight: 600;
+}
+.segmented .is-active { background: var(--surface-2); color: var(--text); }
+
+/* ---------- Métricas ---------- */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(var(--gap) * 0.65);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: calc(var(--pad) * 0.68);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.metric__label {
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.metric__value {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: var(--display-weight, 400);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--display-tracking, -0.02em);
+  line-height: 1.05;
+}
+
+.metric__unit {
+  margin-left: 3px;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 0.5em;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.metric__delta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.66em;
+}
+.metric__delta strong { color: var(--success); font-weight: 600; }
+
+.metric--hero {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+}
+/* ---------- Paneles ---------- */
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(238px, 0.85fr);
+  gap: calc(var(--gap) * 0.8);
+  align-items: start;
+}
+
+.panel {
+  min-width: 0;
+  padding: calc(var(--pad) * 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panel__title {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.panel__sub {
+  margin: 2px 0 0;
+  color: var(--dim);
+  font-size: 0.66em;
+}
+
+.link {
+  color: var(--accent-text);
+  font-size: 0.68em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Calendario ---------- */
+.calendar__days { display: flex; gap: 3px; }
+
+.calendar__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--dim);
+  font-size: 9px;
+  line-height: 1.1;
+}
+.calendar__day b { color: var(--muted); font-size: 0.9em; font-weight: 600; }
+.calendar__day.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.calendar__day.is-active b { color: var(--accent-fg); }
+
+.calendar__staff {
+  display: grid;
+  grid-template-columns: 44px repeat(3, minmax(0, 1fr));
+  margin-top: 6px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line);
+}
+.calendar__staff > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding-left: 6px;
+  color: var(--muted);
+  font-size: 0.66em;
+  font-weight: 600;
+}
+
+.dot { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--staff-1); }
+.dot--2 { background: var(--staff-2); }
+.dot--3 { background: var(--staff-3); }
+
+.calendar__body {
+  display: grid;
+  grid-template-columns: 44px repeat(3, minmax(0, 1fr));
+  grid-auto-rows: var(--row-h);
+  position: relative;
+  border-bottom: 1px solid var(--line-soft);
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px);
+  background-size: 100% var(--row-h);
+}
+
+.time {
+  grid-column: 1;
+  z-index: 1;
+  align-self: start;
+  padding: 4px 0 0 2px;
+  background: var(--surface);
+  color: var(--dim);
+  font-size: 0.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+.appt {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin: 2px 3px;
+  padding: 4px 7px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--staff-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.appt--2 { border-left-color: var(--staff-2); }
+.appt--3 { border-left-color: var(--staff-3); }
+.appt--soft { background: var(--surface); }
+.appt--accent {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+}
+.appt strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.72em;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appt span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.62em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now {
+  grid-column: 1 / -1;
+  z-index: 3;
+  position: relative;
+  border-top: 1px solid var(--danger);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.now::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+/* ---------- Columna lateral ---------- */
+.rail { display: flex; flex-direction: column; gap: calc(var(--gap) * 0.8); }
+
+.list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
+.list__item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.list__item:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.list__item time {
+  color: var(--muted);
+  font-size: 0.7em;
+  font-variant-numeric: tabular-nums;
+}
+.list__item strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.76em;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list__item span {
+  display: block;
+  overflow: hidden;
+  color: var(--dim);
+  font-size: 0.64em;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel--accent {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: var(--accent-soft);
+}
+
+.wa {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  border-bottom-left-radius: 2px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.7em;
+  line-height: 1.5;
+}
+.wa strong { color: var(--text); font-weight: 600; }
+
+.portal-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--accent-text);
+  font-family: var(--page-mono);
+  font-size: 0.68em;
+}
+.portal-link span {
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 0.92em;
+  font-weight: 600;
+}
+
+/* ---------- Pie de cada dirección ---------- */
+.direction__footer {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--page-line);
+}
+
+.notes ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--page-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.notes li::marker { color: var(--page-dim); }
+.notes li + li { margin-top: 2px; }
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.swatches li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--page-muted);
+  font-size: 11px;
+}
+.swatches i {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+}
+.swatches code { color: var(--page-dim); font-family: var(--page-mono); font-size: 10px; }
+.swatches small { color: var(--page-dim); font-size: 10px; }
+/* ============================================================
+   2. Tokens de cada dirección
+   ============================================================ */
+.theme-nocturne {
+  --bg: #0a0a0f;
+  --surface: #101017;
+  --surface-2: #16161f;
+  --surface-3: #1b1b26;
+  --line: #23232f;
+  --line-soft: #1a1a23;
+  --grid-line: #1a1a23;
+  --text: #ececf1;
+  --muted: #9a9aa7;
+  --dim: #8a8a98;
+  --accent: #5f62ee;
+  --accent-text: #a5b4fc;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(95, 98, 238, 0.14);
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.12);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.12);
+  --danger: #f87171;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.95);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display-weight: 350;
+  --display-tracking: -0.025em;
+  --fs: 13px;
+  --pad: 18px;
+  --gap: 15px;
+  --row-h: 44px;
+  --btn-h: 34px;
+  --sidebar-w: 212px;
+  --staff-1: #818cf8;
+  --staff-2: #f472b6;
+  --staff-3: #34d399;
+}
+
+.theme-atelier {
+  --bg: #f6f3ed;
+  --surface: #fffdf9;
+  --surface-2: #f1ece3;
+  --surface-3: #e9e3d7;
+  --line: #e3ded3;
+  --line-soft: #ede8de;
+  --grid-line: #ede8de;
+  --text: #171614;
+  --muted: #5f5b53;
+  --dim: #625d53;
+  --accent: #3f5d45;
+  --accent-text: #3f5d45;
+  --accent-fg: #fbf9f4;
+  --accent-soft: #e8eee4;
+  --success: #2f6b4f;
+  --success-soft: #e3eee7;
+  --warn: #8a5a12;
+  --warn-soft: #f6ecd9;
+  --danger: #a33b2a;
+  --radius: 6px;
+  --radius-sm: 5px;
+  --radius-lg: 10px;
+  --shadow: 0 1px 1px rgba(23, 22, 20, 0.03), 0 18px 40px -30px rgba(23, 22, 20, 0.35);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display-weight: 350;
+  --display-tracking: -0.025em;
+  --fs: 14px;
+  --pad: 22px;
+  --gap: 18px;
+  --row-h: 48px;
+  --btn-h: 38px;
+  --sidebar-w: 224px;
+  --staff-1: #6d7f5b;
+  --staff-2: #b4552d;
+  --staff-3: #7c6a93;
+}
+
+.theme-studio {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --surface-3: #e9e9eb;
+  --line: #e4e4e7;
+  --line-soft: #f0f0f2;
+  --grid-line: #f0f0f2;
+  --text: #0b0b0c;
+  --muted: #52525b;
+  --dim: #66666f;
+  --accent: #2563eb;
+  --accent-text: #1d4ed8;
+  --accent-fg: #ffffff;
+  --accent-soft: #eff4ff;
+  --success: #15803d;
+  --success-soft: #eaf7ee;
+  --warn: #b45309;
+  --warn-soft: #fef3e2;
+  --danger: #dc2626;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 14px 30px -24px rgba(0, 0, 0, 0.35);
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display-weight: 650;
+  --display-tracking: -0.04em;
+  --fs: 12.5px;
+  --pad: 16px;
+  --gap: 12px;
+  --row-h: 44px;
+  --btn-h: 32px;
+  --sidebar-w: 204px;
+  --staff-1: #2563eb;
+  --staff-2: #db2777;
+  --staff-3: #059669;
+}
+
+.theme-maison {
+  --bg: #14100e;
+  --surface: #1c1714;
+  --surface-2: #241d19;
+  --surface-3: #2c241f;
+  --line: #332a24;
+  --line-soft: #2a221d;
+  --grid-line: #2a221d;
+  --text: #f3eae0;
+  --muted: #b3a79a;
+  --dim: #95897d;
+  --accent: #c8a46a;
+  --accent-text: #d9bc8c;
+  --accent-fg: #1a1411;
+  --accent-soft: rgba(200, 164, 106, 0.14);
+  --success: #8fbf9f;
+  --success-soft: rgba(143, 191, 159, 0.12);
+  --warn: #e0b36a;
+  --warn-soft: rgba(224, 179, 106, 0.12);
+  --danger: #e08b7a;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-lg: 24px;
+  --shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.95);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display-weight: 300;
+  --display-tracking: -0.02em;
+  --fs: 14.5px;
+  --pad: 22px;
+  --gap: 18px;
+  --row-h: 50px;
+  --btn-h: 38px;
+  --sidebar-w: 222px;
+  --staff-1: #c8a46a;
+  --staff-2: #b57e6a;
+  --staff-3: #8fa98f;
+}
+
+/* ---------- Detalles propios de cada tema ---------- */
+.search kbd { display: none; }
+
+.theme-nocturne .metric--hero {
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+
+.theme-atelier .metric--hero {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.theme-atelier .metric--hero .metric__label,
+.theme-atelier .metric--hero .metric__value { color: var(--accent-fg); }
+.theme-atelier .metric--hero .metric__delta {
+  color: color-mix(in srgb, var(--accent-fg) 76%, var(--accent));
+}
+.theme-atelier .metric--hero .metric__delta strong { color: var(--accent-fg); }
+.theme-atelier .calendar__day.is-active {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.theme-atelier .calendar__day.is-active b { color: var(--accent-text); }
+.theme-atelier .appt { background: var(--surface); }
+.theme-atelier .appt--accent { background: var(--accent-soft); }
+.theme-atelier .panel { box-shadow: 0 1px 0 rgba(23, 22, 20, 0.02); }
+
+.theme-studio .search kbd { display: inline-block; }
+.theme-studio .metric--hero { background: var(--accent-soft); }
+.theme-studio .nav__item { min-height: calc(var(--row-h) - 12px); }
+.theme-studio .panel { padding: calc(var(--pad) * 0.7); }
+.theme-studio .content__title { font-weight: 650; }
+
+.theme-maison .metric--hero {
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.theme-maison .panel {
+  background: linear-gradient(
+    180deg,
+    var(--surface),
+    color-mix(in srgb, var(--surface) 88%, var(--surface-2))
+  );
+}
+.theme-maison .btn { border-radius: 999px; }
+.theme-maison .calendar__day { border-radius: 999px; }
+.theme-maison .nav__item { border-radius: 999px; }
+
+/* ============================================================
+   3. Responsive del mockup (container queries)
+   ============================================================ */
+@container (max-width: 920px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .mobilebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: calc(var(--pad) * 0.65) var(--pad);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .mobilebar .brand__mark { width: 28px; height: 28px; }
+  .mobilebar__name {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 0.82em;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobilebar .icon { width: 18px; height: 18px; margin-left: auto; color: var(--muted); }
+  .content { padding: calc(var(--pad) * 0.85); }
+}
+
+@container (max-width: 700px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .content-grid { grid-template-columns: 1fr; }
+  .calendar__days { display: none; }
+  .rail { display: grid; grid-template-columns: 1fr 1fr; }
+  .rail .panel:last-child { grid-column: 1 / -1; }
+  .content__head { flex-direction: column; align-items: flex-start; }
+}
+
+@container (max-width: 480px) {
+  .topbar__actions .search { display: none; }
+  .rail { grid-template-columns: 1fr; }
+  .rail .panel:last-child { grid-column: auto; }
+  .metrics { gap: 8px; }
+  .calendar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+  .calendar__staff,
+  .calendar__body { min-width: 420px; }
+  .calendar__staff > span { padding-left: 3px; font-size: 0.6em; }
+  .appt { padding: 3px 5px; }
+}
+
+/* ============================================================
+   4. Comparativa, recomendación y cierre
+   ============================================================ */
+.compare {
+  padding-block: clamp(52px, 7vw, 84px);
+  border-bottom: 1px solid var(--page-line);
+  scroll-margin-top: 66px;
+}
+
+.compare h2,
+.callout h2 {
+  margin: 10px 0 12px;
+  font-family: var(--page-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 350;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.compare__lead {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--page-muted);
+}
+
+.table-wrap {
+  margin-top: 26px;
+  overflow-x: auto;
+  border: 1px solid var(--page-line);
+  border-radius: 16px;
+}
+
+table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--page-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--page-surface);
+  color: var(--page-dim);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+thead th .mark {
+  display: block;
+  margin-top: 3px;
+  color: var(--page-highlight);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+tbody th {
+  color: var(--page-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody td { color: var(--page-text); }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+.col-best { background: rgba(255, 255, 255, 0.028); }
+
+.callout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(24px, 4vw, 48px);
+  margin-top: 32px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--page-line);
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--page-surface), #0d0d0f);
+}
+
+.callout p { max-width: 58ch; margin: 0; color: var(--page-muted); }
+
+.callout__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.callout__list li {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--page-line-soft);
+  color: var(--page-muted);
+  font-size: 13px;
+}
+.callout__list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.callout__list b {
+  flex: none;
+  color: var(--page-text);
+  font-family: var(--page-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding-top: 2px;
+}
+
+.page-footer {
+  padding-block: 32px 44px;
+}
+.page-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--page-dim);
+  font-size: 11px;
+}
+.page-footer__inner code { font-family: var(--page-mono); font-size: 10px; }
+
+/* ============================================================
+   5. Responsive de la página y accesibilidad
+   ============================================================ */
+@media (max-width: 900px) {
+  .direction__intro { grid-template-columns: 1fr; align-items: start; }
+  .direction__footer { grid-template-columns: 1fr; }
+  .callout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .page-hero h1 { font-size: clamp(2.1rem, 10vw, 3rem); }
+  .direction__title { font-size: 1.8rem; }
+  .toc a { padding: 0 10px; }
+  .specimen { border-radius: calc(var(--radius-lg) + 2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <!-- Sprite de iconos (decorativos) -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.5-3.3 2.7-5 5.5-5s5 1.7 5.5 5"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 20c-.2-1.8-.8-3.2-1.8-4.2"/></symbol>
+    <symbol id="i-contact" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.2"/><path d="M6 16c.4-1.8 1.6-2.8 3-2.8s2.6 1 3 2.8M15 9h3M15 13h3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.5 9.5 0 0 1-3.7-.8L3 21l1.9-4.1A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  </svg>
+
+  <header class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow">AgendaSaaS · Exploración de diseño</p>
+      <h1>Cuatro direcciones. <em>La misma agenda.</em></h1>
+      <p class="page-hero__lead">
+        El mismo panel, los mismos datos y la misma estructura. Solo cambian los tokens:
+        color, tipografía, radios, densidad y jerarquía. Así se compara una dirección
+        completa antes de tocar el código de la app.
+      </p>
+      <div class="page-hero__meta">
+        <span class="pill">4 mockups</span>
+        <span class="pill">HTML y CSS estático</span>
+        <span class="pill">Sin cambios en el código</span>
+        <span class="pill">Datos de ejemplo</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Direcciones de diseño">
+    <div class="wrap toc__inner">
+      <a href="#nocturne" class="is-strong"><span>A</span>Nocturne 2.0</a>
+      <a href="#atelier"><span>B</span>Atelier</a>
+      <a href="#studio"><span>C</span>Studio</a>
+      <a href="#maison"><span>D</span>Maison</a>
+      <a href="#comparativa"><span>→</span>Comparativa</a>
+    </div>
+  </nav>
+
+  <main id="contenido">
+    <!-- ================= A · NOCTURNE 2.0 ================= -->
+    <section id="nocturne" class="direction">
+      <div class="wrap">
+        <header class="direction__intro">
+          <div>
+            <span class="direction__num">A</span>
+            <h2 class="direction__title">Nocturne 2.0</h2>
+            <p class="direction__pitch">
+              La identidad actual, llevada al detalle: la misma noche, mejor tipografía,
+              jerarquía y consistencia. Es la opción de menor riesgo si el dark ya convence.
+            </p>
+            <div class="tags">
+              <span class="tag">Dark editorial</span>
+              <span class="tag">Índigo</span>
+              <span class="tag">Densidad media</span>
+            </div>
+          </div>
+
+          <div class="specimen theme-nocturne" aria-label="Muestra tipográfica de Nocturne 2.0">
+            <p class="specimen__eyebrow">Barbería &amp; Spa · Portal</p>
+            <p class="specimen__headline">Tu agenda, <em>organizada.</em></p>
+            <div class="specimen__actions">
+              <span class="btn btn--primary btn--lg">Abrir mi agenda</span>
+              <span class="btn btn--lg">Ver demo</span>
+            </div>
+            <p class="specimen__foot">Fraunces 300 · Inter 500 · #5F62EE</p>
+          </div>
+        </header>
+
+        <div data-artboard="nocturne" data-name="Nocturne 2.0"></div>
+
+        <div class="direction__footer">
+          <div class="notes">
+            <p class="eyebrow">Qué observar</p>
+            <ul>
+              <li>La jerarquía se construye con tamaño y espacio, no con más colores.</li>
+              <li>El índigo aparece solo en acciones y estados activos.</li>
+              <li>Subir el texto operativo a 12–13 px y dejar el 10 px para etiquetas.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">Paleta</p>
+            <ul class="swatches">
+              <li><i style="background:#0A0A0F"></i><code>#0A0A0F</code><small>base</small></li>
+              <li><i style="background:#101017"></i><code>#101017</code><small>surface</small></li>
+              <li><i style="background:#5F62EE"></i><code>#5F62EE</code><small>acento</small></li>
+              <li><i style="background:#ECECF1"></i><code>#ECECF1</code><small>texto</small></li>
+              <li><i style="background:#9A9AA7"></i><code>#9A9AA7</code><small>muted</small></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= B · ATELIER ================= -->
+    <section id="atelier" class="direction">
+      <div class="wrap">
+        <header class="direction__intro">
+          <div>
+            <span class="direction__num">B</span>
+            <h2 class="direction__title">Atelier</h2>
+            <p class="direction__pitch">
+              Papel, tinta y oliva. Un panel que se lee a plena luz y se siente como una
+              revista de interiorismo. La opción con más carácter para barberías y spas premium.
+            </p>
+            <div class="tags">
+              <span class="tag">Claro editorial</span>
+              <span class="tag">Oliva</span>
+              <span class="tag">Aire</span>
+            </div>
+          </div>
+
+          <div class="specimen theme-atelier" aria-label="Muestra tipográfica de Atelier">
+            <p class="specimen__eyebrow">Barbería &amp; Spa · Portal</p>
+            <p class="specimen__headline">Tu agenda, <em>organizada.</em></p>
+            <div class="specimen__actions">
+              <span class="btn btn--primary btn--lg">Abrir mi agenda</span>
+              <span class="btn btn--lg">Ver demo</span>
+            </div>
+            <p class="specimen__foot">Fraunces 350 · Inter 500 · #3F5D45</p>
+          </div>
+        </header>
+
+        <div data-artboard="atelier" data-name="Atelier"></div>
+
+        <div class="direction__footer">
+          <div class="notes">
+            <p class="eyebrow">Qué observar</p>
+            <ul>
+              <li>El serif queda en titulares y cifras; la interfaz sigue en sans.</li>
+              <li>Las líneas de 1 px y el aire hacen el trabajo, sin sombras fuertes.</li>
+              <li>El verde oliva funciona como tinta de acción, no como decoración.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">Paleta</p>
+            <ul class="swatches">
+              <li><i style="background:#F6F3ED"></i><code>#F6F3ED</code><small>papel</small></li>
+              <li><i style="background:#FFFDF9"></i><code>#FFFDF9</code><small>tarjeta</small></li>
+              <li><i style="background:#3F5D45"></i><code>#3F5D45</code><small>oliva</small></li>
+              <li><i style="background:#171614"></i><code>#171614</code><small>tinta</small></li>
+              <li><i style="background:#B4552D"></i><code>#B4552D</code><small>terracota</small></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ================= C · STUDIO ================= -->
+    <section id="studio" class="direction">
+      <div class="wrap">
+        <header class="direction__intro">
+          <div>
+            <span class="direction__num">C</span>
+            <h2 class="direction__title">Studio</h2>
+            <p class="direction__pitch">
+              Denso, rápido y keyboard-first. Menos boutique, más herramienta afilada:
+              pensada para quien pasa ocho horas en el mostrador y quiere todo a un atajo.
+            </p>
+            <div class="tags">
+              <span class="tag">Claro / oscuro</span>
+              <span class="tag">Cobalto</span>
+              <span class="tag">Alta densidad</span>
+            </div>
+          </div>
+
+          <div class="specimen theme-studio" aria-label="Muestra tipográfica de Studio">
+            <p class="specimen__eyebrow">Barbería &amp; Spa · Portal</p>
+            <p class="specimen__headline">Tu agenda, <em>sin fricción.</em></p>
+            <div class="specimen__actions">
+              <span class="btn btn--primary btn--lg">Abrir mi agenda</span>
+              <span class="btn btn--lg">Ver demo</span>
+            </div>
+            <p class="specimen__foot">Inter 650 · Inter 500 · #2563EB</p>
+          </div>
+        </header>
+
+        <div data-artboard="studio" data-name="Studio"></div>
+
+        <div class="direction__footer">
+          <div class="notes">
+            <p class="eyebrow">Qué observar</p>
+            <ul>
+              <li>La densidad sube: 12,5 px de base, filas más cortas y menos relleno.</li>
+              <li>El color se reserva para estado y acción; el resto es neutral.</li>
+              <li>La búsqueda con ⌘K y el segmentado Día/Semana son el centro de la interacción.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">Paleta</p>
+            <ul class="swatches">
+              <li><i style="background:#FAFAF9"></i><code>#FAFAF9</code><small>base</small></li>
+              <li><i style="background:#FFFFFF"></i><code>#FFFFFF</code><small>surface</small></li>
+              <li><i style="background:#2563EB"></i><code>#2563EB</code><small>cobalto</small></li>
+              <li><i style="background:#0B0B0C"></i><code>#0B0B0C</code><small>texto</small></li>
+              <li><i style="background:#E4E4E7"></i><code>#E4E4E7</code><small>línea</small></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= D · MAISON ================= -->
+    <section id="maison" class="direction">
+      <div class="wrap">
+        <header class="direction__intro">
+          <div>
+            <span class="direction__num">D</span>
+            <h2 class="direction__title">Maison</h2>
+            <p class="direction__pitch">
+              Espresso, hueso y latón. Lujo nocturno para spas y estudios premium que
+              venden ritual más que transacción. Más aire, más radio, más silencio.
+            </p>
+            <div class="tags">
+              <span class="tag">Dark cálido</span>
+              <span class="tag">Latón</span>
+              <span class="tag">Radios amplios</span>
+            </div>
+          </div>
+
+          <div class="specimen theme-maison" aria-label="Muestra tipográfica de Maison">
+            <p class="specimen__eyebrow">Barbería &amp; Spa · Portal</p>
+            <p class="specimen__headline">Tu agenda, <em>en calma.</em></p>
+            <div class="specimen__actions">
+              <span class="btn btn--primary btn--lg">Reservar ritual</span>
+              <span class="btn btn--lg">Ver carta</span>
+            </div>
+            <p class="specimen__foot">Fraunces 300 · Inter 500 · #C8A46A</p>
+          </div>
+        </header>
+
+        <div data-artboard="maison" data-name="Maison"></div>
+
+        <div class="direction__footer">
+          <div class="notes">
+            <p class="eyebrow">Qué observar</p>
+            <ul>
+              <li>El contraste cálido funciona si el texto se mantiene claro y el latón es escaso.</li>
+              <li>Los radios de 18 px y los botones cápsula cambian por completo la lectura.</li>
+              <li>El riesgo es el barro: conviene validar contraste en pantallas de mostrador.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">Paleta</p>
+            <ul class="swatches">
+              <li><i style="background:#14100E"></i><code>#14100E</code><small>espresso</small></li>
+              <li><i style="background:#1C1714"></i><code>#1C1714</code><small>surface</small></li>
+              <li><i style="background:#C8A46A"></i><code>#C8A46A</code><small>latón</small></li>
+              <li><i style="background:#F3EAE0"></i><code>#F3EAE0</code><small>hueso</small></li>
+              <li><i style="background:#A79A8C"></i><code>#A79A8C</code><small>muted</small></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= COMPARATIVA ================= -->
+    <section id="comparativa" class="compare">
+      <div class="wrap">
+        <p class="eyebrow">Lectura rápida</p>
+        <h2>Comparativa</h2>
+        <p class="compare__lead">
+          Las cuatro usan la misma estructura y los mismos datos. La decisión no es
+          “cuál se ve mejor”, sino qué personalidad encaja con el negocio y cuánto
+          mantenimiento puede absorber el equipo.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Comparación de las cuatro direcciones de diseño</caption>
+            <thead>
+              <tr>
+                <th scope="col">Criterio</th>
+                <th scope="col">A · Nocturne 2.0</th>
+                <th scope="col" class="col-best">B · Atelier <span class="mark">Recomendada</span></th>
+                <th scope="col">C · Studio</th>
+                <th scope="col">D · Maison</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Personalidad</th>
+                <td>Editorial nocturna</td>
+                <td class="col-best">Editorial diurna</td>
+                <td>Producto afilado</td>
+                <td>Boutique cálida</td>
+              </tr>
+              <tr>
+                <th scope="row">Legibilidad de día</th>
+                <td>Media</td>
+                <td class="col-best">Alta</td>
+                <td>Alta</td>
+                <td>Media</td>
+              </tr>
+              <tr>
+                <th scope="row">Densidad</th>
+                <td>Media</td>
+                <td class="col-best">Baja</td>
+                <td>Alta</td>
+                <td>Baja</td>
+              </tr>
+              <tr>
+                <th scope="row">Esfuerzo</th>
+                <td>Bajo</td>
+                <td class="col-best">Medio</td>
+                <td>Medio-alto</td>
+                <td>Medio</td>
+              </tr>
+              <tr>
+                <th scope="row">Riesgo</th>
+                <td>Bajo</td>
+                <td class="col-best">Medio</td>
+                <td>Medio</td>
+                <td>Alto</td>
+              </tr>
+              <tr>
+                <th scope="row">Mejor para</th>
+                <td>No romper lo que ya gusta</td>
+                <td class="col-best">Barberías y spas premium</td>
+                <td>Equipos jóvenes y venta self-serve</td>
+                <td>Spas de lujo y posicionamiento ritual</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="callout">
+          <div>
+            <p class="eyebrow">Recomendación</p>
+            <h2>Atelier de día, Nocturne de noche.</h2>
+            <p>
+              Atelier como tema claro por defecto y Nocturne como variante oscura.
+              Se reutiliza el trabajo ya hecho, se gana legibilidad en el mostrador
+              y la marca deja de parecer otro SaaS oscuro. El portal del cliente puede
+              heredar el color del negocio sin tocar la estructura.
+            </p>
+          </div>
+          <ul class="callout__list">
+            <li><b>01</b><span>Definir tokens semánticos únicos y un tema claro/oscuro real, no una inversión automática.</span></li>
+            <li><b>02</b><span>Aplicarlo primero a landing, login y dashboard; validar a 360, 768 y 1280 px.</span></li>
+            <li><b>03</b><span>Propagar a calendario, clientes, equipo, configuración y portal con un solo sistema de componentes.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="wrap page-footer__inner">
+      <span>Mockup estático de exploración · no forma parte del build de Next.js</span>
+      <code>AgendaSaaS / design / direcciones.html</code>
+    </div>
+  </footer>
+  <noscript>
+    <p class="wrap" style="color:var(--page-muted)">Activa JavaScript para ver los cuatro mockups.</p>
+  </noscript>
+
+  <!-- ============================================================
+       Plantilla única del panel: se clona una vez por dirección
+       ============================================================ -->
+  <template id="artboard-template">
+    <article class="artboard">
+      <div class="app">
+        <aside class="sidebar" aria-label="Barra lateral de ejemplo">
+          <div class="brand">
+            <span class="brand__mark">B</span>
+            <div>
+              <span class="brand__eyebrow">Panel de control</span>
+              <strong class="brand__name">Barbería Vintage</strong>
+            </div>
+          </div>
+
+          <span class="portal">
+            Ver portal de clientes
+            <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg>
+          </span>
+
+          <nav class="nav" aria-label="Navegación de ejemplo">
+            <span class="nav__label">Navegación</span>
+            <span class="nav__item is-active">
+              <svg class="icon" aria-hidden="true"><use href="#i-grid"></use></svg>
+              <span>Hoy</span>
+              <span class="nav__tail" aria-hidden="true"></span>
+            </span>
+            <span class="nav__item">
+              <svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>
+              <span>Calendario</span>
+            </span>
+            <span class="nav__item">
+              <svg class="icon" aria-hidden="true"><use href="#i-layers"></use></svg>
+              <span>Servicios</span>
+            </span>
+            <span class="nav__item">
+              <svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg>
+              <span>Equipo</span>
+            </span>
+            <span class="nav__item">
+              <svg class="icon" aria-hidden="true"><use href="#i-contact"></use></svg>
+              <span>Clientes</span>
+            </span>
+            <span class="nav__item">
+              <svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg>
+              <span>Configuración</span>
+            </span>
+          </nav>
+
+          <div class="user">
+            <span class="avatar">TD</span>
+            <div>
+              <span class="user__name">Tadeo D.</span>
+              <span class="user__role">Administrador</span>
+            </div>
+            <span class="user__logout">
+              <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+            </span>
+          </div>
+        </aside>
+
+        <div class="main">
+          <div class="mobilebar">
+            <span class="brand__mark">B</span>
+            <span class="mobilebar__name">Barbería Vintage</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+          </div>
+
+          <header class="topbar">
+            <div class="topbar__meta">
+              <span class="topbar__date">Hoy · mié 28 oct</span>
+              <span class="chip chip--success">Sincronizado</span>
+            </div>
+            <div class="topbar__actions">
+              <span class="search">
+                <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                <span>Buscar</span>
+                <kbd>⌘K</kbd>
+              </span>
+              <span class="btn btn--primary">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                <span>Nueva cita</span>
+              </span>
+            </div>
+          </header>
+
+          <div class="content">
+            <div class="content__head">
+              <div>
+                <p class="content__eyebrow">Miércoles 28 de octubre</p>
+                <h3 class="content__title">Hoy en Barbería Vintage</h3>
+                <p class="content__sub">8 citas · 78% de ocupación · $1,030 cobrados</p>
+              </div>
+              <div class="segmented" aria-hidden="true">
+                <span class="is-active">Día</span>
+                <span>Semana</span>
+              </div>
+            </div>
+
+            <section class="metrics" aria-label="Métricas del día">
+              <div class="metric metric--hero">
+                <span class="metric__label">Ingresos hoy</span>
+                <span class="metric__value">$1,030</span>
+                <span class="metric__delta"><strong>+12%</strong> vs. ayer</span>
+              </div>
+              <div class="metric">
+                <span class="metric__label">Citas</span>
+                <span class="metric__value">8<span class="metric__unit">citas</span></span>
+                <span class="metric__delta">3 completadas · 2 pendientes</span>
+              </div>
+              <div class="metric">
+                <span class="metric__label">Ocupación</span>
+                <span class="metric__value">78<span class="metric__unit">%</span></span>
+                <span class="metric__delta">6 h de 8 h disponibles</span>
+              </div>
+              <div class="metric">
+                <span class="metric__label">Próxima</span>
+                <span class="metric__value">10:00</span>
+                <span class="metric__delta">Carlos Ruiz · Mateo</span>
+              </div>
+            </section>
+
+            <div class="content-grid">
+              <section class="panel calendar" aria-label="Agenda del día">
+                <header class="panel__head">
+                  <div>
+                    <h4 class="panel__title">Agenda de hoy</h4>
+                    <p class="panel__sub">3 especialistas · 6 citas</p>
+                  </div>
+                  <div class="calendar__days" aria-hidden="true">
+                    <span class="calendar__day"><span>Lun</span><b>26</b></span>
+                    <span class="calendar__day"><span>Mar</span><b>27</b></span>
+                    <span class="calendar__day is-active"><span>Mié</span><b>28</b></span>
+                    <span class="calendar__day"><span>Jue</span><b>29</b></span>
+                    <span class="calendar__day"><span>Vie</span><b>30</b></span>
+                  </div>
+                </header>
+
+                <div class="calendar__staff" aria-hidden="true">
+                  <span></span>
+                  <span><i class="dot"></i>Mateo</span>
+                  <span><i class="dot dot--2"></i>Valentina</span>
+                  <span><i class="dot dot--3"></i>Lucas</span>
+                </div>
+
+                <div class="calendar__body">
+                  <span class="time" style="grid-row:1 / 3">09:00</span>
+                  <span class="time" style="grid-row:3 / 5">10:00</span>
+                  <span class="time" style="grid-row:5 / 7">11:00</span>
+                  <span class="time" style="grid-row:7 / 8">12:00</span>
+
+                  <div class="appt" style="grid-column:2;grid-row:1 / 2">
+                    <strong>Corte clásico</strong>
+                    <span>30 min · $250</span>
+                  </div>
+                  <div class="appt appt--accent" style="grid-column:2;grid-row:3 / 4">
+                    <strong>Fade / Degradado</strong>
+                    <span>30 min · $300</span>
+                  </div>
+                  <div class="appt" style="grid-column:2;grid-row:6 / 7">
+                    <strong>Barba + toalla</strong>
+                    <span>30 min · $220</span>
+                  </div>
+
+                  <div class="appt appt--2" style="grid-column:3;grid-row:1 / 3">
+                    <strong>Tinte completo</strong>
+                    <span>60 min · $480</span>
+                  </div>
+                  <div class="appt appt--2 appt--soft" style="grid-column:3;grid-row:4 / 6">
+                    <strong>Brushing</strong>
+                    <span>60 min · $350</span>
+                  </div>
+
+                  <div class="appt appt--3" style="grid-column:4;grid-row:2 / 3">
+                    <strong>Barba + toalla</strong>
+                    <span>30 min · $220</span>
+                  </div>
+                  <div class="appt appt--3 appt--soft" style="grid-column:4;grid-row:5 / 7">
+                    <strong>Corte niño</strong>
+                    <span>60 min · $300</span>
+                  </div>
+
+                  <div class="now" style="grid-row:3" aria-hidden="true"></div>
+                </div>
+              </section>
+
+              <aside class="rail" aria-label="Resumen lateral">
+                <section class="panel">
+                  <header class="panel__head">
+                    <h4 class="panel__title">Próximas</h4>
+                    <span class="link">Ver todas</span>
+                  </header>
+                  <ul class="list">
+                    <li class="list__item">
+                      <time>10:00</time>
+                      <div><strong>Carlos Ruiz</strong><span>Corte clásico · Mateo</span></div>
+                      <span class="chip chip--success">Confirmada</span>
+                    </li>
+                    <li class="list__item">
+                      <time>11:30</time>
+                      <div><strong>Ana Torres</strong><span>Tinte completo · Valentina</span></div>
+                      <span class="chip chip--warn">Pendiente</span>
+                    </li>
+                    <li class="list__item">
+                      <time>12:30</time>
+                      <div><strong>Luis Vega</strong><span>Barba + toalla · Lucas</span></div>
+                      <span class="chip chip--success">Confirmada</span>
+                    </li>
+                  </ul>
+                </section>
+
+                <section class="panel panel--accent">
+                  <h4 class="panel__title">Recordatorio</h4>
+                  <p class="wa">Hola Carlos, te esperamos hoy a las <strong>10:00</strong> con Mateo.</p>
+                  <span class="btn btn--primary btn--block">
+                    <svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg>
+                    Enviar por WhatsApp
+                  </span>
+                </section>
+
+                <section class="panel">
+                  <h4 class="panel__title">Portal de clientes</h4>
+                  <div class="portal-link">
+                    <span>/b/barberia-vintage</span>
+                    <span>Copiar</span>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <style>
+    .icon {
+      width: 1em;
+      height: 1em;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .content__eyebrow {
+      margin: 0;
+      color: var(--accent-text);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <script>
+    (() => {
+      const template = document.getElementById("artboard-template");
+      if (!template) return;
+
+      document.querySelectorAll("[data-artboard]").forEach((slot) => {
+        const theme = slot.getAttribute("data-artboard");
+        const name = slot.getAttribute("data-name") || theme;
+        const fragment = template.content.cloneNode(true);
+        const artboard = fragment.querySelector(".artboard");
+
+        artboard.classList.add("theme-" + theme);
+        artboard.setAttribute("aria-label", "Mockup del panel de administración: " + name);
+        slot.replaceWith(fragment);
+      });
+    })();
+  </script>
+</body>
+</html>

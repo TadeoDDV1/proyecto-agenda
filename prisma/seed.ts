@@ -1,13 +1,24 @@
-import { PrismaClient, UserRole, AppointmentStatus } from "@prisma/client";
+import { PrismaClient, UserRole, AppointmentStatus, BrandTheme, Vertical, ResourceKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { normalizePhone } from "../src/lib/booking/phone";
+import {
+  addDaysToDateKey,
+  formatDateKeyInZone,
+  zonedToUtc,
+} from "../src/lib/booking/time";
 
 const prisma = new PrismaClient();
+
+const TIMEZONE = "America/Mexico_City";
 
 async function main() {
   console.log("🌱 Iniciando sembrado de datos...");
 
   // 1. Limpiar datos existentes en caso de re-ejecución
   await prisma.appointment.deleteMany();
+  await prisma.resource.deleteMany();
+  await prisma.testimonial.deleteMany();
+  await prisma.businessHour.deleteMany();
   await prisma.staffService.deleteMany();
   await prisma.schedule.deleteMany();
   await prisma.service.deleteMany();
@@ -22,15 +33,40 @@ async function main() {
     data: {
       name: "Barbería & Spa Vintage",
       slug: "barberia-vintage",
-      description: "Especialistas en cortes clásicos, degradados modernos y cuidado de barba de alta gama.",
-      phone: "+52 55 4123 8899",
+      description:
+        "Especialistas en cortes clásicos, degradados modernos y cuidado de barba de alta gama.",
+      tagline: "El oficio de siempre, con la precisión de hoy.",
+      story:
+        "Abrimos en 2014 con dos sillas y una idea simple: que cada corte tenga tiempo. Hoy somos tres barberos, un ritual de toalla caliente y café de olla para quien espera.",
+      phone: "+525541238899",
+      whatsappNumber: "+525541238899",
       address: "Av. Insurgentes Sur 1205, Col. Del Valle, CDMX",
       currency: "MXN",
-      logoUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&auto=format&fit=crop&q=60",
+      logoUrl:
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&auto=format&fit=crop&q=60",
+      coverImageUrl:
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1400&auto=format&fit=crop&q=70",
+      instagram: "barberiavintage",
+      brandTheme: BrandTheme.TERRACOTTA,
+      vertical: Vertical.BARBERSHOP,
+      onboardingState: "READY",
+      timezone: TIMEZONE,
+      bookingWindowDays: 45,
+      minLeadTimeMinutes: 60,
+      cancellationWindowHours: 24,
     },
   });
 
   console.log(`✅ Tenant creado: ${tenant.name} (${tenant.slug})`);
+
+  // Recursos agendables (sillas) del local de ejemplo
+  await prisma.resource.createMany({
+    data: [
+      { tenantId: tenant.id, name: "Silla 1", kind: ResourceKind.CHAIR },
+      { tenantId: tenant.id, name: "Silla 2", kind: ResourceKind.CHAIR },
+      { tenantId: tenant.id, name: "Silla 3", kind: ResourceKind.CHAIR },
+    ],
+  });
 
   // 3. Crear Usuario Administrador/Dueño (contraseña: password123)
   const passwordHash = await bcrypt.hash("password123", 10);
@@ -50,9 +86,12 @@ async function main() {
       tenantId: tenant.id,
       displayName: "Mateo Silva",
       email: "mateo@barberiavintage.com",
-      phone: "+52 55 1111 2222",
-      colorCode: "#3b82f6", // Azul
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      phone: "+525511112222",
+      colorCode: "#C2410C",
+      bio: "Cortes clásicos y degradados a máquina. Diez años detrás de la silla.",
+      specialties: "Fade, cortes clásicos",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     },
   });
 
@@ -61,9 +100,12 @@ async function main() {
       tenantId: tenant.id,
       displayName: "Valentina Ríos",
       email: "valentina@barberiavintage.com",
-      phone: "+52 55 3333 4444",
-      colorCode: "#ec4899", // Rosa
-      avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      phone: "+525533334444",
+      colorCode: "#7C3AED",
+      bio: "Color, textura y combos largos. Le gusta explicar el porqué de cada producto.",
+      specialties: "Color, tratamientos",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
     },
   });
 
@@ -72,15 +114,18 @@ async function main() {
       tenantId: tenant.id,
       displayName: "Lucas Gómez",
       email: "lucas@barberiavintage.com",
-      phone: "+52 55 5555 6666",
-      colorCode: "#10b981", // Verde
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      phone: "+525555556666",
+      colorCode: "#0F766E",
+      bio: "Barba y navaja. El ritual de toalla caliente es su especialidad.",
+      specialties: "Barba, afeitado",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     },
   });
 
   console.log("✅ Colaboradores creados (3)");
 
-  // 5. Configurar Horarios Semanales (Lunes a Sábado, 09:00 - 19:00, Almuerzo 13:00 - 14:00)
+  // 5. Horarios semanales (lunes a sábado, 09:00–19:00, descanso 13:00–14:00)
   const allStaff = [staffMateo, staffValentina, staffLucas];
   for (const staff of allStaff) {
     for (let day = 1; day <= 6; day++) {
@@ -99,37 +144,44 @@ async function main() {
     }
   }
 
-  console.log("✅ Horarios laborales asignados para todo el equipo");
+  // Horario general del negocio (se muestra en Vitrina)
+  for (let day = 0; day <= 6; day++) {
+    await prisma.businessHour.create({
+      data: {
+        tenantId: tenant.id,
+        dayOfWeek: day,
+        openTime: "09:00",
+        closeTime: "19:00",
+        isClosed: day === 0,
+      },
+    });
+  }
 
-  // 6. Crear Categorías
+  console.log("✅ Horarios laborales y del negocio asignados");
+
+  // 6. Categorías
   const catCortes = await prisma.category.create({
-    data: {
-      tenantId: tenant.id,
-      name: "Cortes de Cabello",
-    },
+    data: { tenantId: tenant.id, name: "Cortes de Cabello" },
   });
 
   const catBarba = await prisma.category.create({
-    data: {
-      tenantId: tenant.id,
-      name: "Barbería Tradicional",
-    },
+    data: { tenantId: tenant.id, name: "Barbería Tradicional" },
   });
 
   const catCombos = await prisma.category.create({
-    data: {
-      tenantId: tenant.id,
-      name: "Paquetes & Experiencias",
-    },
+    data: { tenantId: tenant.id, name: "Paquetes & Experiencias" },
   });
 
-  // 7. Crear Servicios
+  // 7. Servicios
   const servCorteClasico = await prisma.service.create({
     data: {
       tenantId: tenant.id,
       categoryId: catCortes.id,
       name: "Corte de Cabello Clásico",
-      description: "Lavado previo, corte a tijera y máquina, terminado con navaja y peinado profesional.",
+      description:
+        "Lavado previo, corte a tijera y máquina, terminado con navaja y peinado profesional.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop&q=70",
       durationMinutes: 30,
       price: 250.0,
     },
@@ -140,7 +192,10 @@ async function main() {
       tenantId: tenant.id,
       categoryId: catCortes.id,
       name: "Fade / Degradado Moderno",
-      description: "Skin fade milimétrico, diseño y aplicación de pomada de fijación.",
+      description:
+        "Skin fade milimétrico, diseño y aplicación de pomada de fijación.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800&auto=format&fit=crop&q=70",
       durationMinutes: 40,
       price: 300.0,
     },
@@ -151,7 +206,10 @@ async function main() {
       tenantId: tenant.id,
       categoryId: catBarba.id,
       name: "Perfilado y Cuidado de Barba",
-      description: "Recorte simétrico, perfilado al filo de navaja y aplicación de aceites hidratantes.",
+      description:
+        "Recorte simétrico, perfilado al filo de navaja y aplicación de aceites hidratantes.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&auto=format&fit=crop&q=70",
       durationMinutes: 25,
       price: 200.0,
     },
@@ -162,7 +220,10 @@ async function main() {
       tenantId: tenant.id,
       categoryId: catBarba.id,
       name: "Afeitado con Toalla Caliente",
-      description: "Ritual completo de toallas calientes, espuma templada, afeitado profundo y bálsamo anti-irritación.",
+      description:
+        "Ritual completo de toallas calientes, espuma templada, afeitado profundo y bálsamo anti-irritación.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800&auto=format&fit=crop&q=70",
       durationMinutes: 35,
       price: 260.0,
     },
@@ -173,7 +234,10 @@ async function main() {
       tenantId: tenant.id,
       categoryId: catCombos.id,
       name: "Combo Imperial (Corte + Barba + Mascarilla)",
-      description: "La experiencia completa: corte premium, arreglo de barba y mascarilla purificante de puntos negros.",
+      description:
+        "La experiencia completa: corte premium, arreglo de barba y mascarilla purificante de puntos negros.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&auto=format&fit=crop&q=70",
       durationMinutes: 60,
       price: 480.0,
     },
@@ -181,8 +245,7 @@ async function main() {
 
   console.log("✅ Catálogo de servicios creado (5 servicios en 3 categorías)");
 
-  // 8. Asignar servicios a colaboradores
-  // Mateo y Lucas hacen cortes y barbas; Valentina hace cortes y combos
+  // 8. Servicios por colaborador
   await prisma.staffService.createMany({
     data: [
       { staffId: staffMateo.id, serviceId: servCorteClasico.id },
@@ -201,13 +264,14 @@ async function main() {
     ],
   });
 
-  // 9. Crear Clientes de Prueba
+  // 9. Clientes de prueba (teléfonos normalizados a E.164)
   const cliente1 = await prisma.customer.create({
     data: {
       tenantId: tenant.id,
       fullName: "Carlos Mendoza",
-      phone: "+52 55 1234 5678",
+      phone: normalizePhone("55 1234 5678")!,
       email: "carlos.mendoza@email.com",
+      whatsappOptIn: true,
     },
   });
 
@@ -215,52 +279,85 @@ async function main() {
     data: {
       tenantId: tenant.id,
       fullName: "Andrés Navarro",
-      phone: "+52 55 8765 4321",
+      phone: normalizePhone("+52 55 8765 4321")!,
       email: "andres.navarro@email.com",
+      whatsappOptIn: true,
     },
   });
 
-  // 10. Crear Citas de Prueba para hoy y mañana
-  const today = new Date();
-  today.setHours(10, 0, 0, 0);
-  const endToday = new Date(today);
-  endToday.setMinutes(endToday.getMinutes() + 40);
+  // 10. Citas de prueba para hoy y mañana, en la zona del tenant
+  const now = new Date();
+  const todayKey = formatDateKeyInZone(now, TIMEZONE);
+  const tomorrowKey = addDaysToDateKey(todayKey, 1);
 
+  const todayStart = zonedToUtc(todayKey, "10:00", TIMEZONE);
   await prisma.appointment.create({
     data: {
       tenantId: tenant.id,
       staffId: staffMateo.id,
       serviceId: servFade.id,
       customerId: cliente1.id,
-      startTime: today,
-      endTime: endToday,
+      startTime: todayStart,
+      endTime: new Date(todayStart.getTime() + 40 * 60_000),
       status: AppointmentStatus.CONFIRMED,
       totalPrice: 300.0,
       customerNotes: "Cliente frecuente. Prefiere desvanecido medio.",
+      source: "ADMIN",
+      confirmationCode: "H7K2M9",
     },
   });
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(16, 0, 0, 0);
-  const endTomorrow = new Date(tomorrow);
-  endTomorrow.setMinutes(endTomorrow.getMinutes() + 60);
-
+  const tomorrowStart = zonedToUtc(tomorrowKey, "16:00", TIMEZONE);
   await prisma.appointment.create({
     data: {
       tenantId: tenant.id,
       staffId: staffValentina.id,
       serviceId: servComboImperial.id,
       customerId: cliente2.id,
-      startTime: tomorrow,
-      endTime: endTomorrow,
+      startTime: tomorrowStart,
+      endTime: new Date(tomorrowStart.getTime() + 60 * 60_000),
       status: AppointmentStatus.CONFIRMED,
       totalPrice: 480.0,
       customerNotes: "Reserva agendada desde el portal web.",
+      source: "WEB",
+      confirmationCode: "P4R8T2",
     },
   });
 
-  console.log("✅ Citas de prueba registradas");
+  // 11. Reseñas publicadas para Vitrina
+  await prisma.testimonial.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        authorName: "Lucía M.",
+        quote:
+          "Vine por una recomendación y me quedé por cómo me explicaron qué hacer con mi barba. Salí con un plan, no solo con un corte.",
+        rating: 5,
+        serviceId: servToallaCaliente.id,
+        isPublished: true,
+      },
+      {
+        tenantId: tenant.id,
+        authorName: "Diego R.",
+        quote:
+          "El degradado aguantó tres semanas impecable. Y el café de olla mientras esperás no tiene precio.",
+        rating: 5,
+        serviceId: servFade.id,
+        isPublished: true,
+      },
+      {
+        tenantId: tenant.id,
+        authorName: "Mariana T.",
+        quote:
+          "Pedí un cambio de último momento y me lo resolvieron sin drama. Se nota que la agenda la manejan bien.",
+        rating: 4,
+        serviceId: servComboImperial.id,
+        isPublished: true,
+      },
+    ],
+  });
+
+  console.log("✅ Citas de prueba y reseñas registradas");
   console.log("🎉 Sembrado completado exitosamente.");
 }
 
