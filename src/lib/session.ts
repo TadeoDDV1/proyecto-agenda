@@ -19,6 +19,8 @@ export interface SessionPayload {
   role: string;
   email: string;
   fullName: string;
+  /** Versión del token: al cambiarla se invalidan las sesiones abiertas. */
+  v?: number;
 }
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {

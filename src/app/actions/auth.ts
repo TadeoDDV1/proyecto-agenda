@@ -52,6 +52,13 @@ export async function loginAction(formData: FormData) {
     role: user.role,
     email: user.email,
     fullName: user.fullName,
+    v: user.tokenVersion,
+  });
+
+  // Registro del acceso para el control de sesiones del equipo.
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
   });
 
   // El login fue correcto: se reinicia el contador anti fuerza bruta.

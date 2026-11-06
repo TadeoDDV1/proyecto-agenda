@@ -64,6 +64,16 @@ export async function requireSession(): Promise<SessionPayload> {
  */
 export async function requireTenant() {
   const session = await requireSession();
+
+  // Si se cerraron las sesiones del usuario, el token deja de ser válido.
+  const actual = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { tokenVersion: true },
+  });
+  if (!actual || (session.v ?? 0) !== actual.tokenVersion) {
+    await clearSessionCookie();
+    redirect("/login?error=sesion");
+  }
   const tenant = await prisma.tenant.findUnique({
     where: { id: session.tenantId },
   });

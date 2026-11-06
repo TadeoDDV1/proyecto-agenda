@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
@@ -13,6 +13,14 @@ import { VITRINA_THEME_NAMES } from "@/lib/vitrina/theme";
 async function getActiveTenantId() {
   const session = await getSession();
   return session?.tenantId ?? null;
+}
+
+// Cambios de configuración: solo dueño o administrador del negocio.
+async function getManagerTenantId() {
+  const session = await getSession();
+  if (!session?.tenantId) return null;
+  if (!["OWNER", "ADMIN"].includes(session.role)) return null;
+  return session.tenantId;
 }
 
 export async function updateAppointmentStatusAction(
@@ -443,4 +451,27 @@ export async function updateTenantSettingsAction(formData: FormData) {
     console.error("Error al actualizar configuración:", error);
     return { success: false, error: "No se pudo actualizar la configuración del salón." };
   }
+}
+
+/**
+ * Cierra todas las sesiones abiertas de un usuario del negocio.
+ * Incrementa tokenVersion: cualquier JWT emitido antes deja de valer.
+ */
+export async function revokeUserSessionsAction(userId: string) {
+  const tenantId = await getManagerTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  const objetivo = await prisma.user.findFirst({
+    where: { id: userId, tenantId },
+    select: { id: true, email: true },
+  });
+  if (!objetivo) return { success: false, error: "Usuario no encontrado." };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } },
+  });
+
+  revalidatePath("/admin/sesiones");
+  return { success: true, email: objetivo.email };
 }

@@ -19,6 +19,7 @@ import {
   X,
   Store,
   MessageSquare,
+  ShieldCheck,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -93,7 +94,8 @@ export function AdminSidebar({
     { name: "Agenda", href: "/admin", icon: LayoutDashboard },
     { name: "Calendario", href: "/admin/calendario", icon: Calendar },
     { name: config.terms.services, href: "/admin/servicios", icon: Layers },
-    { name: config.terms.professionals, href: "/admin/personal", icon: Users },
+    { name: config.terms.professionals, href: "/admin/personal", icon: Users },
+    { href: "/admin/sesiones", name: "Sesiones", icon: ShieldCheck },
     { name: config.terms.customers, href: "/admin/clientes", icon: Contact },
     { name: "WhatsApp", href: "/admin/whatsapp", icon: MessageCircle },
     { name: "Configuración", href: "/admin/configuracion", icon: Settings },

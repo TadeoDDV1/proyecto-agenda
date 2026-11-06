@@ -10,6 +10,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const { session, tenant } = await requireTenant();
+  const store = await cookies();
+  const impersonando = Boolean(store.get("agenda_super")?.value);
 
   return (
     <div className="min-h-screen bg-base text-foreground">

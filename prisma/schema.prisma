@@ -157,6 +157,16 @@ model Tenant {
   whatsappAccount       WhatsAppAccount?
   whatsappConversations WhatsAppConversation[]
 
+  // Panel de plataforma (superadministrador)
+  plan            String  @default("BASIC")
+  isActive        Boolean @default(true)
+  isPlatform      Boolean @default(false)
+  maxStaff        Int     @default(10)
+  maxServices     Int     @default(50)
+  suspendedReason String?
+  notes           String?
+  features        Json?
+
   @@map("tenants")
 }
 
@@ -167,6 +177,10 @@ model User {
   passwordHash String
   fullName     String
   role         UserRole @default(STAFF)
+  /// Último acceso correcto (para el control de sesiones del equipo).
+  lastLoginAt  DateTime?
+  /// Se incrementa para invalidar todas las sesiones abiertas del usuario.
+  tokenVersion Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
