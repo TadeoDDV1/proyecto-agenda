@@ -1,7 +1,8 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { rateLimit } from "@/lib/rate-limit";
 
 export interface CreateBookingInput {
   tenantSlug: string;
@@ -23,6 +24,21 @@ export async function createBooking(input: CreateBookingInput) {
 
     if (!tenant) {
       return { success: false, error: "Negocio no encontrado." };
+    }
+
+    if (tenant.isPlatform || !tenant.isActive) {
+      return { success: false, error: "El negocio no está disponible para reservas." };
+    }
+
+    const nombre = (input.customerName || "").trim().slice(0, 80);
+    const telefono = (input.customerPhone || "").trim().slice(0, 25);
+    if (nombre.length < 2 || telefono.length < 7) {
+      return { success: false, error: "Nombre y teléfono son obligatorios." };
+    }
+
+    const limite = rateLimit(`reserva:${tenant.id}:${telefono}`, 3, 10 * 60 * 1000);
+    if (!limite.ok) {
+      return { success: false, error: "Demasiadas reservas seguidas. Intenta más tarde." };
     }
 
     const service = await prisma.service.findFirst({
@@ -123,7 +139,7 @@ export async function createBooking(input: CreateBookingInput) {
     let customer = await prisma.customer.findFirst({
       where: {
         tenantId: tenant.id,
-        phone: input.customerPhone,
+        phone: telefono,
       },
     });
 
@@ -131,9 +147,9 @@ export async function createBooking(input: CreateBookingInput) {
       customer = await prisma.customer.create({
         data: {
           tenantId: tenant.id,
-          fullName: input.customerName,
-          phone: input.customerPhone,
-          email: input.customerEmail || null,
+          fullName: nombre,
+          phone: telefono,
+          email: (input.customerEmail || '').trim().slice(0, 120) || null,
         },
       });
     }
@@ -148,7 +164,7 @@ export async function createBooking(input: CreateBookingInput) {
         startTime,
         endTime,
         totalPrice: service.price,
-        customerNotes: input.notes || null,
+        customerNotes: (input.notes || '').trim().slice(0, 500) || null,
         status: "CONFIRMED",
       },
       include: {

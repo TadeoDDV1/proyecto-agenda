@@ -1,0 +1,21 @@
+-- =============================================================================
+-- postgres-init.sql — inicialización de PostgreSQL
+-- =============================================================================
+-- Docker ejecuta este archivo SOLO cuando el volumen `dbdata` está vacío, es
+-- decir, la primera vez que se crea el contenedor de la base de datos.
+--
+-- Las TABLAS no se declaran aquí: las genera Prisma a partir de
+-- prisma/schema.prisma con:
+--   docker compose --profile setup run --rm migrate
+--
+-- Este archivo es el punto de extensión para lo que deba existir antes de la
+-- app: extensiones, roles, bases auxiliares, datos mínimos, etc.
+-- Ejemplos (descomenta lo que necesites):
+--
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- CREATE EXTENSION IF NOT EXISTS "unaccent";
+--
+-- Si ya inicializaste el volumen y cambias este archivo, los cambios NO se
+-- aplican solos: hay que recrear la base con `docker compose down -v`
+-- (⚠️ eso borra los datos) o ejecutar el SQL a mano.

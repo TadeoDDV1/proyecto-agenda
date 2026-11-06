@@ -1,0 +1,132 @@
+# =============================================================================
+# docker-compose.yml — SaaS de citas (Next.js 16 + Prisma + PostgreSQL 17)
+# =============================================================================
+# Servicios:
+#   db      · PostgreSQL 17 con los datos persistidos en el volumen "dbdata".
+#   app     · la aplicación Next.js construida desde ./Dockerfile (puerto 3000).
+#   migrate · tarea de una sola ejecución: crea las tablas (prisma db push) y,
+#             si SEED_DEMO=1, carga los datos demo. Está detrás del profile
+#             "setup" para que no se ejecute en cada `docker compose up`.
+#
+# Primer arranque recomendado:
+#   1) docker compose --profile setup run --rm migrate   # crea el esquema
+#   2) docker compose up -d --build                      # levanta db + app
+#
+# Con un archivo de variables propio:
+#   docker compose --env-file .env.docker --profile setup run --rm migrate
+#   docker compose --env-file .env.docker up -d --build
+#
+# Integración con el Dockerfile (multi-stage: deps → builder → runner):
+#   · `migrate` reutiliza la etapa "builder", que tiene node_modules completo
+#     (prisma y tsx), el cliente generado y el esquema; su WORKDIR es /app.
+#   · la app escucha en el puerto 3000 (PORT/HOSTNAME definidos en el runner).
+#   Si renombras la etapa "builder", exporta MIGRATE_BUILD_TARGET con el nombre
+#   nuevo (ver .env.docker.example).
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Base de datos
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: proyecto_agenda
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      # Los datos viven en un volumen nombrado: sobreviven a `docker compose
+      # down`, pero se borran con `docker compose down -v`.
+      - dbdata:/var/lib/postgresql/data
+      # Punto de extensión: este SQL se ejecuta SOLO la primera vez que se
+      # inicializa el volumen (volumen vacío).
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    # El puerto no se publica a propósito: la app se conecta por la red interna
+    # de Compose en db:5432. Si necesitas entrar desde tu máquina (psql, Prisma
+    # Studio), descomenta este mapeo; se usa 5433 para no chocar con un
+    # PostgreSQL local que ya escuche en 5432.
+    # ports:
+    #   - "5433:5432"
+    healthcheck:
+      # pg_isready devuelve 0 cuando PostgreSQL acepta conexiones.
+      test: ["CMD-SHELL", "pg_isready -U postgres -d proyecto_agenda"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Aplicación Next.js
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # No arranca hasta que PostgreSQL responda al healthcheck.
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Host "db" = nombre del servicio en la red de Compose (nunca 127.0.0.1).
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/proyecto_agenda?schema=public"
+      # Cambia este valor en producción (p. ej. desde .env.docker).
+      JWT_SECRET: "${JWT_SECRET:-agenda_saas_dev_secret_2026_cambiar_en_produccion}"
+
+      # --- WhatsApp Cloud API (opcional) ---
+      # Descomenta y completa solo si quieres activar el chatbot de WhatsApp.
+      # Sin WA_TOKEN el webhook no envía mensajes: solo los registra en el log.
+      # WA_VERIFY_TOKEN: "agenda-verify"
+      # WA_TOKEN: "EAAG...token-de-Meta..."
+      # WA_PHONE_MAP: '{"109876543210":"barberia-vintage"}'
+      # WA_DEFAULT_TENANT: "barberia-vintage"
+
+  # ---------------------------------------------------------------------------
+  # Preparación de la base de datos (se ejecuta una vez y termina)
+  # ---------------------------------------------------------------------------
+  migrate:
+    # Con profiles solo corre cuando se pide explícitamente:
+    #   docker compose --profile setup run --rm migrate
+    profiles: ["setup"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Reutiliza la etapa de build (node_modules + prisma + tsx + esquema).
+      # La primera vez compila esa etapa, incluido `next build`: puede tardar
+      # varios minutos. Sobrescribe MIGRATE_BUILD_TARGET si cambia el nombre.
+      target: ${MIGRATE_BUILD_TARGET:-builder}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/proyecto_agenda?schema=public"
+      # 1 = después del db push ejecuta prisma/seed-test.ts (datos demo).
+      # 0 = solo crea/actualiza el esquema.
+      SEED_DEMO: "${SEED_DEMO:-0}"
+    # "db push" crea las tablas a partir de prisma/schema.prisma y además
+    # regenera el cliente Prisma que usa el seed.
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        echo "→ Creando/actualizando el esquema con prisma db push..."
+        npx prisma db push
+        if [ "$$SEED_DEMO" = "1" ]; then
+          echo "→ Cargando datos demo (prisma/seed-test.ts)..."
+          npx tsx prisma/seed-test.ts
+        else
+          echo "→ Seed omitido (usa SEED_DEMO=1 para cargar los datos demo)."
+        fi
+
+# -----------------------------------------------------------------------------
+# Volúmenes
+# -----------------------------------------------------------------------------
+volumes:
+  # Datos de PostgreSQL. Compose le antepone el nombre del proyecto, así que
+  # suele verse como "proyecto-agenda_dbdata".
+  dbdata:

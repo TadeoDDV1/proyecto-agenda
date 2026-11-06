@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   LayoutDashboard,
   Calendar,
@@ -16,6 +17,7 @@ import {
   Menu,
   X,
   Store,
+  MessageSquare,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -42,6 +44,7 @@ export function AdminSidebar({
     { name: "Servicios", href: "/admin/servicios", icon: Layers },
     { name: "Equipo", href: "/admin/personal", icon: Users },
     { name: "Clientes", href: "/admin/clientes", icon: Contact },
+    { name: "Chatbot", href: "/admin/chatbot", icon: MessageSquare },
     { name: "Configuración", href: "/admin/configuracion", icon: Settings },
   ];
 
@@ -198,6 +201,7 @@ export function AdminSidebar({
         <div
           className="px-4 py-4 border-t border-border"
         >
+          <ThemeToggle compacto />
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               {/* Monograma del usuario */}

@@ -1,10 +1,39 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { parseFeatures } from "@/lib/tenant-config";
 import { BookingWizard } from "@/components/BookingWizard";
 import { MapPin, Phone, Clock } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * La validación se hace en generateMetadata porque se ejecuta ANTES de que la
+ * respuesta empiece a transmitirse; así el 404 llega con el código correcto
+ * (si se hiciera solo en el componente, el streaming ya habría enviado un 200).
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const tenant = await prisma.tenant.findUnique({
+    where: { slug },
+    select: { name: true, description: true, isPlatform: true, isActive: true, features: true },
+  });
+
+  if (!tenant || tenant.isPlatform || !tenant.isActive) {
+    notFound();
+  }
+
+  // El superadmin puede desactivar el portal público de un negocio.
+  if (parseFeatures(tenant.features).publicBooking === false) {
+    notFound();
+  }
+
+  return {
+    title: `${tenant.name} · Reserva tu cita`,
+    description: tenant.description ?? `Agenda tu cita en ${tenant.name}.`,
+  };
 }
 
 export default async function PublicBookingPage({ params }: PageProps) {
@@ -35,6 +64,12 @@ export default async function PublicBookingPage({ params }: PageProps) {
   });
 
   if (!tenant) {
+    notFound();
+  }
+
+  // El negocio interno de la plataforma no se expone, y un negocio suspendido
+  // o sin portal público habilitado no debe recibir reservas.
+  if (tenant.isPlatform || !tenant.isActive || parseFeatures(tenant.features).publicBooking === false) {
     notFound();
   }
 

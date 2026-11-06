@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, comparePassword, setSessionCookie, clearSessionCookie } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { rateLimit, limpiarLimite } from "@/lib/rate-limit";
 
 export async function loginAction(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
@@ -11,6 +12,15 @@ export async function loginAction(formData: FormData) {
 
   if (!email || !password) {
     return { success: false, error: "Por favor ingresa tu correo y contraseña." };
+  }
+
+  // Anti fuerza bruta: 5 intentos por correo cada 15 minutos.
+  const intento = rateLimit(`login:${email}`, 5, 15 * 60 * 1000);
+  if (!intento.ok) {
+    return {
+      success: false,
+      error: `Demasiados intentos. Espera ${Math.ceil((intento.reintentarEn ?? 900) / 60)} minutos.`,
+    };
   }
 
   const user = await prisma.user.findUnique({
@@ -27,6 +37,14 @@ export async function loginAction(formData: FormData) {
     return { success: false, error: "Contraseña incorrecta." };
   }
 
+  // Un negocio suspendido por el superadmin no puede iniciar sesión
+  if (!user.tenant.isActive && user.role !== UserRole.SUPERADMIN) {
+    return {
+      success: false,
+      error: "Este negocio se encuentra suspendido. Contacta al administrador de la plataforma.",
+    };
+  }
+
   await setSessionCookie({
     userId: user.id,
     tenantId: user.tenantId,
@@ -34,6 +52,9 @@ export async function loginAction(formData: FormData) {
     email: user.email,
     fullName: user.fullName,
   });
+
+  // El login fue correcto: se reinicia el contador anti fuerza bruta.
+  limpiarLimite(`login:${email}`);
 
   return { success: true };
 }

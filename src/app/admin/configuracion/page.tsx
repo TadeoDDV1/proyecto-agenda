@@ -1,10 +1,16 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { TenantSettingsForm } from "@/components/TenantSettingsForm";
 import { PageHeader } from "@/components/ui";
 
 export default async function AdminConfiguracionPage() {
   const session = await getSession();
+
+  // Solo dueño o administrador pueden ver la configuración del negocio.
+  if (!session || !["OWNER", "ADMIN"].includes(session.role)) {
+    redirect("/admin");
+  }
 
   let tenant = null;
   if (session?.tenantId) {

@@ -52,6 +52,43 @@
   --font-newsreader: var(--font-fraunces);
 }
 
+/* ───────────────────────────────────────────────
+   Tema claro — se activa con [data-theme="light"]
+   Mantiene la misma estructura y contraste AA.
+   ─────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --base: #fbfbfd;
+  --surface: #ffffff;
+  --surface-raised: #f4f4f8;
+  --surface-overlay: #ffffff;
+
+  --border: #e3e3ea;
+  --border-subtle: #ededf2;
+  --border-strong: #cfcfda;
+
+  --text: #14141c;
+  --text-muted: #55555f;
+  --text-dim: #6b6b78;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.1);
+  --accent-fg: #ffffff;
+  --accent-warm: #4338ca;
+  --accent-dim: #3730a3;
+
+  --success: #059669;
+  --success-text: #047857;
+  --warning: #b45309;
+  --warning-text: #92400e;
+  --error: #dc2626;
+  --error-text: #b91c1c;
+  --info: #0284c7;
+  --info-text: #0369a1;
+
+  --ring: rgba(79, 70, 229, 0.35);
+}
+
 @theme inline {
   /* Colores */
   --color-base: var(--base);

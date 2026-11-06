@@ -10,6 +10,7 @@ datasource db {
 }
 
 enum UserRole {
+  SUPERADMIN
   OWNER
   ADMIN
   STAFF
@@ -34,6 +35,16 @@ model Tenant {
   logoUrl     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // --- administración de plataforma (superadmin) ---
+  plan            String  @default("BASIC") // BASIC | PRO | ENTERPRISE
+  isActive        Boolean @default(true)
+  isPlatform      Boolean @default(false) // tenant interno que aloja a los superadmins
+  maxStaff        Int     @default(10)
+  maxServices     Int     @default(50)
+  suspendedReason String?
+  notes           String?
+  features        Json? // { whatsappBot, publicBooking, bitacoras, reportes, multiSucursal }
 
   users        User[]
   staff        StaffProfile[]

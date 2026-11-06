@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+
+// La portada muestra métricas en vivo desde la base de datos: se renderiza en
+// cada petición. Sin esto, Next intenta prerenderizarla y el build exige una
+// base de datos accesible (falla en Docker y en CI).
+export const dynamic = "force-dynamic";
 import { buttonClasses } from "@/components/ui";
 import { ProductPreview } from "@/components/ProductPreview";
 import {

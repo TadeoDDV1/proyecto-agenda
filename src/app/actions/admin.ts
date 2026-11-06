@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
@@ -8,14 +8,17 @@ import { AppointmentStatus } from "@prisma/client";
 // Helper para validar tenant activo
 async function getActiveTenantId() {
   const session = await getSession();
-  if (session?.tenantId) {
-    return session.tenantId;
-  }
-  // Fallback al tenant de prueba para agilidad
-  const demoTenant = await prisma.tenant.findFirst({
-    where: { slug: "barberia-vintage" },
-  });
-  return demoTenant?.id || null;
+  // Sin sesión no se opera: antes caía al negocio de demostración y permitía
+  // modificar datos sin autenticarse.
+  return session?.tenantId ?? null;
+}
+
+// Cambios de configuración: solo dueño o administrador del negocio.
+async function getManagerTenantId() {
+  const session = await getSession();
+  if (!session?.tenantId) return null;
+  if (!["OWNER", "ADMIN"].includes(session.role)) return null;
+  return session.tenantId;
 }
 
 export async function updateAppointmentStatusAction(
@@ -45,8 +48,21 @@ export async function updateAppointmentStatusAction(
 }
 
 export async function createServiceAction(formData: FormData) {
-  const tenantId = await getActiveTenantId();
+  const tenantId = await getManagerTenantId();
   if (!tenantId) return { success: false, error: "No autorizado." };
+
+  // Límite del plan configurado por el superadmin
+  const limite = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { maxServices: true },
+  });
+  const actuales = await prisma.service.count({ where: { tenantId } });
+  if (limite && actuales >= limite.maxServices) {
+    return {
+      success: false,
+      error: `Tu plan permite hasta ${limite.maxServices} servicios. Elimina uno o amplía el plan.`,
+    };
+  }
 
   const name = (formData.get("name") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
@@ -123,8 +139,21 @@ export async function toggleServiceStatusAction(serviceId: string, isActive: boo
 }
 
 export async function createStaffAction(formData: FormData) {
-  const tenantId = await getActiveTenantId();
+  const tenantId = await getManagerTenantId();
   if (!tenantId) return { success: false, error: "No autorizado." };
+
+  // Límite del plan configurado por el superadmin
+  const limite = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { maxStaff: true },
+  });
+  const actuales = await prisma.staffProfile.count({ where: { tenantId } });
+  if (limite && actuales >= limite.maxStaff) {
+    return {
+      success: false,
+      error: `Tu plan permite hasta ${limite.maxStaff} colaboradores. Elimina uno o amplía el plan.`,
+    };
+  }
 
   const displayName = (formData.get("displayName") as string)?.trim();
   const email = (formData.get("email") as string)?.trim();
@@ -339,7 +368,7 @@ export async function updateCustomerNotesAction(customerId: string, notes: strin
 }
 
 export async function updateTenantSettingsAction(formData: FormData) {
-  const tenantId = await getActiveTenantId();
+  const tenantId = await getManagerTenantId();
   if (!tenantId) return { success: false, error: "No autorizado." };
 
   const name = (formData.get("name") as string)?.trim();

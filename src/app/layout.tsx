@@ -27,12 +27,19 @@ export const viewport = {
   themeColor: "#0a0a0f",
 };
 
+// Aplica el tema antes del primer pintado para evitar el destello blanco.
+const SCRIPT_TEMA = `(function(){try{var t=localStorage.getItem("tema")||"system";var oscuro=t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=oscuro?"dark":"light";}catch(e){document.documentElement.dataset.theme="dark";}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
