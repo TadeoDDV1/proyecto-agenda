@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Necesario para la imagen Docker: genera .next/standalone con el servidor
+  // autocontenido que copia la etapa `runner` del Dockerfile.
+  output: "standalone",
   turbopack: {
     rules: {
       // Solo el CSS global de Tailwind. Aplicar este loader a *todo* `*.css`

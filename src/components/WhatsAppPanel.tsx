@@ -112,7 +112,7 @@ export function WhatsAppPanel(props: WhatsAppPanelProps) {
           <div className="mb-5 flex items-start gap-2.5 rounded-[3px] border border-warning/25 bg-warning/10 px-3 py-2.5 text-xs text-warning-text">
             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p>
-              El worker del bot no está corriendo. Abrí una terminal y ejecutá{" "}
+              El servicio del bot no está activo. En Docker se levanta con{" "}
               <code className="font-mono text-[11px] px-1 py-0.5 rounded bg-surface-raised">
                 npm run bot
               </code>

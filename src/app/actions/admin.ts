@@ -475,3 +475,23 @@ export async function revokeUserSessionsAction(userId: string) {
   revalidatePath("/admin/sesiones");
   return { success: true, email: objetivo.email };
 }
+/** Configuración del bot de WhatsApp del negocio. */
+export async function updateWhatsAppConfigAction(formData: FormData) {
+  const tenantId = await getManagerTenantId();
+  if (!tenantId) return { success: false, error: "No autorizado." };
+
+  const botName = ((formData.get("botName") as string) || "").trim().slice(0, 40) || null;
+  const customGreeting =
+    ((formData.get("customGreeting") as string) || "").trim().slice(0, 300) || null;
+  const escalationPhone =
+    ((formData.get("escalationPhone") as string) || "").trim().slice(0, 25) || null;
+  await prisma.whatsAppAccount.upsert({
+    where: { tenantId },
+    create: { tenantId, botName, customGreeting, escalationPhone, botEnabled: true },
+    // El encendido/apagado se controla con su propio botón, no con este formulario.
+    update: { botName, customGreeting, escalationPhone },
+  });
+
+  revalidatePath("/admin/whatsapp");
+  return { success: true };
+}

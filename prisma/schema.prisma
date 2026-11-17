@@ -407,7 +407,13 @@ model WhatsAppAccount {
   id                    String                @id @default(uuid())
   tenantId              String                @unique
   status                WhatsAppAccountStatus @default(PENDING)
-  botEnabled            Boolean               @default(true)
+  botEnabled           Boolean @default(true)
+  /// Nombre con el que se presenta el bot al cliente.
+  botName             String?
+  /// Saludo personalizado; si está vacío se usa el de fábrica.
+  customGreeting      String?
+  /// Número al que se deriva cuando el cliente pide hablar con una persona.
+  escalationPhone     String?
   /// Número propio ya vinculado (E.164). Lo completa el worker al conectar.
   displayPhoneNumber    String?
   /// JID propio (`521...@s.whatsapp.net`) para ignorar mensajes propios.

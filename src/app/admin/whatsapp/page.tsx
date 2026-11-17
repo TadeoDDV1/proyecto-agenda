@@ -15,6 +15,8 @@ import { prisma } from "@/lib/prisma";
 import { isWorkerOnline } from "@/lib/whatsapp/worker";
 import { WhatsAppPanel } from "@/components/WhatsAppPanel";
 import { Badge, Card, CardHeader, EmptyState, PageHeader } from "@/components/ui";
+import { BotToggle } from "@/components/BotToggle";
+import { updateWhatsAppConfigAction } from "@/app/actions/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +75,12 @@ export default async function AdminWhatsAppPage() {
       })
     : null;
 
-  const workerOnline = isWorkerOnline(account?.workerSeenAt ?? null);
+  // El latido puede quedar viejo entre sincronizaciones: si hay un QR reciente,
+// el worker está vivo aunque el latido tenga más de 45 s.
+  const qrReciente =
+    account?.qrUpdatedAt instanceof Date &&
+    Date.now() - account.qrUpdatedAt.getTime() < 2 * 60 * 1000;
+  const workerOnline = isWorkerOnline(account?.workerSeenAt ?? null) || Boolean(qrReciente);
 
   const stats = [
     {
@@ -105,6 +112,58 @@ export default async function AdminWhatsAppPage() {
         action={<Badge tone="accent">Baileys</Badge>}
       />
 
+      <Card className="p-6">
+        <CardHeader
+          title="Configuración del bot"
+          subtitle="Se aplica en la siguiente conversación, sin reiniciar nada."
+          className="pb-4 mb-4"
+        />
+                <div className="mb-4">
+          <BotToggle activo={account?.botEnabled ?? true} />
+        </div>
+        <form
+          action={async (fd: FormData) => {
+            "use server";
+            await updateWhatsAppConfigAction(fd);
+          }}
+          className="grid gap-4 sm:grid-cols-2"
+        >
+          <label className="text-xs text-muted">
+            Nombre del bot
+            <input
+              name="botName"
+              defaultValue={account?.botName ?? ""}
+              placeholder="Ej. Valentina, Sofía, Recepción"
+              className="mt-1 w-full rounded-lg border border-border bg-base px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <label className="text-xs text-muted">
+            Teléfono para pasar con una persona
+            <input
+              name="escalationPhone"
+              defaultValue={account?.escalationPhone ?? ""}
+              placeholder="+52 961 000 0000"
+              className="mt-1 w-full rounded-lg border border-border bg-base px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <label className="sm:col-span-2 text-xs text-muted">
+            Saludo personalizado (opcional)
+            <textarea
+              name="customGreeting"
+              rows={2}
+              defaultValue={account?.customGreeting ?? ""}
+              placeholder="Ej. ¡Hola! Soy Sofía de Barbería Vintage. Te ayudo a agendar en un minuto."
+              className="mt-1 w-full rounded-lg border border-border bg-base px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <button
+            type="submit"
+            className="justify-self-start px-4 py-2 rounded-lg bg-accent text-accent-fg text-sm"
+          >
+            Guardar configuración
+          </button>
+        </form>
+      </Card>
       <div className="grid lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 space-y-6 min-w-0">
           <WhatsAppPanel

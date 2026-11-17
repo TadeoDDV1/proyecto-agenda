@@ -3,22 +3,23 @@
 # =============================================================================
 # Servicios:
 #   db      · PostgreSQL 17 con los datos persistidos en el volumen "dbdata".
+#   bot     · worker del bot de WhatsApp (Baileys). Arranca solo; nadie tiene
+#             que abrir una terminal.
 #   app     · la aplicación Next.js construida desde ./Dockerfile (puerto 3000).
 #   migrate · tarea de una sola ejecución: crea las tablas (prisma db push) y,
-#             si SEED_DEMO=1, carga los datos demo. Está detrás del profile
-#             "setup" para que no se ejecute en cada `docker compose up`.
+#             si SEED_DEMO=1, carga los datos demo. Detrás del profile "setup".
 #
-# Primer arranque recomendado:
+# Primer arranque:
 #   1) docker compose --profile setup run --rm migrate   # crea el esquema
-#   2) docker compose up -d --build                      # levanta db + app
+#   2) docker compose up -d --build                      # levanta db + bot + app
 #
-# Con un archivo de variables propio:
+# Con variables propias:
 #   docker compose --env-file .env.docker --profile setup run --rm migrate
 #   docker compose --env-file .env.docker up -d --build
 #
 # Integración con el Dockerfile (multi-stage: deps → builder → runner):
-#   · `migrate` reutiliza la etapa "builder", que tiene node_modules completo
-#     (prisma y tsx), el cliente generado y el esquema; su WORKDIR es /app.
+#   · `bot` y `migrate` reutilizan la etapa "builder", que tiene node_modules
+#     completo (prisma y tsx), el cliente generado y el esquema; WORKDIR /app.
 #   · la app escucha en el puerto 3000 (PORT/HOSTNAME definidos en el runner).
 #   Si renombras la etapa "builder", exporta MIGRATE_BUILD_TARGET con el nombre
 #   nuevo (ver .env.docker.example).
@@ -55,6 +56,28 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Worker del bot de WhatsApp (Baileys)
+  # ---------------------------------------------------------------------------
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # La etapa builder ya trae node_modules (con tsx), src y prisma.
+      target: builder
+    command: npm run bot
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/proyecto_agenda?schema=public"
+      JWT_SECRET: "${JWT_SECRET:-agenda_saas_dev_secret_2026_cambiar_en_produccion}"
+      # La sesión de WhatsApp debe sobrevivir a los reinicios del contenedor.
+      BOT_SESSION_DIR: "/data/wa-auth"
+    volumes:
+      - wa_auth:/data/wa-auth
 
   # ---------------------------------------------------------------------------
   # Aplicación Next.js
@@ -109,13 +132,15 @@ services:
       SEED_DEMO: "${SEED_DEMO:-0}"
     # "db push" crea las tablas a partir de prisma/schema.prisma y además
     # regenera el cliente Prisma que usa el seed.
+    # --accept-data-loss: el esquema agrega restricciones únicas; sin esta
+    # bandera el comando se detiene pidiendo confirmación y el arranque falla.
     command:
       - sh
       - -c
       - |
         set -e
         echo "→ Creando/actualizando el esquema con prisma db push..."
-        npx prisma db push
+        npx prisma db push --accept-data-loss
         if [ "$$SEED_DEMO" = "1" ]; then
           echo "→ Cargando datos demo (prisma/seed-test.ts)..."
           npx tsx prisma/seed-test.ts
@@ -130,3 +155,6 @@ volumes:
   # Datos de PostgreSQL. Compose le antepone el nombre del proyecto, así que
   # suele verse como "proyecto-agenda_dbdata".
   dbdata:
+  # Credenciales de la sesión de WhatsApp (Baileys). Si se borra, hay que
+  # escanear el QR otra vez.
+  wa_auth:

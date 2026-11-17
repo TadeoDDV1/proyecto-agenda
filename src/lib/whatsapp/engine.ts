@@ -44,7 +44,15 @@ const SLOTS_PER_PAGE = 8;
 /* ─── Entrada y utilidades ─── */
 
 export async function handleInbound(input: EngineInput): Promise<EngineResult> {
-  const text = normalize(input.text);
+    // Configuración del bot: nombre propio y saludo personalizado.
+  const cuentaBot = await prisma.whatsAppAccount.findUnique({
+    where: { tenantId: input.tenant.id },
+    select: { botName: true, customGreeting: true },
+  });
+  const saludo =
+    cuentaBot?.customGreeting?.trim() || GREETING(input.tenant.name, cuentaBot?.botName);
+
+const text = normalize(input.text);
   const expired =
     input.expiresAt instanceof Date && input.expiresAt.getTime() < Date.now();
 
@@ -53,7 +61,7 @@ export async function handleInbound(input: EngineInput): Promise<EngineResult> {
     return {
       state: "MENU",
       context: {},
-      replies: [`${GREETING(input.tenant.name)}\n\n${menuText()}`],
+      replies: [`${saludo}\n\n${menuText()}`],
     };
   }
 
@@ -65,7 +73,7 @@ export async function handleInbound(input: EngineInput): Promise<EngineResult> {
     return {
       state: "MENU",
       context: {},
-      replies: [`${GREETING(input.tenant.name)}\n\n${menuText()}`],
+      replies: [`${saludo}\n\n${menuText()}`],
     };
   }
 

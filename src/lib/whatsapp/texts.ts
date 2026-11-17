@@ -10,8 +10,8 @@ import { es } from "date-fns/locale";
 import { formatDateKeyInZone } from "@/lib/booking";
 import type { DayChoice, SlotChoice } from "./types";
 
-export const GREETING = (tenantName: string) =>
-  `¡Hola! Soy el asistente de *${tenantName}*.`;
+export const GREETING = (tenantName: string, botName?: string | null) =>
+  `¡Hola! Soy *${botName?.trim() || `el asistente de ${tenantName}`}*.`;
 
 export function menuText(): string {
   return [
@@ -19,7 +19,7 @@ export function menuText(): string {
     "",
     "1. Reservar una cita",
     "2. Ver mis próximas citas",
-    "3. Información del salón",
+    "3. Información y horarios",
     "",
     "Responde con el número de la opción.",
   ].join("\n");
